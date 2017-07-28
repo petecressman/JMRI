@@ -47,7 +47,7 @@ public class LocoIcon extends PositionableLabel {
         setDisplayLevel(Editor.MARKERS);
         setShowTooltip(false);
         //setEditable(false);
-        _text = true; //Markers are an icon with text
+        setIsText(true); //Markers are an icon with text
         setPopupUtility(new PositionablePopupUtil(this, this) {       // need this class for Font Edit
             @Override
             public void setFixedTextMenu(JPopupMenu popup) {
@@ -322,7 +322,7 @@ public class LocoIcon extends PositionableLabel {
                     block.setMarkerFont(util.getFont());
                     String name = getText(); // rotated icons have null text
                     if (name == null || name.length() == 0) {
-                        name = getUnRotatedText();
+                        name = getText();
                     }
                     if (TrackerTableAction.markNewTracker(block, name) != null) {
                         dock();

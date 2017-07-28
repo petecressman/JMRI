@@ -298,8 +298,8 @@ public class PositionableJComponent extends JComponent implements Positionable {
             _iconEditor = editor;
         } else {
             log.error("IconAdder missing for name={}. cannot make _iconEditorFrame", name);
+//          _iconEditor = new IconAdder(name, getEditor());
             return;
-//            _iconEditor = new IconAdder(name, getEditor());
         }
         _iconEditorFrame = _editor.makeAddIconFrame(name, false, table, _iconEditor);
         _iconEditorFrame.addWindowListener(new java.awt.event.WindowAdapter() {

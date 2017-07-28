@@ -189,6 +189,24 @@ public final class ImageIndexEditor extends JmriJFrame {
         return _indexChanged;
     }
 
+    /**
+     * Called from window close of Icon Editors
+     */
+    public static boolean checkImageIndex() {
+        if (_indexChanged) {
+            int result = JOptionPane.showConfirmDialog(null, Bundle.getMessage("SaveImageIndex"),
+                    Bundle.getMessage("question"), JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (result == JOptionPane.YES_OPTION) {
+                storeImageIndex();
+                return true;
+            } else if (result == JOptionPane.NO_OPTION) {
+                indexChanged(false);
+            }
+        }
+        return false;
+    }
+
     public static void storeImageIndex() {
         jmri.jmrit.display.palette.ItemPalette.storeIcons();
 

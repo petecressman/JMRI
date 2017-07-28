@@ -32,7 +32,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -45,7 +44,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JViewport;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.border.TitledBorder;
 import jmri.ConfigureManager;
@@ -2238,7 +2236,7 @@ public class SwitchboardEditor extends Editor {
             g2d.setStroke(new java.awt.BasicStroke(2.0f));
             for (Positionable p : _secondSelectionGroup) {
                 if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                    g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
+                    g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
                 }
             }
         }

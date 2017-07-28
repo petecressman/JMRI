@@ -32,11 +32,11 @@ public class LinkingLabel extends PositionableLabel implements LinkingObject {
     @Override
     public Positionable deepClone() {
         PositionableLabel pos;
-        if (_icon) {
-            NamedIcon icon = new NamedIcon((NamedIcon) getIcon());
+        if (isIcon()) {
+            NamedIcon icon = new NamedIcon(getIcon());
             pos = new LinkingLabel(icon, _editor, url);
         } else {
-            pos = new LinkingLabel(_unRotatedText, _editor, url);
+            pos = new LinkingLabel(getText(), _editor, url);
         }
         return finishClone(pos);
     }

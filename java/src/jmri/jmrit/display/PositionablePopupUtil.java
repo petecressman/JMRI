@@ -2,7 +2,6 @@ package jmri.jmrit.display;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -15,7 +14,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
-import jmri.util.MenuScroller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,7 +205,7 @@ public class PositionablePopupUtil {
         }
         popup.add(edit);
     }
-
+/*
     protected JMenu makeFontMenu() {
         JMenu fontMenu = new JMenu("Font"); // create font menu
         //fontMenu.setMnemonic('n'); // set mnemonic to n
@@ -249,6 +247,26 @@ public class PositionablePopupUtil {
         MenuScroller.setScrollerFor(fontMenu, 36);
 
         return fontMenu;
+    }
+*/    
+    public void setTextBorderMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditBorder"));
+        edit.add("Border Size= " + _borderSize);
+        edit.add(CoordinateEdit.getBorderEditAction(_parent));
+        JMenu colorMenu = new JMenu(Bundle.getMessage("BorderColorMenu"));
+        makeColorMenu(colorMenu, BORDER_COLOR);
+        edit.add(colorMenu);
+        popup.add(edit);
+    }
+
+    public void setTextFontMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditFont"));
+        edit.add(makeFontSizeMenu());
+        edit.add(makeFontStyleMenu());
+        JMenu colorMenu = new JMenu(Bundle.getMessage("FontColor"));
+        makeColorMenu(colorMenu, PositionablePopupUtil.FONT_COLOR);
+        edit.add(colorMenu);
+        popup.add(edit);
     }
 
     protected JMenu makeFontSizeMenu() {
