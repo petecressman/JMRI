@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -944,12 +945,11 @@ public class CircuitBuilder {
             if (pos instanceof PortalIcon) {
                 continue;
             }
-            homeRect = pos.getBounds(homeRect);
+            homeRect = pos.getContentBounds(homeRect);
             if (iconIntersectsRect(icon, homeRect)) {
                 ok = true;
                 break;
             }
-
         }
         if (!ok) {
             icon.setStatus(status);
@@ -962,7 +962,7 @@ public class CircuitBuilder {
             if (pos instanceof PortalIcon) {
                 continue;
             }
-            homeRect = pos.getBounds(homeRect);
+            homeRect = pos.getContentBounds(homeRect);
             if (iconIntersectsRect(icon, homeRect)) {
                 ok = true;
                 break;
@@ -973,10 +973,15 @@ public class CircuitBuilder {
         return ok;
     }
 
-    private static boolean iconIntersectsRect(Positionable icon, Rectangle rect) {
-        Rectangle iconRect = icon.getBounds(new Rectangle());
-        return (iconRect.intersects(rect));
-    }
+    protected static final boolean iconIntersectsRect(Positionable icon, Rectangle rect) {
+        java.awt.geom.AffineTransform tf = icon.getTransform();
+        Rectangle test = icon.getContentBounds(null);
+        test.x = 0;
+        test.y = 0;
+        AffineTransform t = AffineTransform.getTranslateInstance(icon.getX(), icon.getY());
+        t.concatenate(tf);
+        return (t.createTransformedShape(test).intersects(rect));
+        }                    
 
     ////////////////////////// Frame Utilities //////////////////////////
     protected List<Positionable> getCircuitIcons(OBlock block) {
@@ -1213,7 +1218,7 @@ public class CircuitBuilder {
         }
         t.setLevel(Editor.TURNOUTS);
         t.setScale(_oldIcon.getScale());
-        t.rotate(_oldIcon.getDegrees());
+        t.setDegrees(_oldIcon.getDegrees());
         finishConvert(t);
     }
 
@@ -1236,7 +1241,7 @@ public class CircuitBuilder {
         }
         t.setLevel(Editor.TURNOUTS);
         t.setScale(_oldIcon.getScale());
-        t.rotate(_oldIcon.getDegrees());
+        t.setDegrees(_oldIcon.getDegrees());
         finishConvert(t);
     }
 

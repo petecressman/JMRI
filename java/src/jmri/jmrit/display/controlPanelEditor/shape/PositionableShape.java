@@ -2,7 +2,6 @@ package jmri.jmrit.display.controlPanelEditor.shape;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -40,8 +39,6 @@ public class PositionableShape extends PositionableJComponent
     protected Color _lineColor = Color.black;
     protected Color _fillColor = new Color(255, 255, 255, 0);
     protected int _lineWidth = 1;
-    private int _degrees;
-    protected AffineTransform _transform;
     private NamedBeanHandle<Sensor> _controlSensor = null;
     private int _saveLevel = 5;   // default level set in popup
     private int _changeLevel = 5;
@@ -78,8 +75,9 @@ public class PositionableShape extends PositionableJComponent
 
     protected void setShape(Shape s) {
         _shape = s;
+        updateSize();
     }
-
+/*
     protected Shape getShape() {
         return _shape;
     }
@@ -87,7 +85,7 @@ public class PositionableShape extends PositionableJComponent
     public AffineTransform getTransform() {
         return _transform;
     }
-
+*/
     public void setWidth(int w) {
         if (w > SIZE) {
             _width = w;
@@ -149,7 +147,7 @@ public class PositionableShape extends PositionableJComponent
     public int getLineWidth() {
         return _lineWidth;
     }
-
+/*
     @Override
     public void rotate(int deg) {
         _degrees = deg % 360;
@@ -163,7 +161,7 @@ public class PositionableShape extends PositionableJComponent
         }
         updateSize();
     }
-
+*/
     @Override
     public void paint(Graphics g) {
         if (!getEditor().isEditable() && !isVisible()) {
@@ -185,6 +183,7 @@ public class PositionableShape extends PositionableJComponent
         }
 
         g2d.setClip(null);
+        AffineTransform _transform = getTransform();
         if (_transform != null) {
             g2d.transform(_transform);
         }
@@ -205,7 +204,8 @@ public class PositionableShape extends PositionableJComponent
         if (_editor.isEditable() && _handles != null) {
             g2d.setColor(Editor.HIGHLIGHT_COLOR);
             g2d.setStroke(new java.awt.BasicStroke(2.0f));
-            Rectangle r = getBounds();
+            Rectangle r = new Rectangle();
+            r = getContentBounds(r);
             r.x = -_lineWidth / 2;
             r.y = -_lineWidth / 2;
             r.width += _lineWidth;
@@ -237,10 +237,10 @@ public class PositionableShape extends PositionableJComponent
         pos.setWidth(_width);
         pos.setHeight(_height);
         pos.makeShape();
-        pos.rotate(getDegrees());       // must be after makeShape due to updateSize call
+        pos.setDegrees(getDegrees());       // must be after makeShape due to updateSize call
         return super.finishClone(pos);
     }
-
+/*
     @Override
     public Dimension getSize(Dimension rv) {
         return new Dimension(maxWidth(), maxHeight());
@@ -267,7 +267,7 @@ public class PositionableShape extends PositionableJComponent
     @Override
     public int maxHeight() {
         return getSize().height;
-    }
+    }*/
 
     @Override
     public boolean showPopUp(JPopupMenu popup) {
@@ -291,10 +291,50 @@ public class PositionableShape extends PositionableJComponent
         return false;
     }
 
-    @Override
-    public int getDegrees() {
-        return _degrees;
-    }
+/*    DrawFrame _editFrame;
+
+    protected void setEditParams() {
+        _editFrame.setDisplayParams(this);
+        java.awt.Container contentPane = _editFrame.getContentPane();
+        contentPane.add(_editFrame.makeParamsPanel());
+        contentPane.add(makeDoneButtonPanel());
+        _editFrame.pack();
+        drawHandles();
+    }*/
+/*
+    protected JPanel makeDoneButtonPanel() {
+        JPanel panel0 = new JPanel();
+        panel0.setLayout(new FlowLayout());
+        JButton doneButton = new JButton(Bundle.getMessage("ButtonDone"));
+        @override
+        doneButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent a) {
+                editItem();
+            }
+        });
+        panel0.add(doneButton);
+
+        JButton cancelButton = new JButton(Bundle.getMessage("ButtonCancel"));
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent a) {
+                removeHandles();
+                _editFrame.closingEvent();
+                _editFrame = null;
+            }
+        });
+        panel0.add(cancelButton);
+        return panel0;
+    }*/
+/*
+    protected void editItem() {
+        _editFrame.updateFigure(this);
+//        makeShape();
+        removeHandles();
+        updateSize();
+        _editFrame.closingEvent();
+        _editFrame = null;
+        repaint();
+    }*/
 
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -471,6 +511,7 @@ public class PositionableShape extends PositionableJComponent
     }
 
     public Point getInversePoint(int x, int y) throws java.awt.geom.NoninvertibleTransformException {
+        AffineTransform _transform = getTransform();
         if (_transform != null) {
             java.awt.geom.AffineTransform t = _transform.createInverse();
             float[] pt = new float[2];

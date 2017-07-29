@@ -175,7 +175,7 @@ public class PositionableShapeXml extends AbstractXmlAdapter {
         ps.setFillColor(getColor(element, "fillColor", alpha));
 
         ps.makeShape();
-        ps.rotate(getInt(element, "degrees"));
+        ps.setDegrees(getInt(element, "degrees"));
 
         a = element.getAttribute("hideOnSensor");
         boolean hide = false;

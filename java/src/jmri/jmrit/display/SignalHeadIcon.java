@@ -312,7 +312,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      * ************* popup AbstractAction.actionPerformed method overrides
      * ***********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         super.rotateOrthogonal();
         displayState(headState());
@@ -328,7 +328,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
     public void rotate(int deg) {
         super.rotate(deg);
         displayState(headState());
-    }
+    }*/
 
     /**
      * Drive the current state of the display from the state of the underlying
@@ -413,10 +413,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         while (it.hasNext()) {
             Entry<String, NamedIcon> entry = it.next();
             NamedIcon oldIcon = entry.getValue();
-            NamedIcon newIcon = cloneIcon(oldIcon, this);
-            newIcon.rotate(0, this);
-            newIcon.scale(1.0, this);
-            newIcon.setRotation(4, this);
+            NamedIcon newIcon = new NamedIcon(oldIcon);
             map.put(entry.getKey(), newIcon);
         }
         _itemPanel.init(updateAction, map);
@@ -501,10 +498,6 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             if (log.isDebugEnabled()) {
                 log.debug("key= " + entry.getKey() + ", localKey= " + name
                         + ", newIcon= " + icon + ", oldIcon= " + oldIcon);
-            }
-            if (oldIcon != null) {
-                icon.setLoad(oldIcon.getDegrees(), oldIcon.getScale(), this);
-                icon.setRotation(oldIcon.getRotation(), this);
             }
             tempMap.put(name, icon);
         }

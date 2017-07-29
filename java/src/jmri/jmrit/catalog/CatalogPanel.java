@@ -46,6 +46,8 @@ import javax.swing.tree.TreePath;
 import jmri.CatalogTree;
 import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
+import jmri.jmrit.display.PositionableLabel;
+import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -413,15 +415,15 @@ public class CatalogPanel extends JPanel implements MouseListener {
         JRadioButton darkButton = new JRadioButton(Bundle.getMessage("darkGray"), false);
         whiteButton.addActionListener((ActionEvent e) -> {
             _currentBackground = Color.white;
-            setBackground(_preview);
+            PreviewDialog.setBackGround(_preview, _currentBackground);
         });
         grayButton.addActionListener((ActionEvent e) -> {
             _currentBackground = _grayColor;
-            setBackground(_preview);
+            PreviewDialog.setBackGround(_preview, _currentBackground);
         });
         darkButton.addActionListener((ActionEvent e) -> {
             _currentBackground = new Color(150, 150, 150);
-            setBackground(_preview);
+            PreviewDialog.setBackGround(_preview, _currentBackground);
         });
         JPanel backgroundPanel = new JPanel();
         backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS));
@@ -464,7 +466,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
             comp1.removeMouseListener(this);
         }
         _preview.removeAll();
-        setBackground(_preview);
+        PreviewDialog.setBackGround(_preview, _currentBackground);
         _preview.repaint();
     }
 
@@ -521,7 +523,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
             }
             CatalogTreeLeaf leaf = leaves.get(i);
             NamedIcon icon = new NamedIcon(leaf.getPath(), leaf.getName());
-            double scale = icon.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
+//            double scale = icon.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
             if (_noMemory) {
                 continue;
             }
@@ -545,26 +547,31 @@ public class CatalogPanel extends JPanel implements MouseListener {
             }
             c.insets = new Insets(5, 5, 0, 0);
 
-            JLabel nameLabel;
+            PositionableLabel image = null;
             if (_noDrag) {
-                nameLabel = new JLabel();
+                image = new PositionableLabel(icon, null);
             } else {
                 try {
-                    nameLabel = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime));
+                    image = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime), icon);
+                    image.setIsIcon(true);
                 } catch (java.lang.ClassNotFoundException cnfe) {
-                    log.warn("Unable to create drag label", cnfe);
+                    cnfe.printStackTrace();
                     continue;
                 }
             }
-//            nameLabel.setText(leaf.getName());
-            nameLabel.setName(leaf.getName());
-//            nameLabel.setVerticalTextPosition(JLabel.TOP);
-            nameLabel.setBackground(_currentBackground);
-            nameLabel.setIcon(icon);
-
+            image.setToolTipText(leaf.getName());
+            Double scale = image.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
+            if (scale<1.0) {
+                image.setSize(CatalogPanel.ICON_WIDTH,CatalogPanel.ICON_HEIGHT);
+            }
+            image.setName(leaf.getName());
+            PositionablePopupUtil util = image.getPopupUtility();
+            if (util!=null) {
+                util.setBackgroundColor(_currentBackground);                
+            }
             JPanel p = new JPanel();
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            p.add(nameLabel);
+            p.add(image);
             JLabel label = new JLabel(Bundle.getMessage("scale", CatalogPanel.printDbl(scale, 2)));
             p.add(label);
             label = new JLabel(leaf.getName());

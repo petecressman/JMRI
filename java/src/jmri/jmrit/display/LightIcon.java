@@ -41,10 +41,10 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
 
     protected Positionable finishClone(LightIcon pos) {
         pos.setLight(getNameString());
-        pos.setOffIcon(cloneIcon(getOffIcon(), pos));
-        pos.setOnIcon(cloneIcon(getOnIcon(), pos));
-        pos.setInconsistentIcon(cloneIcon(getInconsistentIcon(), pos));
-        pos.setUnknownIcon(cloneIcon(getUnknownIcon(), pos));
+        pos.setOffIcon(new NamedIcon(getOffIcon()));
+        pos.setOnIcon(new NamedIcon(getOnIcon()));
+        pos.setInconsistentIcon(new NamedIcon(getInconsistentIcon()));
+        pos.setUnknownIcon(new NamedIcon(getUnknownIcon()));
         return super.finishClone(pos);
     }
 
@@ -123,7 +123,7 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
         unknown = i;
         displayState(lightState());
     }
-
+/*
     @Override
     public int maxHeight() {
         return Math.max(
@@ -140,7 +140,7 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
                         (on != null) ? on.getIconWidth() : 0),
                 (inconsistent != null) ? inconsistent.getIconWidth() : 0
         );
-    }
+    }*/
 
     /**
      * Get current state of attached light
@@ -186,7 +186,7 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
 
     //
     // ****** popup AbstractAction.actionPerformed method overrides ********
-    //
+    /*
     @Override
     protected void rotateOrthogonal() {
         off.setRotation(on.getRotation() + 1, this);
@@ -214,7 +214,7 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
         unknown.rotate(deg, this);
         inconsistent.rotate(deg, this);
         displayState(lightState());
-    }
+    }*/
 
     @Override
     protected void edit() {

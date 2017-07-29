@@ -39,8 +39,8 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
     private NamedBeanHandle<SignalMast> namedMast;
 
     public void setShowAutoText(boolean state) {
-        _text = state;
-        _icon = !_text;
+        setIsText(state);
+        setIsIcon(!state);
     }
 
     @Override
@@ -131,12 +131,6 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
                 return true;
             }
             _iconMap.put(s, n);
-            if (_rotate != 0) {
-                n.rotate(_rotate, this);
-            }
-            if (_scale != 1.0) {
-                n.scale(_scale, this);
-            }
         }
         return false;
     }
@@ -579,30 +573,6 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
     @Override
     public boolean setEditIconMenu(JPopupMenu popup) {
         return false;
-    }
-
-    @Override
-    protected void rotateOrthogonal() {
-        super.rotateOrthogonal();
-        // bug fix, must repaint icons that have same width and height
-        displayState(mastState());
-        repaint();
-    }
-
-    @Override
-    public void rotate(int deg) {
-        super.rotate(deg);
-        if (getSignalMast() != null) {
-            displayState(mastState());
-        }
-    }
-
-    @Override
-    public void setScale(double s) {
-        super.setScale(s);
-        if (getSignalMast() != null) {
-            displayState(mastState());
-        }
     }
 
     /**

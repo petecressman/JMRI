@@ -359,7 +359,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
         unknown = i;
         displayState(turnoutState());
     }
-
+/*
     @Override
     public int maxHeight() {
         return Math.max(
@@ -384,7 +384,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
                         Math.max((unknown != null) ? unknown.getIconWidth() : 0,
                                 (inconsistent != null) ? inconsistent.getIconWidth() : 0))
         );
-    }
+    }*/
 
     /**
      * Get current state of attached turnouts This adds the two turnout states
@@ -545,7 +545,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
     /**
      * ****** popup AbstractAction.actionPerformed method overrides ********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         lowerWestToUpperEast.setRotation(lowerWestToUpperEast.getRotation() + 1, this);
         upperWestToLowerEast.setRotation(upperWestToLowerEast.getRotation() + 1, this);
@@ -578,7 +578,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
         unknown.rotate(deg, this);
         inconsistent.rotate(deg, this);
         displayState(turnoutState());
-    }
+    }*/
 
     /**
      * Drive the current state of the display from the state of the turnout.

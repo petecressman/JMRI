@@ -1119,8 +1119,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         for (Positionable p : _selectionGroup) {
             Rectangle2D.Double rect2D = new Rectangle2D.Double(p.getX() * _paintScale,
                     p.getY() * _paintScale,
-                    p.maxWidth() * _paintScale,
-                    p.maxHeight() * _paintScale);
+                    p.getWidth() * _paintScale,
+                    p.getHeight() * _paintScale);
             if (rect2D.contains(x, y)) {
                 return p;
             }
@@ -1138,27 +1138,30 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         int x = 0;
         int y = 0;
         switch (e.getKeyCode()) {
+            case KeyEvent.VK_U:
             case KeyEvent.VK_UP:
             case KeyEvent.VK_KP_UP:
             case KeyEvent.VK_NUMPAD8:
                 y = -1;
                 break;
+            case KeyEvent.VK_D:
             case KeyEvent.VK_DOWN:
             case KeyEvent.VK_KP_DOWN:
             case KeyEvent.VK_NUMPAD2:
                 y = 1;
                 break;
+            case KeyEvent.VK_L:
             case KeyEvent.VK_LEFT:
             case KeyEvent.VK_KP_LEFT:
             case KeyEvent.VK_NUMPAD4:
                 x = -1;
                 break;
+            case KeyEvent.VK_R:
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_KP_RIGHT:
             case KeyEvent.VK_NUMPAD6:
                 x = 1;
                 break;
-            case KeyEvent.VK_D:
             case KeyEvent.VK_DELETE:
             case KeyEvent.VK_MINUS:
                 _shapeDrawer.delete();
@@ -1189,8 +1192,10 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
      *
      * @param event the moust event to handle
      */
+    private long _mouseDownTime = 0;
     @Override
     public void mousePressed(MouseEvent event) {
+        _mouseDownTime = System.currentTimeMillis();
         setToolTip(null); // ends tooltip if displayed
         log.debug("mousePressed at ({},{}) _dragging={}", event.getX(), event.getY(), _dragging);
         //  " _selectionGroup= "+(_selectionGroup==null?"null":_selectionGroup.size()));
@@ -1231,6 +1236,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
     @Override
     public void mouseReleased(MouseEvent event) {
+        _mouseDownTime = 0;
         setToolTip(null); // ends tooltip if displayed
         if (log.isDebugEnabled()) { // avoid string concatination if not debug
             log.debug("mouseReleased at ({},{}) dragging={}, pastePending={}, selectRect is{} null",
@@ -1342,6 +1348,11 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         //if (_debug) log.debug("mouseDragged at ("+event.getX()+","+event.getY()+")");
         setToolTip(null); // ends tooltip if displayed
 
+        long time = System.currentTimeMillis();
+        if (time - _mouseDownTime < 100) {
+            return;     // don't drag until sure mouse down was not just a select click
+        }
+
         if (_circuitBuilder.doMouseDragged(_currentSelection, event)) {
             return;
         }
@@ -1451,7 +1462,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             g2d.setStroke(new java.awt.BasicStroke(2.0f));
             for (Positionable p : _secondSelectionGroup) {
                 if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                    g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
+                    g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
                 }
             }
         }
@@ -1580,7 +1591,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
     @Override
     protected void setSelectionsRotation(int k, Positionable p) {
         if (_circuitBuilder.saveSelectionGroup(_selectionGroup)) {
-            p.rotate(k);
+            p.setDegrees(k);
         } else {
             super.setSelectionsRotation(k, p);
         }
@@ -1765,7 +1776,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             _highlightcomponent = null;
         } else {
             _highlightcomponent = new Rectangle(pos.getX(), pos.getY(),
-                    pos.maxWidth(), pos.maxHeight());
+                    pos.getWidth(), pos.getHeight());
         }
         repaint();
     }

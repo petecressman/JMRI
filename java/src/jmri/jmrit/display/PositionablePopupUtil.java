@@ -205,6 +205,13 @@ public class PositionablePopupUtil {
         }
         popup.add(edit);
     }
+
+    public void setBackgroundMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("FontBackgroundColor"));
+        makeColorMenu(edit, BACKGROUND_COLOR);
+        popup.add(edit);
+    }
+
 /*
     protected JMenu makeFontMenu() {
         JMenu fontMenu = new JMenu("Font"); // create font menu

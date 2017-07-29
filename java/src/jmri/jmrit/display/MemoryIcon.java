@@ -1,6 +1,5 @@
 package jmri.jmrit.display;
 
-import java.awt.Color;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -177,9 +176,9 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             if (e.getPropertyName().equals("IsForward")) {
                 Boolean boo = (Boolean) e.getNewValue();
                 if (boo) {
-                    flipIcon(NamedIcon.NOFLIP);
+                    flipIcon(PositionableJComponent.NOFLIP);
                 } else {
-                    flipIcon(NamedIcon.HORIZONTALFLIP);
+                    flipIcon(PositionableJComponent.HORIZONTALFLIP);
                 }
             }
         }
@@ -305,13 +304,6 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         return true;
     }
 
-    protected void flipIcon(int flip) {
-        _namedIcon.flip(flip, this);
-        updateSize();
-        repaint();
-    }
-    Color _saveColor;
-
     /**
      * Drive the current state of the display from the state of the Memory.
      */
@@ -319,8 +311,8 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         log.debug("displayState()");
 
         if (namedMemory == null) {  // use default if not connected yet
+            doLocation();
             setIcon(defaultIcon);
-            updateSize();
             return;
         }
         if (re != null) {
@@ -347,29 +339,28 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
                 }
                 if (val instanceof String) {
                     String str = (String) val;
-                    _icon = false;
-                    _text = true;
+                    setIsIcon(false);
+                    setIsText(true);
                     setText(str);
                     updateIcon(null);
                     if (log.isDebugEnabled()) {
                         log.debug("String str= \"" + str + "\" str.trim().length()= " + str.trim().length());
-                        log.debug("  maxWidth()= " + maxWidth() + ", maxHeight()= " + maxHeight());
+                        log.debug("  getWidth()= " + getWidth() + ", getHeight()= " + getHeight());
                         log.debug("  getBackground(): {}", getBackground());
                         log.debug("  _editor.getTargetPanel().getBackground(): {}", _editor.getTargetPanel().getBackground());
                         log.debug("  setAttributes to getPopupUtility({}) with", getPopupUtility());
-                        log.debug("     hasBackground() {}", getPopupUtility().hasBackground());
                         log.debug("     getBackground() {}", getPopupUtility().getBackground());
                         log.debug("    on editor {}", _editor);
                     }
-                    _editor.setAttributes(getPopupUtility(), this);
+//                    _editor.setAttributes(getPopupUtility(), this);
                 } else if (val instanceof javax.swing.ImageIcon) {
-                    _icon = true;
-                    _text = false;
-                    setIcon((javax.swing.ImageIcon) val);
+                    setIsIcon(true);
+                    setIsText(false);
+                    setIcon(new NamedIcon(((javax.swing.ImageIcon)val).getImage()));
                     setText(null);
                 } else if (val instanceof Number) {
-                    _icon = false;
-                    _text = true;
+                    setIsIcon(false);
+                    setIsText(true);
                     setText(val.toString());
                     setIcon(null);
                 } else {
@@ -380,27 +371,43 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
                 // map exists, use it
                 NamedIcon newicon = map.get(key.toString());
                 if (newicon != null) {
-
-                    setText(null);
                     super.setIcon(newicon);
                 } else {
                     // no match, use default
-                    _icon = true;
-                    _text = false;
                     setIcon(defaultIcon);
-                    setText(null);
                 }
+                setText(null);
+                setIsIcon(true);
+                setIsText(false);
             }
         } else {
             if (log.isDebugEnabled()) {
                 log.debug("object null");
             }
-            _icon = true;
-            _text = false;
+            setIsIcon(true);
+            setIsText(false);
             setIcon(defaultIcon);
             setText(null);
         }
+        doLocation();
         updateSize();
+    }
+
+    private void doLocation() {
+        if (_popupUtil.getFixedWidth() == 0) {
+            //setSize(getWidth(), getHeight());
+            switch (_popupUtil.getJustification()) {
+                case PositionablePopupUtil.LEFT:
+                    super.setLocation(getOriginalX(), getOriginalY());
+                    break;
+                case PositionablePopupUtil.RIGHT:
+                    super.setLocation(getOriginalX() - getWidth(), getOriginalY());
+                    break;
+                case PositionablePopupUtil.CENTRE:
+                    super.setLocation(getOriginalX() - (getWidth() / 2), getOriginalY());
+                    break;
+            }
+        }        
     }
 
     protected Object updateIconFromRosterVal(RosterEntry roster) {
@@ -411,18 +418,19 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             return roster.titleString();
         } else {
             NamedIcon rosterIcon = new NamedIcon(roster.getIconPath(), roster.getIconPath());
-            _text = false;
-            _icon = true;
+            setIsText(false);
+            setIsIcon(true);
             updateIcon(rosterIcon);
+            reduceTo(getWidth(), getHeight(), 0.2);
 
             if (flipRosterIcon) {
-                flipIcon(NamedIcon.HORIZONTALFLIP);
+                flipIcon(PositionableJComponent.HORIZONTALFLIP);
             }
             jmri.InstanceManager.throttleManagerInstance().attachListener(re.getDccLocoAddress(), this);
             Object isForward = jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(re.getDccLocoAddress(), "IsForward");
             if (isForward != null) {
                 if (!(Boolean) isForward) {
-                    flipIcon(NamedIcon.HORIZONTALFLIP);
+                    flipIcon(PositionableJComponent.HORIZONTALFLIP);
                 }
             }
             return null;
@@ -436,7 +444,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
     static final int LEFT = 0x00;
     static final int RIGHT = 0x02;
     static final int CENTRE = 0x04;
-
+/*
     @Override
     public void updateSize() {
         if (_popupUtil.getFixedWidth() == 0) {
@@ -462,7 +470,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
                 _namedIcon.reduceTo(maxWidthTrue(), maxHeightTrue(), 0.2);
             }
         }
-    }
+    }*/
 
     /*Stores the original location of the memory, this is then used to calculate
      the position of the text dependant upon the justification*/
@@ -472,7 +480,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
     public void setOriginalLocation(int x, int y) {
         originalX = x;
         originalY = y;
-        updateSize();
+        displayState();
     }
 
     public int getOriginalX() {
@@ -517,7 +525,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
 
     void editMemory() {
         setMemory(_iconEditor.getTableSelection().getDisplayName());
-        updateSize();
+ //       updateSize();
         _iconEditorFrame.dispose();
         _iconEditorFrame = null;
         _iconEditor = null;
@@ -559,7 +567,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             return;
         }
         setValue(newMemory.getText());
-        updateSize();
+ //       updateSize();
     }
 
     //This is used by the LayoutEditor

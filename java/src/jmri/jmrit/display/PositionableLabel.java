@@ -376,9 +376,15 @@ public class PositionableLabel extends PositionableJComponent {
 
     public jmri.util.JmriJFrame _paletteFrame;
 
-    /************ Methods for Item Popups in Control Panel editor
+    //
+    // ********** Methods for Item Popups in Control Panel editor *******************
+    //
+    /**
+     * Create a palette window.
+     *
+     * @param title the name of the palette
      */
-    protected void makePalettteFrame(String title) {
+    protected void makePaletteFrame(String title) {
         jmri.jmrit.display.palette.ItemPalette.loadIcons(_editor);
 
         _paletteFrame = new jmri.util.JmriJFrame(title, false, false);
@@ -394,6 +400,7 @@ public class PositionableLabel extends PositionableJComponent {
     /**
      * Rotate degrees return true if popup is set
      */
+    @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         if (getDisplayLevel() > Editor.BKG) {
             popup.add(CoordinateEdit.getRotateEditAction(this));
@@ -405,6 +412,7 @@ public class PositionableLabel extends PositionableJComponent {
     /**
      * Scale percentage return true if popup is set
      */
+    @Override
     public boolean setScaleMenu(JPopupMenu popup) {
         if (isIcon() && getDisplayLevel() > Editor.BKG) {
             popup.add(CoordinateEdit.getScaleEditAction(this));
@@ -413,6 +421,7 @@ public class PositionableLabel extends PositionableJComponent {
         return false;
     }
 
+    @Override
     public boolean setTextEditMenu(JPopupMenu popup) {
         if (isText()) {
             popup.add(CoordinateEdit.getTextEditAction(this, "EditText"));
@@ -421,15 +430,16 @@ public class PositionableLabel extends PositionableJComponent {
         return false;
     }
 
+    JCheckBoxMenuItem disableItem = null;
+
+    @Override
     public boolean setDisableControlMenu(JPopupMenu popup) {
         if (_control) {
-            JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
+            disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
             disableItem.setSelected(!isControlling());
             popup.add(disableItem);
-            disableItem.addActionListener(new ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    setControlling(!disableItem.isSelected());
-                }
+            disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
+                setControlling(!disableItem.isSelected());
             });
             return true;
         }

@@ -12,6 +12,7 @@ import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -32,7 +34,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -53,7 +54,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
@@ -72,7 +72,6 @@ import jmri.jmrit.roster.Roster;
 import jmri.jmrit.roster.RosterEntry;
 import jmri.jmrit.roster.swing.RosterEntrySelectorPanel;
 import jmri.util.JmriJFrame;
-import jmri.util.MathUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -261,6 +260,9 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             _newIcon = NamedIcon.getIconByName(url);
         }
         return _newIcon;
+    }
+    protected Editor getThisEditor() {
+        return this;
     }
 
     class UrlErrorDialog extends JDialog {
@@ -636,14 +638,12 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
                 g2d.setColor(_selectGroupColor);
                 g2d.setStroke(new java.awt.BasicStroke(2.0f));
                 for (Positionable p : _selectionGroup) {
-                    if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                        g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
-                    } else {
-                        jmri.jmrit.display.controlPanelEditor.shape.PositionableShape s
-                                = (jmri.jmrit.display.controlPanelEditor.shape.PositionableShape) p;
-                        s.drawHandles();
-                    }
+                    drawSelectedItem(p, g2d);
                 }
+            } else if(_currentSelection!=null) {
+                g2d.setColor(_selectGroupColor);
+                g2d.setStroke(new java.awt.BasicStroke(2.0f));
+                drawSelectedItem(_currentSelection, g2d);             
             }
             //Draws a border around the highlighted component
             if (_highlightcomponent != null) {
@@ -657,6 +657,22 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             if (_tooltip != null) {
                 _tooltip.paint(g2d, _paintScale);
             }
+        }
+
+        private void drawSelectedItem(Positionable p, Graphics2D g2d) {
+            if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
+                java.awt.geom.AffineTransform r = p.getTransform();
+                Rectangle bds = p.getContentBounds(null);
+                Rectangle rect = new Rectangle(0, 0, bds.width, bds.height);
+                AffineTransform t = AffineTransform.getTranslateInstance(bds.x, bds.y);
+                t.concatenate(r);
+                g2d.draw(t.createTransformedShape(rect));
+            } else {
+                jmri.jmrit.display.controlPanelEditor.shape.PositionableShape s
+                        = (jmri.jmrit.display.controlPanelEditor.shape.PositionableShape) p;
+                s.drawHandles();
+            }
+            
         }
 
         public void setBackgroundColor(Color col) {
@@ -1624,7 +1640,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             if (p instanceof PositionableLabel) {
                 PositionableLabel l = (PositionableLabel) p;
                 if (l.isBackground()) {
-                    int test = l.getX() + l.maxWidth();
+                    int test = l.getX() + l.getWidth();
                     if (test > left) {
                         left = test;
                     }
@@ -1655,7 +1671,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
     public void putLocoIcon(LocoIcon l, String name) {
         l.setText(name);
-        l.setHorizontalTextPosition(SwingConstants.CENTER);
+//        l.setHorizontalTextPosition(SwingConstants.CENTER);
         l.setSize(l.getPreferredSize().width, l.getPreferredSize().height);
         l.setEditable(isEditable());    // match popup mode to editor mode
         putItem(l);
@@ -2787,26 +2803,32 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         for (Positionable p : _contents) {
             x = event.getX();
             y = event.getY();
-            rect = p.getBounds(rect);
-            if (p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape
+            rect = p.getContentBounds(rect);
+/*            if (p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape
                     && p.getDegrees() != 0) {
-                // since this object is rotated we have to transform the point
-                // we're testing into the coordinate space of this object before
-                // we can test if it is in our objects bounds.
-                double rad = Math.toRadians(p.getDegrees());
-                java.awt.geom.AffineTransform t = java.awt.geom.AffineTransform.getRotateInstance(-rad);
+                double rad = p.getDegrees() * Math.PI / 180.0;
+                java.awt.geom.AffineTransform tf = java.awt.geom.AffineTransform.getRotateInstance(-rad);
                 double[] pt = new double[2];
                 // bit shift to avoid Findbugs paranoia
                 pt[0] = x - rect.x - (rect.width >>> 1);
                 pt[1] = y - rect.y - (rect.height >>> 1);
-                t.transform(pt, 0, pt, 0, 1);
-                x = pt[0] + rect.x + (rect.width >>> 1);
-                y = pt[1] + rect.y + (rect.height >>> 1);
-            }
-            Rectangle2D rect2D = MathUtil.scale(MathUtil.RectangleToRectangle2D(rect), _paintScale);
-            int level = p.getDisplayLevel();
-            if (rect2D.contains(x, y) && (level > BKG || event.isControlDown())) {
+                tf.transform(pt, 0, pt, 0, 1);
+//                x = pt[0] + rect.x + (rect.width >>> 1);
+//                y = pt[1] + rect.y + (rect.height >>> 1);
+            }*/
+            Rectangle2D.Double rect2D = new Rectangle2D.Double(rect.x * _paintScale,
+                    rect.y * _paintScale,
+                    rect.width * _paintScale,
+                    rect.height * _paintScale);
+            java.awt.geom.AffineTransform r = p.getTransform();
+            rect2D.x = 0;
+            rect2D.y = 0;
+            AffineTransform t = AffineTransform.getTranslateInstance(rect.x*_paintScale, rect.y*_paintScale);
+            t.concatenate(r);
+            Shape bdsShape = t.createTransformedShape(rect2D);
+            if (bdsShape.contains(x, y) && (p.getDisplayLevel() > BKG || event.isControlDown())) {
                 boolean added = false;
+                int level = p.getDisplayLevel();
                 for (int k = 0; k < selections.size(); k++) {
                     if (level >= selections.get(k).getDisplayLevel()) {
                         selections.add(k, p);
@@ -2835,18 +2857,44 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         List<Positionable> list = getContents();
         if (event.isShiftDown()) {
             for (Positionable comp : list) {
-                if (_selectRect.intersects(comp.getBounds(test))
-                        && (event.isControlDown() || comp.getDisplayLevel() > BKG)) {
-                    _selectionGroup.add(comp);
-                    //log.debug("makeSelectionGroup: selection: {}, class= {}", comp.getNameString(), comp.getClass().getName());
+                if (comp instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape) {
+                    if (_selectRect.intersects(comp.getContentBounds(test))
+                            && (event.isControlDown() || comp.getDisplayLevel() > BKG)) {
+                        _selectionGroup.add(comp);
+                    }
+                } else {
+                    java.awt.geom.AffineTransform tf = comp.getTransform();
+                    test = comp.getContentBounds(test);
+                    test.x = 0;
+                    test.y = 0;
+                    AffineTransform t = AffineTransform.getTranslateInstance(comp.getX(), comp.getY());
+                    t.concatenate(tf);
+                    if (t.createTransformedShape(test).intersects(_selectRect)
+                            && (event.isControlDown() || comp.getDisplayLevel() > BKG)) {
+                        _selectionGroup.add(comp);
+                    }                    
                 }
             }
         } else {
             for (Positionable comp : list) {
-                if (_selectRect.contains(comp.getBounds(test))
-                        && (event.isControlDown() || comp.getDisplayLevel() > BKG)) {
-                    _selectionGroup.add(comp);
-                    //log.debug("makeSelectionGroup: selection: {}, class= {}", comp.getNameString(), comp.getClass().getName());
+                if (comp instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape) {
+                    if (_selectRect.contains(comp.getContentBounds(test))
+                            && (event.isControlDown() || comp.getDisplayLevel() > BKG)) {
+                        _selectionGroup.add(comp);
+                    }
+                } else {
+                    java.awt.geom.AffineTransform r = comp.getTransform();
+                    test = comp.getContentBounds(test);
+                    test.x = 0;
+                    test.y = 0;
+                    AffineTransform t;
+                    t = AffineTransform.getTranslateInstance(comp.getX(), comp.getY());
+                    t.concatenate(r);
+                    Rectangle bdsShape = t.createTransformedShape(test).getBounds();
+                    if (_selectRect.contains(bdsShape)
+                            && (event.isControlDown() || comp.getDisplayLevel() > BKG)) {
+                        _selectionGroup.add(comp);
+                    }
                 }
             }
         }
@@ -2968,46 +3016,14 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
      *
      */
     protected void setAttributes(PositionablePopupUtil newUtil, Positionable p) {
-        p.setPopupUtility(newUtil.clone(p, p.getTextComponent()));
-        int mar = newUtil.getMargin();
-        int bor = newUtil.getBorderSize();
-        javax.swing.border.Border outlineBorder;
-        if (bor == 0) {
-            outlineBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
-        } else {
-            outlineBorder = new javax.swing.border.LineBorder(newUtil.getBorderColor(), bor);
-        }
-        javax.swing.border.Border borderMargin;
-        if (newUtil.hasBackground()) {
-            borderMargin = new javax.swing.border.LineBorder(p.getBackground(), mar);
-        } else {
-            borderMargin = BorderFactory.createEmptyBorder(mar, mar, mar, mar);
-        }
-        if (p instanceof PositionableLabel) {
-            PositionableLabel pos = (PositionableLabel) p;
-            if (pos.isText()) {
-                int deg = pos.getDegrees();
-                pos.rotate(0);
-                pos.setBorder(new javax.swing.border.CompoundBorder(outlineBorder, borderMargin));
-                if (deg == 0) {
-                    p.setOpaque(newUtil.hasBackground());
-                } else {
-                    pos.rotate(deg);
-                }
-            }
-        } else if (p instanceof PositionableJPanel) {
-            p.setOpaque(newUtil.hasBackground());
-            p.getTextComponent().setOpaque(newUtil.hasBackground());
-            p.setBorder(new javax.swing.border.CompoundBorder(outlineBorder, borderMargin));
-        }
-        p.updateSize();
-        p.repaint();
+        p.setPopupUtility(newUtil.clone());
         if (p instanceof PositionableIcon) {
             jmri.NamedBean bean = p.getNamedBean();
             if (bean != null) {
                 ((PositionableIcon) p).displayState(bean.getState());
             }
         }
+        p.updateSize();
     }
 
     protected void setSelectionsAttributes(PositionablePopupUtil util, Positionable pos) {
@@ -3061,10 +3077,10 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     protected void setSelectionsRotation(int k, Positionable p) {
         if (_selectionGroup != null && _selectionGroup.contains(p)) {
             for (Positionable comp : _selectionGroup) {
-                comp.rotate(k);
+                comp.setDegrees(k);
             }
         } else {
-            p.rotate(k);
+            p.setDegrees(k);
         }
     }
 
