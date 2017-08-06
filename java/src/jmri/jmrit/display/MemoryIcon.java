@@ -16,6 +16,7 @@ import jmri.Memory;
 import jmri.NamedBeanHandle;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.roster.RosterEntry;
+import jmri.jmrit.roster.RosterIconFactory;
 import jmri.jmrit.throttle.ThrottleFrame;
 import jmri.jmrit.throttle.ThrottleFrameManager;
 import jmri.util.datatransfer.RosterEntrySelection;
@@ -231,7 +232,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ThrottleFrame tf = ThrottleFrameManager.instance().createThrottleFrame();
+                    ThrottleFrame tf = InstanceManager.getDefault(ThrottleFrameManager.class).createThrottleFrame();
                     tf.toFront();
                     tf.getAddressPanel().setRosterEntry(re);
                 }
@@ -253,7 +254,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
 
                             @Override
                             public void actionPerformed(ActionEvent e) {
-                                //Just brings up the standard allocate extra frame, this could be expanded in the future 
+                                //Just brings up the standard allocate extra frame, this could be expanded in the future
                                 //As a point and click operation.
                                 df.allocateExtraSection(e, at);
                             }
@@ -342,7 +343,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
                     setIsIcon(false);
                     setIsText(true);
                     setText(str);
-                    updateIcon(null);
+                    setIcon(null);
                     if (log.isDebugEnabled()) {
                         log.debug("String str= \"" + str + "\" str.trim().length()= " + str.trim().length());
                         log.debug("  getWidth()= " + getWidth() + ", getHeight()= " + getHeight());
@@ -412,7 +413,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
 
     protected Object updateIconFromRosterVal(RosterEntry roster) {
         re = roster;
-        javax.swing.ImageIcon icon = jmri.InstanceManager.rosterIconFactoryInstance().getIcon(roster);
+        javax.swing.ImageIcon icon = jmri.InstanceManager.getDefault(RosterIconFactory.class).getIcon(roster);
         if (icon == null || icon.getIconWidth() == -1 || icon.getIconHeight() == -1) {
             //the IconPath is still at default so no icon set
             return roster.titleString();
@@ -420,7 +421,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             NamedIcon rosterIcon = new NamedIcon(roster.getIconPath(), roster.getIconPath());
             setIsText(false);
             setIsIcon(true);
-            updateIcon(rosterIcon);
+            setIcon(rosterIcon);
             reduceTo(getWidth(), getHeight(), 0.2);
 
             if (flipRosterIcon) {
@@ -444,36 +445,9 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
     static final int LEFT = 0x00;
     static final int RIGHT = 0x02;
     static final int CENTRE = 0x04;
-/*
-    @Override
-    public void updateSize() {
-        if (_popupUtil.getFixedWidth() == 0) {
-            //setSize(maxWidth(), maxHeight());
-            switch (_popupUtil.getJustification()) {
-                case LEFT:
-                    super.setLocation(getOriginalX(), getOriginalY());
-                    break;
-                case RIGHT:
-                    super.setLocation(getOriginalX() - maxWidth(), getOriginalY());
-                    break;
-                case CENTRE:
-                    super.setLocation(getOriginalX() - (maxWidth() / 2), getOriginalY());
-                    break;
-                default:
-                    log.warn("Unhandled justification code: {}", _popupUtil.getJustification());
-                    break;
-            }
-            setSize(maxWidth(), maxHeight());
-        } else {
-            super.updateSize();
-            if (_icon && _namedIcon != null) {
-                _namedIcon.reduceTo(maxWidthTrue(), maxHeightTrue(), 0.2);
-            }
-        }
-    }*/
 
     /*Stores the original location of the memory, this is then used to calculate
-     the position of the text dependant upon the justification*/
+     the position of the text dependent upon the justification*/
     private int originalX = 0;
     private int originalY = 0;
 

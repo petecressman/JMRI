@@ -74,7 +74,7 @@ public class SignalMastIconXml extends PositionableLabelXml {
             if (attr != null) {
                 rotation = attr.getIntValue();
             }
-            l.rotate(rotation);
+            l.setDegrees(rotation);
             attr = element.getAttribute("scale");
             String text = "Error attr null";
             if (attr != null) {

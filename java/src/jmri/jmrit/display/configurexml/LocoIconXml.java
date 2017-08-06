@@ -36,8 +36,8 @@ public class LocoIconXml extends PositionableLabelXml {
         storeCommonAttributes(p, element);
 
         // include contents
-        if (p.getUnRotatedText() != null) {
-            element.setAttribute("text", p.getUnRotatedText());
+        if (p.getText() != null) {
+            element.setAttribute("text", p.getText());
         }
         storeTextInfo(p, element);
         element.setAttribute("icon", "yes");
@@ -90,7 +90,7 @@ public class LocoIconXml extends PositionableLabelXml {
                 }
             }
         }
-        l.updateIcon(icon);
+        l.setIcon(icon);
 
         try {
             int x = element.getAttribute("dockX").getIntValue();

@@ -3,26 +3,28 @@ package jmri.jmrit.catalog;
 import java.awt.Component;
 import java.awt.Image;
 import java.net.URL;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.swing.ImageIcon;
 import jmri.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Extend an ImageIcon to remember the name from which it was created and
- * provide rotation & scaling services.
+ * Extend an ImageIcon to remember the name from which it was created
+ * Since Aug 2017 all transformations are done in PaintComponent
  * <p>
  * We store both a "URL" for finding the file this was made from (so we can load
  * this later), plus a shorter "name" for display.
  * <p>
- * These can be persisted by storing their name and rotation
+ * These can be persisted by storing their name
  *
  * @see jmri.jmrit.display.configurexml.PositionableLabelXml
  * @author Bob Jacobsen Copyright 2002, 2008
- * @author Pete Cressman Copyright: Copyright (c) 2009, 2010
- * @version $Revision$
+ * @author Pete Cressman Copyright: Copyright (c) 2009, 2010, 2017
  */
 public class NamedIcon extends ImageIcon {
+
     /**
      * Create a NamedIcon that is a complete copy of an existing NamedIcon
      *
@@ -38,6 +40,7 @@ public class NamedIcon extends ImageIcon {
      * NamedIcon
      *
      * @param pOld Object to copy
+     * @param comp the container the new icon is embedded in
      */
     public NamedIcon(NamedIcon pOld, Component comp) {
         this(pOld.mURL, pOld.mName);
@@ -80,54 +83,65 @@ public class NamedIcon extends ImageIcon {
     }
 
     /**
-     * Find the NamedIcon corresponding to a name. Understands the
+     * Find the NamedIcon corresponding to a file path. Understands the
      * <a href="http://jmri.org/help/en/html/doc/Technical/FileNames.shtml">standard
      * portable filename prefixes</a>.
      *
-     * @param pName The name string, possibly starting with file: or resource:
-     * @return the desired icon with this same pName as its name.
+     * @param path The path to the file, either absolute or portable
+     * @return the desired icon with this same name as its path
      */
-    static public NamedIcon getIconByName(String pName) {
-        if (pName == null || pName.length() == 0) {
+    static public NamedIcon getIconByName(String path) {
+        if (path == null || path.isEmpty()) {
             return null;
         }
-        URL u = FileUtil.findURL(pName);
-        if (u == null) {
+        if (FileUtil.findURL(path) == null) {
             return null;
         }
-        return new NamedIcon(pName, pName);
+        return new NamedIcon(path, path);
     }
 
     /**
-     * Return the human-readable name of this icon
+     * Return the human-readable name of this icon.
+     *
+     * @return the name or null if not set
      */
+    @CheckForNull
     public String getName() {
         return mName;
     }
 
     /**
-     * Actually it is mName that is the URL that loads the icon!
+     * Set the human-readable name for this icon.
+     *
+     * @param name the new name, can be null
      */
-    public void setName(String name) {
+    public void setName(@Nullable String name) {
         mName = name;
     }
 
     /**
-     * Return the URL of this icon
+     * Get the URL of this icon.
+     *
+     * @return the path to this icon in JMRI portable format or null if not set
      */
+    @CheckForNull
     public String getURL() {
         return mURL;
     }
 
     /**
-     * Set URL of original icon image
+     * Set URL of original icon image. Setting this after initial construction
+     * does not change the icon.
+     *
+     * @param url the URL associated with this icon
      */
-    public void setURL(String url) {
+    public void setURL(@Nullable String url) {
         mURL = url;
     }
 
     private String mName = null;
     private String mURL = null;
     
+
     private final static Logger log = LoggerFactory.getLogger(NamedIcon.class.getName());
 }

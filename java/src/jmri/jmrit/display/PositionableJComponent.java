@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author Howard G. Penny copyright (C) 2005
- * @author Pete Cressman copyright (C) 2016
+ * @author Pete Cressman copyright (C) 2017
  * @version $Revision$
  */
 public class PositionableJComponent extends JComponent implements Positionable {
@@ -290,7 +290,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return _popupUtil;
     }
 
-    /**
+    /*
      * Utility
      */
     protected void makeIconEditorFrame(Container pos, String name, boolean table, IconAdder editor) {
@@ -353,6 +353,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
 
     /**
      * "active" means that the object is still displayed, and should be stored.
+     * @return should object be stored.
      */
     public boolean isActive() {
         return active;

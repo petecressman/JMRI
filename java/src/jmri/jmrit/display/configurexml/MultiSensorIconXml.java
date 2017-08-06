@@ -121,13 +121,16 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                             if (a != null) {
                                 scale = item.getAttribute("scale").getDoubleValue();
                             }
-                            icon.setLoad(deg, scale, l);
+//                            icon.setLoad(deg, scale, l);
+                            l.setDegrees(deg);
+                            l.setScale(scale);
                         }
                         if (deg == 0) {
                             a = item.getAttribute("rotate");
                             if (a != null) {
                                 rotation = a.getIntValue();
-                                icon.setRotation(rotation, l);
+//                                icon.setRotation(rotation, l);
+                                doRotationConversion(rotation, l);
                             }
                         }
                     } catch (org.jdom2.DataConversionException dce) {
@@ -143,7 +146,7 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                         }
                     }
                     if (rotation != 0) {
-                        icon.setRotation(rotation, l);
+                        doRotationConversion(rotation, l);
                     }
                 }
 
@@ -168,7 +171,20 @@ public class MultiSensorIconXml extends PositionableLabelXml {
                         log.info(msg + " removed for url= " + iconName);
                     }
                 } else {
-                    icon.setRotation(rotation, l);
+                    switch(rotation) {
+                        case 1:
+                            l.setDegrees(90);
+                            break;
+                        case 2:
+                            l.setDegrees(180);
+                            break;
+                        case 3:
+                            l.setDegrees(270);
+                            break;
+                        default:
+                            l.setDegrees(0);
+                            break;
+                    }
                 }
             } else {
                 log.warn("did not locate " + state + " for Multisensor icon file");

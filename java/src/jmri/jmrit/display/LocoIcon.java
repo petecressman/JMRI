@@ -11,9 +11,11 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import jmri.InstanceManager;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.logix.TrackerTableAction;
 import jmri.jmrit.roster.RosterEntry;
+import jmri.jmrit.throttle.ThrottleFrameManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +89,7 @@ public class LocoIcon extends PositionableLabel {
         super.setShowTooltip(false);
     }
 
-    // Markers are always positionable 
+    // Markers are always positionable
     @Override
     public void setPositionable(boolean enabled) {
         super.setPositionable(true);
@@ -110,7 +112,7 @@ public class LocoIcon extends PositionableLabel {
             popup.add(new AbstractAction("Throttle") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    tf = jmri.jmrit.throttle.ThrottleFrameManager.instance().createThrottleFrame();
+                    tf = InstanceManager.getDefault(ThrottleFrameManager.class).createThrottleFrame();
                     tf.getAddressPanel().setRosterEntry(_entry);
                     tf.toFront();
                 }
@@ -178,32 +180,32 @@ public class LocoIcon extends PositionableLabel {
     public void setLocoColor(String color) {
         log.debug("Set loco color to " + color);
         if (color.equals(WHITE)) {
-            super.updateIcon(white);
+            super.setIcon(white);
             _locoColor = Color.WHITE;
             setForeground(Color.black);
         }
         if (color.equals(GREEN)) {
-            super.updateIcon(green);
+            super.setIcon(green);
             _locoColor = Color.GREEN;
             setForeground(Color.black);
         }
         if (color.equals(GRAY)) {
-            super.updateIcon(gray);
+            super.setIcon(gray);
             _locoColor = Color.GRAY;
             setForeground(Color.white);
         }
         if (color.equals(RED)) {
-            super.updateIcon(red);
+            super.setIcon(red);
             _locoColor = Color.RED;
             setForeground(Color.white);
         }
         if (color.equals(BLUE)) {
-            super.updateIcon(blue);
+            super.setIcon(blue);
             _locoColor = COLOR_BLUE;
             setForeground(Color.white);
         }
         if (color.equals(YELLOW)) {
-            super.updateIcon(yellow);
+            super.setIcon(yellow);
             _locoColor = Color.YELLOW;
             setForeground(Color.black);
         }

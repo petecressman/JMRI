@@ -254,7 +254,7 @@ public class SignalHeadIconXml extends PositionableLabelXml {
                     }
                 }
                 if (icon != null) {
-                    icon.setRotation(rotation, l);
+                    doRotationConversion(rotation, l);
                 }
             } else {
                 log.info("did not load file aspect " + aspect + " for SignalHead " + name);

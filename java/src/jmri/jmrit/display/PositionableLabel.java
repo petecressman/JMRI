@@ -18,8 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * PositionableLabel is a JLabel that can be dragged around the inside of the
- * enclosing Container using a right-drag.
+ * PositionableLabel is a container for text and icons
  * <P>
  * The positionable parameter is a global, set from outside. The 'fixed'
  * parameter is local, set from the popup here.
@@ -39,7 +38,6 @@ public class PositionableLabel extends PositionableJComponent {
 
     public PositionableLabel(String s, Editor editor) {
         super(editor);
-//        _editor = editor;
         _text = true;
         _textString = s;
         debug = log.isDebugEnabled();
@@ -143,7 +141,7 @@ public class PositionableLabel extends PositionableJComponent {
     /**
      * ************** end Positionable methods *********************
      */
-
+    @Override
     public int getWidth() {
         int width = Math.max(getIconWidth(), getTextWidth());
         if (_popupUtil!=null) {
@@ -152,6 +150,7 @@ public class PositionableLabel extends PositionableJComponent {
         return Math.max(width, PositionablePopupUtil.MIN_SIZE); // don't let item disappear
     }
 
+    @Override
     public int getHeight() {
         int height = Math.max(getIconHeight(), getTextHeight());
         if (_popupUtil!=null) {
@@ -205,10 +204,10 @@ public class PositionableLabel extends PositionableJComponent {
 
     /**
      * Scale icon size to be less than width x height
-     * @param width
-     * @param height
+     * @param width width
+     * @param height height
      * @param limit - minimum scale factor allowed
-     * @return
+     * @return size
      */
     public double reduceTo(int width, int height, double limit) {
         double scale = 1.0;
@@ -229,11 +228,6 @@ public class PositionableLabel extends PositionableJComponent {
 
     public boolean isBackground() {
         return (getDisplayLevel() == Editor.BKG);
-    }
-
-    public void updateIcon(NamedIcon s) {
-        _namedIcon = s;
-        updateSize();
     }
 
     /**
@@ -279,11 +273,11 @@ public class PositionableLabel extends PositionableJComponent {
             buttonGrp.add(flipMenuEntry(flipMenu, NOFLIP));
             edit.add(flipMenu);
             popup.add(edit);        
-/*            popup.add(new AbstractAction(Bundle.getMessage("mirrorMenu")) {
+            popup.add(new AbstractAction(Bundle.getMessage("mirrorMenu")) {
                 public void actionPerformed(ActionEvent e) {
                     makeFlipMenu();
                 }
-            });*/
+            });
             return true;
         }
         return false;

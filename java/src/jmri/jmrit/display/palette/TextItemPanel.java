@@ -145,11 +145,11 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             }
             _decorator.setAttributes(l);
             PositionablePopupUtil util = _decorator.getPositionablePopupUtil();
-            l.setPopupUtility(util.clone(l, l.getTextComponent()));
+            l.setPopupUtility(util.clone());
 //            l.setFont(util.getFont().deriveFont(util.getFontStyle()));
-            if (util.hasBackground()) {     //unrotated
+/*            if (util.hasBackground()) {     //unrotated
                 l.setOpaque(true);
-            }
+            }*/
             l.setLevel(this.getDisplayLevel());
             return l;
         }

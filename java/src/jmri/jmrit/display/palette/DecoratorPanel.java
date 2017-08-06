@@ -24,9 +24,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import jmri.jmrit.display.Editor;
@@ -234,10 +231,10 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             PositionableLabel sample = new PositionableLabel("", _editor);
             sample.setForeground(pos.getForeground());
             sample.setBackground(pos.getBackground());
-            sample.setOpaque(_util.hasBackground());
+//            sample.setOpaque(_util.hasBackground());
             boolean addtextField;
             if (pos instanceof PositionableLabel) {
-                sample.setText(((PositionableLabel)pos).getUnRotatedText());
+                sample.setText(((PositionableLabel)pos).getText());
                 if (pos instanceof jmri.jmrit.display.MemoryIcon) {
                     addtextField = false;                    
                 } else {
@@ -278,7 +275,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         util.setHorizontalAlignment(ut.getJustification());
         util.setFixedWidth(ut.getFixedWidth());
         util.setFixedHeight(ut.getFixedHeight());
-        util.setMargin(ut.getMargin());
+        util.setMarginSize(ut.getMarginSize());
         util.setBorderSize(ut.getBorderSize());
         util.setBorderColor(ut.getBorderColor());
         util.setFont(util.getFont().deriveFont(ut.getFontStyle()));
@@ -331,7 +328,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         SpinnerNumberModel model = new SpinnerNumberModel(_util.getBorderSize(), 0, 100, 1);
         _borderSpin = new AJSpinner(model, BORDER);
         sizePanel.add(makeSpinPanel("borderSize", _borderSpin));
-        model = new SpinnerNumberModel(_util.getMargin(), 0, 100, 1);
+        model = new SpinnerNumberModel(_util.getMarginSize(), 0, 100, 1);
         _marginSpin = new AJSpinner(model, MARGIN);
         sizePanel.add(makeSpinPanel("marginSize", _marginSpin));
         model = new SpinnerNumberModel(_util.getFixedWidth(), 0, 1000, 1);
@@ -349,7 +346,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
 
     String BundleCaption = null;
 
-    private JPanel makeTextPanel(String caption, JLabel sample, int state, boolean addTextField) {
+    private JPanel makeTextPanel(String caption, PositionableLabel sample, int state, boolean addTextField) {
         JPanel panel = new JPanel();
         // use NamedBeanBundle property for basic beans like "Turnout" I18N
         if ("Active".equals(caption)) {
@@ -369,21 +366,18 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         if (addTextField) {
             JTextField textField = new JTextField(sample.getText(), 25);
             textField.addKeyListener(new KeyListener() {
-                JLabel sample;
+                PositionableLabel sample;
 
-                KeyListener init(JLabel s) {
+                KeyListener init(PositionableLabel s) {
                     sample = s;
                     return this;
                 }
-
                 @Override
                 public void keyTyped(KeyEvent E) {
                 }
-
                 @Override
                 public void keyPressed(KeyEvent E) {
                 }
-
                 @Override
                 public void keyReleased(KeyEvent E) {
                     JTextField tmp = (JTextField) E.getSource();
@@ -469,47 +463,17 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             return;            
         }
         
-        int mar = _util.getMargin();
-        int bor = _util.getBorderSize();
-        Border outlineBorder;
-        if (bor == 0) {
-            outlineBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
-        } else {
-            outlineBorder = new LineBorder(_util.getBorderColor(), bor);
-        }
-        Font font = _util.getFont();
-        int just = _util.getJustification();
-        
         Iterator<PositionableLabel> it = _sample.values().iterator();
         while (it.hasNext()) {
             PositionableLabel sam = it.next();
             PositionablePopupUtil util = sam.getPopupUtility();
-            sam.setFont(font);
+            sam.setFont(_util.getFont());
             util.setFixedWidth(_util.getFixedWidth());
             util.setFixedHeight(_util.getFixedHeight());
-            util.setMargin(mar);
-            util.setBorderSize(bor);
-            Border borderMargin;
-            if (sam.isOpaque()) {
-                borderMargin = new LineBorder(sam.getBackground(), mar);
-            } else {
-                borderMargin = BorderFactory.createEmptyBorder(mar, mar, mar, mar);
-            }
-            sam.setBorder(new CompoundBorder(outlineBorder, borderMargin));
-            
-            switch (just) {
-                case PositionablePopupUtil.LEFT:
-                    sam.setHorizontalAlignment(JLabel.LEFT);
-                    break;
-                case PositionablePopupUtil.RIGHT:
-                    sam.setHorizontalAlignment(JLabel.RIGHT);
-                    break;
-                default:
-                    sam.setHorizontalAlignment(JLabel.CENTER);
-            }
+            util.setMarginSize(_util.getMarginSize());
+            util.setBorderSize(_util.getBorderSize());
+            util.setBorderColor(_util.getBorderColor());
             sam.updateSize();
-            sam.setPreferredSize(sam.getSize());
-            sam.repaint();
         }
         if (_dialog!=null) {
             _dialog.pack();            
@@ -526,7 +490,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                     _util.setBorderSize(num);
                     break;
                 case MARGIN:
-                    _util.setMargin(num);
+                    _util.setMarginSize(num);
+//                    _sample.get("Text").getPopupUtility().setMarginSize(num);
                     break;
                 case FWIDTH:
                     _util.setFixedWidth(num);
@@ -598,7 +563,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             } else {
                 pos.setBackground(null);                
             }
-            _util.setHasBackground(sample.isOpaque());
+//            _util.setHasBackground(sample.isOpaque());
         }
     }
     

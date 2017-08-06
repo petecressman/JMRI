@@ -36,7 +36,7 @@ public class RpsPositionIconXml extends PositionableLabelXml {
         // include contents
         element.setAttribute("active", p.getActiveIcon().getURL());
         element.setAttribute("error", p.getErrorIcon().getURL());
-        element.setAttribute("rotate", String.valueOf(p.getActiveIcon().getRotation()));
+        element.setAttribute("rotate", String.valueOf(p.getDegrees()));
         element.setAttribute("momentary", p.getMomentary() ? "true" : "false");
 
         element.setAttribute("sxscale", "" + p.getXScale());
@@ -95,8 +95,7 @@ public class RpsPositionIconXml extends PositionableLabelXml {
             Attribute a = element.getAttribute("rotate");
             if (a != null) {
                 int rotation = element.getAttribute("rotate").getIntValue();
-                active.setRotation(rotation, l);
-                error.setRotation(rotation, l);
+                doRotationConversion(rotation, l);
             }
         } catch (org.jdom2.DataConversionException e) {
         }
