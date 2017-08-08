@@ -33,7 +33,7 @@ public abstract class ItemPanel extends JPanel {
 
     protected JmriJFrame _paletteFrame;
     protected String _itemType;
-    protected Editor _editor;
+//    protected Editor _editor;
     protected boolean _initialized = false;    // Has init() been run
     protected boolean _update = false;    // Editing existing icon, do not allow icon dragging. Set in init()
     JTextField _linkName = new JTextField(30);
@@ -48,7 +48,7 @@ public abstract class ItemPanel extends JPanel {
         _paletteFrame = parentFrame;
         _itemType = type;
         // TODO when calling _itemType: use existing NamedBeanBundle property for basic beans like "Turnout", Sensor etc. I18N
-        _editor = editor;
+//        _editor = editor;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     }
 
@@ -83,9 +83,9 @@ public abstract class ItemPanel extends JPanel {
         return _update;
     }
     
-    protected Editor getEditor() {
+/*    protected Editor getEditor() {
         return _editor;
-    }
+    }*/
 
     /**
      * ****** Default family icon names *******

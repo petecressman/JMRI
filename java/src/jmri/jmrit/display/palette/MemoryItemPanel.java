@@ -41,7 +41,7 @@ public class MemoryItemPanel extends TableItemPanel implements ChangeListener, L
     @Override
     public void init() {
         if (!_initialized) {
-            add(initTablePanel(_model, _editor));
+            add(initTablePanel(_model));
             initIconFamiliesPanel();
             add(_iconFamilyPanel);
             _initialized = true;
@@ -106,7 +106,7 @@ public class MemoryItemPanel extends TableItemPanel implements ChangeListener, L
 
         panel.add(new JLabel(Bundle.getMessage("ReadWriteMemory")), c);
         c.gridy = 1;
-        _writeMem = new MemoryInputIcon(5, _editor);
+        _writeMem = new MemoryInputIcon(5, null);
 //        JPanel p0 = makeDragIcon(_writeMem, Type.READWRITE);
         panel.add(makeDragIcon(_writeMem, Type.READWRITE), c);
         
@@ -128,14 +128,14 @@ public class MemoryItemPanel extends TableItemPanel implements ChangeListener, L
         c.anchor = java.awt.GridBagConstraints.CENTER;
         panel.add(new JLabel(Bundle.getMessage("ReadMemory")), c);
         c.gridy = 1;
-        _readMem = new MemoryIcon(NamedIcon.getIconByName("resources/icons/misc/X-red.gif"), _editor);
+        _readMem = new MemoryIcon(NamedIcon.getIconByName("resources/icons/misc/X-red.gif"), null);
         panel.add(makeDragIcon(_readMem, Type.READONLY), c);
 
         c.gridx = 2;
         c.gridy = 0;
         panel.add(new JLabel(Bundle.getMessage("SpinnerMemory")), c);
         c.gridy = 1;
-        _spinMem = new MemorySpinnerIcon(_editor);
+        _spinMem = new MemorySpinnerIcon(null);
         panel.add(makeDragIcon(_spinMem, Type.SPINNER), c);
 
         c.gridx = 0;
@@ -143,7 +143,7 @@ public class MemoryItemPanel extends TableItemPanel implements ChangeListener, L
         c.gridwidth = 4;
         panel.add(new JLabel(Bundle.getMessage("ComboMemory")), c);
         c.gridy = 3;
-        _comboMem = new MemoryComboIcon(_editor, null);
+        _comboMem = new MemoryComboIcon(null, null);
         panel.add(makeDragIcon(_comboMem, Type.COMBO), c);
 
         _dragIconPanel = panel;
@@ -248,7 +248,7 @@ public class MemoryItemPanel extends TableItemPanel implements ChangeListener, L
             if (flavor.isMimeTypeEqual(Editor.POSITIONABLE_FLAVOR)) {
                 switch (_memType) {
                     case READONLY:
-                        MemoryIcon m = new MemoryIcon("", _editor);
+                        MemoryIcon m = new MemoryIcon("", null);
                         m.setMemory(bean.getDisplayName());
                         m.setSize(m.getPreferredSize().width, m.getPreferredSize().height);
                         m.setLevel(Editor.MEMORIES);
@@ -266,19 +266,19 @@ public class MemoryItemPanel extends TableItemPanel implements ChangeListener, L
                         } catch (java.text.ParseException pe) {
                             log.error("MemoryDnD.createTransferable: " + pe);
                         }
-                        MemoryInputIcon mi = new MemoryInputIcon(numCols, _editor);
+                        MemoryInputIcon mi = new MemoryInputIcon(numCols, null);
                         mi.setMemory(bean.getDisplayName());
                         mi.setSize(mi.getPreferredSize().width, mi.getPreferredSize().height);
                         mi.setLevel(Editor.MEMORIES);
                         return mi;
                     case SPINNER:
-                        MemorySpinnerIcon ms = new MemorySpinnerIcon(_editor);
+                        MemorySpinnerIcon ms = new MemorySpinnerIcon(null);
                         ms.setMemory(bean.getDisplayName());
                         ms.setSize(ms.getPreferredSize().width, ms.getPreferredSize().height);
                         ms.setLevel(Editor.MEMORIES);
                         return ms;
                     case COMBO:
-                        MemoryComboIcon mc = new MemoryComboIcon(_editor, null);
+                        MemoryComboIcon mc = new MemoryComboIcon(null, null);
                         mc.setMemory(bean.getDisplayName());
                         mc.setSize(mc.getPreferredSize().width, mc.getPreferredSize().height);
                         mc.setLevel(Editor.MEMORIES);

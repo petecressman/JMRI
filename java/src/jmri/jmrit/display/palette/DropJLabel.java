@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
-import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.PositionableLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +27,8 @@ public class DropJLabel extends PositionableLabel implements DropTargetListener 
     private HashMap<String, NamedIcon> _iconMap;
     private boolean _update;
 
-    DropJLabel(NamedIcon icon, HashMap<String, NamedIcon> iconMap, boolean update, Editor ed) {
-        super(icon, ed);
+    DropJLabel(NamedIcon icon, HashMap<String, NamedIcon> iconMap, boolean update) {
+        super(icon, null);
         _iconMap = iconMap;
         _update = update;
         try {

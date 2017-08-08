@@ -1,5 +1,6 @@
 package jmri.jmrit.catalog;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +19,6 @@ import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
 import jmri.ShutDownTask;
 import jmri.implementation.swing.SwingShutDownTask;
-import jmri.jmrit.display.Editor;
 import jmri.util.FileUtil;
 import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
@@ -56,21 +56,20 @@ public final class ImageIndexEditor extends JmriJFrame {
 
     private ImageIndexEditor() {
         super();
+        init();
     }
 
-    private ImageIndexEditor(String name) {
-        super(name);
-    }
-
-    public static ImageIndexEditor instance(Editor editor) {
-        if (_instance == null) {
-            _instance = new ImageIndexEditor(Bundle.getMessage("editIndexFrame"));
-            _instance.init(editor);
+    public static ImageIndexEditor getDefault() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return null;
         }
-        return _instance;
+        ImageIndexEditor instance = InstanceManager.getOptionalDefault(ImageIndexEditor.class).orElseGet(() -> {
+            return InstanceManager.setDefault(ImageIndexEditor.class, new ImageIndexEditor());
+        });
+        return instance;
     }
 
-    private void init(Editor editor) {
+    private void init() {
         JMenuBar menuBar = new JMenuBar();
         JMenu findIcon = new JMenu(Bundle.getMessage("MenuFile"));
         menuBar.add(findIcon);

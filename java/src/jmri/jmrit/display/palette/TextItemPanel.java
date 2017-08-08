@@ -52,8 +52,8 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             JPanel p = new JPanel();
             p.add(blurb);
             add(p);
-            DragDecoratorLabel sample = new DragDecoratorLabel(Bundle.getMessage("sample"), _editor);
-            _decorator = new DecoratorPanel(_editor, null);
+            DragDecoratorLabel sample = new DragDecoratorLabel(Bundle.getMessage("sample"));
+            _decorator = new DecoratorPanel(null, null);
             _decorator.initDecoratorPanel(sample);
             add(_decorator);
             initLinkPanel();
@@ -69,8 +69,8 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
 
         DataFlavor dataFlavor;
 
-        public DragDecoratorLabel(String s, Editor editor) {
-            super(s, editor);
+        public DragDecoratorLabel(String s) {
+            super(s, null);
             DragSource dragSource = DragSource.getDefaultDragSource();
             dragSource.createDefaultDragGestureRecognizer(this,
                     DnDConstants.ACTION_COPY, this);

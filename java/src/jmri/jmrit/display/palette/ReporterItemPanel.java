@@ -76,7 +76,7 @@ public class ReporterItemPanel extends TableItemPanel {
         if (_update) {
             return;
         }
-        _reporter = new ReporterIcon(_editor);
+        _reporter = new ReporterIcon(null);
         JPanel panel = new JPanel();
         JPanel comp;
         try {
@@ -160,7 +160,7 @@ public class ReporterItemPanel extends TableItemPanel {
             }
 
             if (flavor.isMimeTypeEqual(Editor.POSITIONABLE_FLAVOR)) {
-                ReporterIcon r = new ReporterIcon(_editor);
+                ReporterIcon r = new ReporterIcon(null);
                 r.setReporter(bean.getDisplayName());
                 r.setLevel(Editor.REPORTERS);
                 return r;                

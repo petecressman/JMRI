@@ -2528,7 +2528,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ImageIndexEditor ii = ImageIndexEditor.instance(editor);
+                    ImageIndexEditor ii = jmri.InstanceManager.getDefault(ImageIndexEditor.class);
                     ii.pack();
                     ii.setVisible(true);
                 }

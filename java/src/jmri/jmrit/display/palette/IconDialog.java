@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import jmri.jmrit.catalog.CatalogPanel;
 import jmri.jmrit.catalog.NamedIcon;
+import jmri.jmrit.display.PositionableLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,19 +168,19 @@ public class IconDialog extends ItemDialog {
         while (it.hasNext()) {
             Entry<String, NamedIcon> entry = it.next();
             NamedIcon icon = new NamedIcon(entry.getValue());    // make copy for possible reduction
-            double scale = icon.reduceTo(100, 100, 0.2);
             JPanel panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             String borderName = ItemPalette.convertText(entry.getKey());
             panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                     borderName));
             panel.add(Box.createHorizontalStrut(100));
-            JLabel image = new DropJLabel(icon, _iconMap, _parent.isUpdate());
+            PositionableLabel image = new DropJLabel(icon, _iconMap, _parent.isUpdate());
             image.setName(entry.getKey());
             if (icon.getIconWidth() < 1 || icon.getIconHeight() < 1) {
                 image.setText(Bundle.getMessage("invisibleIcon"));
                 image.setForeground(Color.lightGray);
             }
+            Double scale = image.reduceTo(100, 100, 0.2);
             image.setToolTipText(icon.getName());
             JPanel iPanel = new JPanel();
             iPanel.add(image);

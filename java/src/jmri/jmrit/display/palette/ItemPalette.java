@@ -3,7 +3,6 @@ package jmri.jmrit.display.palette;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
 import jmri.jmrit.catalog.CatalogTreeLeaf;
 import jmri.jmrit.catalog.CatalogTreeNode;
-import jmri.jmrit.catalog.DirectorySearcher;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
@@ -54,6 +52,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
     // for now, special case 4 level maps since IndicatorTO is the only case.
     static HashMap<String, HashMap<String, HashMap<String, HashMap<String, NamedIcon>>>> _indicatorTOMaps;
     ItemPanel _currentItemPanel;
+    boolean _loaded = false;
 
     /**
      * Store palette icons in preferences file catalogTrees.xml
@@ -206,19 +205,17 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
                 CatalogTreeLeaf leaf = list.get(i);
                 String path = leaf.getPath();
                 NamedIcon icon = NamedIcon.getIconByName(path);
-                if (icon == null) {
+                if (icon == null && ed != null) {
                     icon = ed.loadFailed(iconName, path);
-                    if (icon == null) {
-                        log.info(iconName + " removed for url= " + path);
-                    } else {
-                        ImageIndexEditor.indexChanged(true);
-                    }
                 }
                 if (icon != null) {
                     iconMap.put(iconName, icon);
+                    ImageIndexEditor.indexChanged(true);
                     if (log.isDebugEnabled()) {
                         log.debug("Add " + iconName + " icon to family " + familyName);
                     }
+                } else {
+                    log.warn("{} not found. removed for url= {}", iconName, path);                    
                 }
                 Thread.yield();
             }
@@ -312,14 +309,13 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
                     log.warn("loadDefaultFamilyMap: iconName= " + iconName + " in family " + familyName + " has no image file.");
                 }
                 NamedIcon icon = NamedIcon.getIconByName(fileName);
-                if (icon == null) {
-                    icon = ed.loadFailed(iconName, fileName);
-                    if (icon == null) {
-                        log.info(iconName + " removed for url= " + fileName);
-                    }
+                if (icon == null && ed != null) {
+                    icon = ed.loadFailed(iconName, fileName);                        
                 }
                 if (icon != null) {
                     iconMap.put(iconName, icon);
+                } else {
+                    log.warn("{} not found. removed for url= {}", iconName, fileName);                    
                 }
             }
             familyMap.put(familyName, iconMap);
@@ -347,13 +343,24 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         return familyTOMap;
     }
 
+    public ItemPalette getItemPalette(String title, Editor ed) {
+        ItemPalette instance = jmri.InstanceManager.getDefault(ItemPalette.class);
+        if (!_loaded) {
+            init(title, ed);
+        }
+        return instance;
+    }
     /**
      * Build the Control Panel Editor tabbed Item Panel frame &amp; menus
      */
-    public ItemPalette(String title, Editor editor) {
-        super(title, true, true);
+    private ItemPalette() {
+        super(true, true);
 //        long t = System.currentTimeMillis();
-        loadIcons(editor);
+    }
+    
+    private void init(String title, Editor ed) {
+        this.setTitle(title);
+        loadIcons(ed);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
@@ -361,8 +368,9 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
             }
         });
 
-        makeMenus(editor);
-        buildTabPane(this, editor);
+        makeMenus();
+        buildTabPane(this, ed);
+        _loaded = true;
 
         setLayout(new BorderLayout(5, 5));
         add(_tabPane, BorderLayout.CENTER);
@@ -477,45 +485,29 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 //        System.out.println("Panel "+p._itemType+" built in "+ (System.currentTimeMillis()-t)+ " milliseconds.");
     }
 
-    private void makeMenus(Editor editor) {
+    private void makeMenus() {
         if (!jmri.util.ThreadingUtil.isGUIThread()) log.error("Not on GUI thread", new Exception("traceback"));
         JMenuBar menuBar = new JMenuBar();
         JMenu findIcon = new JMenu(Bundle.getMessage("findIconMenu"));
         menuBar.add(findIcon);
 
         JMenuItem editItem = new JMenuItem(Bundle.getMessage("editIndexMenu"));
-        editItem.addActionListener(new ActionListener() {
-            Editor editor;
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ImageIndexEditor ii = ImageIndexEditor.instance(editor);
+        editItem.addActionListener((ActionEvent e) -> {
+                ImageIndexEditor ii = ImageIndexEditor.getDefault();
                 ii.pack();
                 ii.setVisible(true);
-            }
-
-            ActionListener init(Editor ed) {
-                editor = ed;
-                return this;
-            }
-        }.init(editor));
+        });
         findIcon.add(editItem);
         findIcon.addSeparator();
 
         JMenuItem openItem = new JMenuItem(Bundle.getMessage("openDirMenu"));
-        openItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DirectorySearcher.instance().openDirectory();
-            }
+        openItem.addActionListener((ActionEvent e) -> {
         });
         findIcon.add(openItem);
 
          JMenuItem searchItem = new JMenuItem(Bundle.getMessage("searchFSMenu"));
-         searchItem.addActionListener(new ActionListener() {
-             public void actionPerformed(ActionEvent e) {
+         searchItem.addActionListener((ActionEvent e) -> {
                  jmri.jmrit.catalog.DirectorySearcher.instance().searchFS();
-             }
          });
          findIcon.add(searchItem);
         

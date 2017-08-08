@@ -132,7 +132,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
     }
 
     // add update button to _bottom1Panel
-    private void addUpdateButtonToBottom(ActionListener doneAction) {
+    protected void addUpdateButtonToBottom(ActionListener doneAction) {
         _updateButton = new JButton(Bundle.getMessage("updateButton")); // custom update label
         _updateButton.addActionListener(doneAction);
         _updateButton.setToolTipText(Bundle.getMessage("ToolTipPickFromTable"));
@@ -417,7 +417,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
                 Bundle.getMessage("AllFamiliesDeleted", _itemType), Bundle.getMessage("QuestionTitle"),
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (result == JOptionPane.YES_OPTION) {
-            ItemPalette.loadMissingItemType(_itemType, _editor);
+            ItemPalette.loadMissingItemType(_itemType, null);
             initIconFamiliesPanel();
             _bottom1Panel.setVisible(true);
             _bottom2Panel.setVisible(false);
@@ -456,7 +456,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
             String borderName = getIconBorderName(entry.getKey());
             panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                     borderName));
-            PositionableLabel image = new PositionableLabel(icon, getEditor());
+            PositionableLabel image = new PositionableLabel(icon, null);
             if (icon.getIconWidth() < 1 || icon.getIconHeight() < 1) {
                 image.setText(Bundle.getMessage("invisibleIcon"));
                 image.setIsText(true);
