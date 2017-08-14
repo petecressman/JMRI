@@ -56,6 +56,7 @@ import jmri.NamedBeanHandle;
 import jmri.Sensor;
 import jmri.Turnout;
 import jmri.jmrit.beantable.AddNewDevicePanel;
+import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.display.CoordinateEdit;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
@@ -1190,7 +1191,7 @@ public class SwitchboardEditor extends Editor {
         }
 
         public void doMouseClicked(java.awt.event.MouseEvent e) {
-            log.debug("Switch clicked", e);
+            log.debug("Switch clicked");
             //if (!_editor.getFlag(Editor.OPTION_CONTROLS, isControlling())) {
             //    return;
             //}
@@ -1471,7 +1472,7 @@ public class SwitchboardEditor extends Editor {
         storeIndexItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                jmri.jmrit.catalog.ImageIndexEditor.storeImageIndex();
+                InstanceManager.getDefault(ImageIndexEditor.class).storeImageIndex();
             }
         });
 
@@ -1873,7 +1874,7 @@ public class SwitchboardEditor extends Editor {
     /**
      * Load switch shape.
      *
-     * @param switchShape name of switch shape 
+     * @param switchShape name of switch shape
      */
     public void setSwitchShape(String switchShape) {
         int shape;

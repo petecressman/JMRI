@@ -27,6 +27,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import jmri.InstanceManager;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.PositionablePopupUtil;
 import org.slf4j.Logger;
@@ -87,7 +88,7 @@ public class PreviewDialog extends JDialog {
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                DirectorySearcher.instance().close();
+                InstanceManager.getDefault(DirectorySearcher.class).close();
                 dispose();
             }
         });
@@ -110,7 +111,7 @@ public class PreviewDialog extends JDialog {
         needsMore = setIcons(startNum);
         if (_noMemory) {
             int choice = JOptionPane.showOptionDialog(null,
-                    Bundle.getMessage("OutOfMemory", _cnt), Bundle.getMessage("ErrorTitle"), 
+                    Bundle.getMessage("OutOfMemory", _cnt), Bundle.getMessage("ErrorTitle"),
                     JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
                     new String[]{Bundle.getMessage("Quit"), Bundle.getMessage("ShowContents")}, 1);
             if (choice==0) {
@@ -127,7 +128,7 @@ public class PreviewDialog extends JDialog {
                 p.add(moreButton);
             } else {
                 log.error("More ActionListener missing");
-            }            
+            }
             msg.setText(Bundle.getMessage("moreMsg"));
         }
 
@@ -142,7 +143,7 @@ public class PreviewDialog extends JDialog {
             p.add(lookButton);
             hasButtons = true;
         }
-        
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
@@ -152,7 +153,7 @@ public class PreviewDialog extends JDialog {
             cancelButton.addActionListener(cancelAction);
             p.add(cancelButton);
             p.add(Box.createHorizontalStrut(5));
-            p.setPreferredSize(new Dimension(400, cancelButton.getPreferredSize().height));            
+            p.setPreferredSize(new Dimension(400, cancelButton.getPreferredSize().height));
             panel.add(p);
             panel.add(new JSeparator());
         }
@@ -163,7 +164,7 @@ public class PreviewDialog extends JDialog {
         pack();
         setVisible(true);
     }
-    
+
     ActionListener getLookActionListener() {
         return _lookAction;
     }
@@ -285,7 +286,7 @@ public class PreviewDialog extends JDialog {
             _noMemory = true;
             log.error("MemoryExceptionHandler: {} {} files read from directory {}", e, _cnt, _currentDir);
             if (log.isDebugEnabled()) {
-                log.debug("memoryAvailable = ", availableMemory());
+                log.debug("memoryAvailable = {}", availableMemory());
             }
         }
     }
@@ -318,11 +319,16 @@ public class PreviewDialog extends JDialog {
         c.anchor = GridBagConstraints.SOUTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
-        c.gridy = 0;
-        c.gridx = -1;
-        _cnt = 0;
-        int cnt = 0;
-        File[] files = _currentDir.listFiles();
+        c.gridy = -1;
+        c.gridx = 0;
+        _cnt = 0;       // number of images displayed in this panel
+        int cnt = 0;    // total number of images in directory
+        File[] files = _currentDir.listFiles(); // all files, filtered below
+        int nCols = 1;
+        int nRows = 1;
+        int nAvail = 1;
+
+        long memoryUsed = 0;        // estmate
         for (int i = 0; i < files.length; i++) {
             String ext = jmri.util.FileChooserFilter.getFileExtension(files[i]);
             for (int k = 0; k < _filter.length; k++) {

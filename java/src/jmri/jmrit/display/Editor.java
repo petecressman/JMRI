@@ -64,6 +64,7 @@ import jmri.NamedBean;
 import jmri.Reporter;
 import jmri.ShutDownManager;
 import jmri.jmrit.catalog.CatalogPanel;
+import jmri.jmrit.catalog.DirectorySearcher;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.operations.trains.TrainIcon;
@@ -95,12 +96,10 @@ import org.slf4j.LoggerFactory;
  * <P>
  * The title of the target and the editor panel are kept consistent via the
  * {#setTitle} method.
- *
  * <p>
  * Mouse events are initial handled here, rather than in the individual
  * displayed objects, so that selection boxes for moving multiple objects can be
  * provided.
- *
  * <p>
  * This class also implements an effective ToolTipManager replacement, because
  * the standard Swing one can't deal with the coordinate changes used to zoom a
@@ -368,7 +367,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     //
     /**
      * Set the target panel.
-     *
+     * <p>
      * An Editor may or may not choose to use 'this' as its frame or the
      * interior class 'TargetPane' for its targetPanel.
      *
@@ -1011,7 +1010,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
      */
     /**
      * Handle closing the target window.
-     *
+     * <p>
      * The target window has been requested to close, don't delete it at this
      * time. Deletion must be accomplished via the Delete this panel menu item.
      *
@@ -1183,6 +1182,23 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         return true;
         //}
         //return false;
+    }
+
+    /**
+     * Display the rotation of the Positionable item and provide a dialog menu
+     * item to edit it.
+     *
+     * @param p     The item to add the menu item to
+     * @param popup The menu item to add the action to
+     * @return always returns true
+     */
+    public boolean setShowRotationMenu(Positionable p, JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("Rotation", "..."));
+        JMenuItem jmi = edit.add(Bundle.getMessage("Rotation", " = " + p.getDegrees()));
+        jmi.setEnabled(false);
+        edit.add(CoordinateEdit.getRotateEditAction(p));
+        popup.add(edit);
+        return true;
     }
 
     /**
@@ -2468,7 +2484,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     protected JFrameItem makeAddIconFrame(String name, boolean add, boolean table, IconAdder editor) {
-        log.debug("makeAddIconFrame for {}, add= {}, table= ", name, add, table);
+        log.debug("makeAddIconFrame for {}, add= {}, table= {}", name, add, table);
         String txt;
         String BundleName;
         JFrameItem frame = new JFrameItem(name, editor);
@@ -2528,7 +2544,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    ImageIndexEditor ii = jmri.InstanceManager.getDefault(ImageIndexEditor.class);
+                    ImageIndexEditor ii = InstanceManager.getDefault(ImageIndexEditor.class);
                     ii.pack();
                     ii.setVisible(true);
                 }
@@ -2547,7 +2563,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    jmri.jmrit.catalog.DirectorySearcher.instance().searchFS();
+                    InstanceManager.getDefault(DirectorySearcher.class).searchFS();
                     ea.addDirectoryToCatalog();
                 }
 
@@ -2762,7 +2778,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
     /**
      * Relocate item.
-     *
+     * <p>
      * Note that items can not be moved past the left or top edges of the panel.
      *
      * @param p      The item to move.
@@ -2804,18 +2820,6 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             x = event.getX();
             y = event.getY();
             rect = p.getContentBounds(rect);
-/*            if (p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape
-                    && p.getDegrees() != 0) {
-                double rad = p.getDegrees() * Math.PI / 180.0;
-                java.awt.geom.AffineTransform tf = java.awt.geom.AffineTransform.getRotateInstance(-rad);
-                double[] pt = new double[2];
-                // bit shift to avoid Findbugs paranoia
-                pt[0] = x - rect.x - (rect.width >>> 1);
-                pt[1] = y - rect.y - (rect.height >>> 1);
-                tf.transform(pt, 0, pt, 0, 1);
-//                x = pt[0] + rect.x + (rect.width >>> 1);
-//                y = pt[1] + rect.y + (rect.height >>> 1);
-            }*/
             Rectangle2D.Double rect2D = new Rectangle2D.Double(rect.x * _paintScale,
                     rect.y * _paintScale,
                     rect.width * _paintScale,
@@ -3323,7 +3327,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     /**
      * Get a list of currently-existing Editor objects that are specific
      * sub-classes of Editor.
-     *
+     * <p>
      * The returned list is a copy made at the time of the call, so it can be
      * manipulated as needed by the caller.
      *

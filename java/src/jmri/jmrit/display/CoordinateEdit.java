@@ -158,13 +158,13 @@ public class CoordinateEdit extends JmriJFrame {
     //////////////////////////////////////////////////////////////
 
     public static AbstractAction getRotateEditAction(final Positionable pos) {
-        return new AbstractAction(Bundle.getMessage("rotate", "...")) {
+        return new AbstractAction(Bundle.getMessage("Rotate", "...")) {
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 CoordinateEdit f = new CoordinateEdit();
                 f.addHelpMenu("package.jmri.jmrit.display.CoordinateEdit", true);
-                f.init(Bundle.getMessage("rotate", ""), pos, true);
+                f.init(Bundle.getMessage("Rotate", ""), pos, true);
                 f.initRotate();
                 f.setVisible(true);
                 f.setLocationRelativeTo((Component) pos);
@@ -236,7 +236,7 @@ public class CoordinateEdit extends JmriJFrame {
             }
         };
     }
-    ////////////////////////////////////////////////////////////// 
+    //////////////////////////////////////////////////////////////
 
     public static AbstractAction getNameEditAction(final Positionable pos) {
         return new AbstractAction(Bundle.getMessage("renamePanelMenu", "...")) {
@@ -253,7 +253,7 @@ public class CoordinateEdit extends JmriJFrame {
             }
         };
     }
-    ////////////////////////////////////////////////////////////// 
+    //////////////////////////////////////////////////////////////
 
     public CoordinateEdit() {
         super(false, false);

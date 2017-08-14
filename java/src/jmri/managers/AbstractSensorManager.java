@@ -255,7 +255,7 @@ public abstract class AbstractSensorManager extends AbstractManager<Sensor> impl
         Enumeration<String> en = _tsys.keys();
         while (en.hasMoreElements()) {
             Sensor sen = (Sensor) _tsys.get(en.nextElement());
-            if (sen.useDefaultTimerSettings()) {
+            if (sen.getUseDefaultTimerSettings()) {
                 sen.setSensorDebounceGoingActiveTimer(timer);
             }
         }
@@ -270,7 +270,7 @@ public abstract class AbstractSensorManager extends AbstractManager<Sensor> impl
         Enumeration<String> en = _tsys.keys();
         while (en.hasMoreElements()) {
             Sensor sen = (Sensor) _tsys.get(en.nextElement());
-            if (sen.useDefaultTimerSettings()) {
+            if (sen.getUseDefaultTimerSettings()) {
                 sen.setSensorDebounceGoingInActiveTimer(timer);
             }
         }
@@ -290,7 +290,7 @@ public abstract class AbstractSensorManager extends AbstractManager<Sensor> impl
     }
 
     /**
-     * Provide a connection agnostic tooltip for the Add new item beantable pane.
+     * Provide a connection system agnostic tooltip for the Add new item beantable pane.
      */
     @Override
     public String getEntryToolTip() {
@@ -299,7 +299,7 @@ public abstract class AbstractSensorManager extends AbstractManager<Sensor> impl
     }
 
     /**
-     * Provide a connection agnostic regex for the Add new item beantable pane.
+     * Provide a connection system agnostic regex for the Add new item beantable pane.
      */
     @Override
     public String getEntryRegex() {

@@ -366,6 +366,7 @@ public class PositionableLabel extends PositionableJComponent {
         _iconEditorFrame = null;
         _iconEditor = null;
         invalidate();
+        repaint();
     }
 
     public jmri.util.JmriJFrame _paletteFrame;
@@ -386,7 +387,7 @@ public class PositionableLabel extends PositionableJComponent {
         _paletteFrame.toFront();
         _paletteFrame.addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent e) {
-                ImageIndexEditor.checkImageIndex();   // write maps to tree
+                ImageIndexEditor.getDefault().checkImageIndex();   // write maps to tree
             }
         });
     }
@@ -397,8 +398,7 @@ public class PositionableLabel extends PositionableJComponent {
     @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         if (getDisplayLevel() > Editor.BKG) {
-            popup.add(CoordinateEdit.getRotateEditAction(this));
-            return true;
+            return _editor.setShowRotationMenu(this, popup);
         }
         return false;
     }
@@ -520,28 +520,6 @@ public class PositionableLabel extends PositionableJComponent {
             g2d.drawString(_textString, hOffSet, vOffSet);             
         }
         g2d.dispose();
-
-/*  Rather than attempt to set a correct bounds rectangle here, we will override the
- *  getBounds calls - see PositionableJComponent  
-        Rectangle bds = getBounds(null);
-        // call does nothing to change the Bounds rectangle! Why??
-        setBounds(bds.x, bds.y, getPreferredSize().width, getPreferredSize().height);
-        bds.width = getPreferredSize().width;
-        bds.height = getPreferredSize().height;
-        // or this call does nothing to change the Bounds rectangle! Why?? 
-        setBounds(bds);
-*/        
-/* Display item bounds as gotten from content list and bounds of item on screen  
-        g.setClip(new Rectangle(-2, -2, 2*getPreferredSize().width, 2*getPreferredSize().height));
-        bds = getContentBounds(null);           
-        // this is the original untransformed bounds - not changed in spite of the above! Why??
-        g.setColor(java.awt.Color.black);
-        g.drawRect(0, 0, bds.width, bds.height);
-        // This is the correct bounding rectangle
-        // - except that it's NOT!
-        g.setColor(java.awt.Color.white);
-        g.drawRect(0, 0, getPreferredSize().width, getPreferredSize().height);
-        */
     }
 
     /**
@@ -552,5 +530,5 @@ public class PositionableLabel extends PositionableJComponent {
         return null;
     }
 
-    static Logger log = LoggerFactory.getLogger(PositionableLabel.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(PositionableLabel.class.getName());
 }

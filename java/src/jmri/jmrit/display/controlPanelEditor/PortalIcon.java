@@ -287,7 +287,8 @@ public class PortalIcon extends PositionableIcon implements java.beans.PropertyC
         setDisplayLevelMenu(popup);
         popup.addSeparator();
         popup.add(CoordinateEdit.getScaleEditAction(this));
-        popup.add(CoordinateEdit.getRotateEditAction(this));
+//        popup.add(CoordinateEdit.getRotateEditAction(this));
+        _editor.setShowRotationMenu(this, popup);
         popup.addSeparator();
         setRemoveMenu(popup);
         return true;

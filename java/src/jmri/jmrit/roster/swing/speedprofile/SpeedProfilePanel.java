@@ -179,7 +179,7 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
         main.add(left);
 
         WarrantPreferences preferences = WarrantPreferences.getDefault();
-        warrentScaleLabel.setText("Scale Factor in Warrents:" + Float.toString(preferences.getLayoutScale()));
+        warrentScaleLabel.setText("Layout Scale: " + Float.toString(preferences.getLayoutScale()));
         warrentScaleLabel.setBackground(Color.white);
         left = makePadPanel(warrentScaleLabel);
         c.gridy = 11;
@@ -575,6 +575,12 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
         setButtonStates(true);
     }
 
+    @Override
+    public void notifyStealThrottleRequired(jmri.DccLocoAddress address){
+        // this is an automatically stealing impelementation.
+        InstanceManager.throttleManagerInstance().stealThrottleRequest(address, this, true);
+    }
+
     PropertyChangeListener startListener = null;
     PropertyChangeListener finishListener = null;
     PropertyChangeListener middleListener = null;
@@ -896,19 +902,19 @@ class SpeedProfilePanel extends jmri.util.swing.JmriPanel implements ThrottleLis
 
         SensorDetails(Sensor sen) {
             sensor = sen;
-            usingGlobal = sen.useDefaultTimerSettings();
+            usingGlobal = sen.getUseDefaultTimerSettings();
             activeDelay = sen.getSensorDebounceGoingActiveTimer();
             inactiveDelay = sen.getSensorDebounceGoingInActiveTimer();
         }
 
         void setupSensor() {
-            sensor.useDefaultTimerSettings(false);
+            sensor.setUseDefaultTimerSettings(false);
             sensor.setSensorDebounceGoingActiveTimer(0);
             sensor.setSensorDebounceGoingInActiveTimer(0);
         }
 
         void resetDetails() {
-            sensor.useDefaultTimerSettings(usingGlobal);
+            sensor.setUseDefaultTimerSettings(usingGlobal);
             sensor.setSensorDebounceGoingActiveTimer(activeDelay);
             sensor.setSensorDebounceGoingInActiveTimer(inactiveDelay);
         }

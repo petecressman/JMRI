@@ -14,8 +14,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import jmri.ConfigureManager;
 import jmri.InstanceManager;
-import jmri.util.JmriJFrame;
 import jmri.util.JUnitUtil;
+import jmri.util.JmriJFrame;
 import junit.extensions.jfcunit.finder.JLabelFinder;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -197,7 +197,7 @@ public class PositionableLabelTest extends jmri.util.SwingTestCase {
         Assert.assertEquals("icon size", new Dimension(13,13).toString(),label.getSize().toString());
 
         // do the rotation, which transforms 13x13 to sqrt(2) bigger, 19x19
-        label.rotate(45);
+        label.setDegrees(45);
         Assert.assertEquals("icon size", new Dimension(19,19).toString(),label.getSize().toString());
 
         f.pack();
@@ -340,7 +340,7 @@ public class PositionableLabelTest extends jmri.util.SwingTestCase {
         Assert.assertEquals("icon size", new Dimension(13,13).toString(),label.getSize().toString());
 
         // do the rotation, which transforms 13x13 to sqrt(2) bigger, 19x19
-        label.rotate(45);
+        label.setDegrees(45);
         Assert.assertEquals("icon size", new Dimension(19,19).toString(),label.getSize().toString());
 
         f.pack();
@@ -472,7 +472,7 @@ public class PositionableLabelTest extends jmri.util.SwingTestCase {
         f.pack();
         flushAWT();
 
-        label.rotate(90);
+        label.setDegrees(90);
 
         f.pack();
         flushAWT();
@@ -520,7 +520,7 @@ public class PositionableLabelTest extends jmri.util.SwingTestCase {
         f.pack();
         flushAWT();
 
-        label.rotate(45);
+        label.setDegrees(45);
 
         f.pack();
         flushAWT();

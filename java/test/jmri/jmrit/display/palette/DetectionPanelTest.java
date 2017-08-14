@@ -1,16 +1,14 @@
 package jmri.jmrit.display.palette;
 
+import java.awt.GraphicsEnvironment;
+import jmri.jmrit.display.EditorScaffold;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import jmri.jmrit.display.EditorScaffold;
-import jmri.util.JmriJFrame;
-import java.awt.GraphicsEnvironment;
 
 /**
  *
@@ -25,7 +23,7 @@ public class DetectionPanelTest {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         EditorScaffold es = new EditorScaffold();
         jmri.util.ThreadingUtil.runOnGUI(() -> {
-            ip = new ItemPalette("Test ItemPalette", null);
+            ip = ItemPalette.getDefault("Test ItemPalette", null);
             ip.pack();
         });
         TextItemPanel tip = new TextItemPanel(ip,"test",es);

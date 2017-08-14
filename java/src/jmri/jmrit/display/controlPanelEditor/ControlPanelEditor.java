@@ -205,9 +205,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (_itemPalette == null) {
-                    _itemPalette = new ItemPalette(Bundle.getMessage("MenuItemItemPalette"), editor);
-                }
+                _itemPalette = ItemPalette.getDefault(Bundle.getMessage("MenuItemItemPalette"), editor);
                 _itemPalette.setVisible(true);
             }
         }.init(this));
@@ -401,7 +399,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         JMenuItem storeIndexItem = new JMenuItem(Bundle.getMessage("MIStoreImageIndex"));
         _fileMenu.add(storeIndexItem);
         storeIndexItem.addActionListener((ActionEvent event) -> {
-            jmri.jmrit.catalog.ImageIndexEditor.storeImageIndex();
+            InstanceManager.getDefault(ImageIndexEditor.class).storeImageIndex();
         });
 
         JMenuItem editItem = new JMenuItem(Bundle.getMessage("renamePanelMenu", "..."));
@@ -417,7 +415,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                ImageIndexEditor ii = ImageIndexEditor.instance(panelEd);
+                ImageIndexEditor ii = InstanceManager.getDefault(ImageIndexEditor.class);
                 ii.pack();
                 ii.setVisible(true);
             }
@@ -1693,9 +1691,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         _currentSelection = null;
     }
 
-    private HashMap<String, NamedIcon> _portalIconMap;
+    private static HashMap<String, NamedIcon> _portalIconMap;
 
-    private void makePortalIconMap() {
+    private void makeDefaultPortalIconMap() {
         _portalIconMap = new HashMap<>();
         _portalIconMap.put(PortalIcon.VISIBLE,
                 new NamedIcon("resources/icons/throttles/RoundRedCircle20.png", "resources/icons/throttles/RoundRedCircle20.png"));
@@ -1711,27 +1709,20 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
     protected NamedIcon getPortalIcon(String name) {
         if (_portalIconMap == null) {  // set defaults
-            makePortalIconMap();
+            makeDefaultPortalIconMap();
         }
         return _portalIconMap.get(name);
     }
 
     public HashMap<String, NamedIcon> getPortalIconMap() {
         if (_portalIconMap == null) {  // set defaults
-            makePortalIconMap();
+            makeDefaultPortalIconMap();
         }
         return _portalIconMap;
     }
 
-    public void setDefaultPortalIcons(HashMap<String, NamedIcon> map) {
+    public static void setDefaultPortalIcons(HashMap<String, NamedIcon> map) {
         _portalIconMap = map;
-        Iterator<Positionable> it = _contents.iterator();
-        while (it.hasNext()) {
-            Positionable pos = it.next();
-            if (pos instanceof PortalIcon) {
-                ((PortalIcon) pos).initMap();
-            }
-        }
     }
 
     /**

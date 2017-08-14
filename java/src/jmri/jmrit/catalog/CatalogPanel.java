@@ -227,7 +227,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
             log.debug("addTreeBranch called for node= {}, has {} children.",
                     node.toString(), node.getChildCount());
         }
-        //String name = node.toString(); 
+        //String name = node.toString();
         CatalogTreeNode root = (CatalogTreeNode) _model.getRoot();
         Enumeration<CatalogTreeNode> e = node.children();
         while (e.hasMoreElements()) {
@@ -333,7 +333,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
         CatalogTreeNode node = new CatalogTreeNode(name);
         AbstractCatalogTree tree = (AbstractCatalogTree) getCorespondingModel(parent);
         tree.insertNodeInto(node, cParent, index);
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
         return true;
     }
 
@@ -346,7 +346,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
         AbstractCatalogTree tree = (AbstractCatalogTree) getCorespondingModel(node);
         tree.removeNodeFromParent(getCorrespondingNode(node));
         _model.removeNodeFromParent(node);
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
     }
 
     /**
@@ -366,7 +366,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
         node.setUserObject(name);
         tree.nodeChanged(cNode);
         _model.nodeChanged(node);
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
         updatePanel();
         return true;
     }
@@ -715,7 +715,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
         }
         node.deleteLeaf(icon.getName(), icon.getURL());
         updatePanel();
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
     }
 
     private void rename(NamedIcon icon) {
@@ -736,7 +736,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
             _dTree.setSelectionPath(null);
             _dTree.setSelectionPath(path);
 //            updatePanel();
-            ImageIndexEditor.indexChanged(true);
+            InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
         }
     }
 

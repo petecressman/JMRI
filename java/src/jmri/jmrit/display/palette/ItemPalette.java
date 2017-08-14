@@ -2,6 +2,7 @@ package jmri.jmrit.display.palette;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 import java.util.Enumeration;
@@ -148,7 +149,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
             while (e.hasMoreElements()) {
                 CatalogTreeNode node = e.nextElement();
                 String typeName = (String) node.getUserObject();
-                // detect this is a 4 level map collection. 
+                // detect this is a 4 level map collection.
                 // not very elegant (i.e. extensible), but maybe all that's needed.
                 if (typeName.equals("IndicatorTO")) {
                     HashMap<String, HashMap<String, HashMap<String, NamedIcon>>> familyTOMap
@@ -210,7 +211,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
                 }
                 if (icon != null) {
                     iconMap.put(iconName, icon);
-                    ImageIndexEditor.indexChanged(true);
+                    InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
                     if (log.isDebugEnabled()) {
                         log.debug("Add " + iconName + " icon to family " + familyName);
                     }
@@ -254,7 +255,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
     }
 
     static void loadFamilies(String typeName, List<Element> families, Editor ed) {
-        // detect this is a 4 level map collection. 
+        // detect this is a 4 level map collection.
         // not very elegant (i.e. extensible), but maybe all that's needed.
         if (typeName.equals("IndicatorTO")) {
             HashMap<String, HashMap<String, HashMap<String, NamedIcon>>> familyTOMap
@@ -284,7 +285,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
                 }
                 List<Element> families = typeList.get(i).getChildren();
                 loadFamilies(itemType, families, ed);
-                ImageIndexEditor.indexChanged(true);
+                InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
             }
         } catch (org.jdom2.JDOMException e) {
             log.error("error reading file \"defaultPanelIcons.xml\" due to: " + e);
@@ -343,19 +344,21 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         return familyTOMap;
     }
 
-    public ItemPalette getItemPalette(String title, Editor ed) {
-        ItemPalette instance = jmri.InstanceManager.getDefault(ItemPalette.class);
-        if (!_loaded) {
-            init(title, ed);
+    static public ItemPalette getDefault(String title, Editor ed) {
+        if (GraphicsEnvironment.isHeadless()) {
+            return null;
         }
+        ItemPalette instance = InstanceManager.getOptionalDefault(ItemPalette.class).orElseGet(() -> {
+            return InstanceManager.setDefault(ItemPalette.class, new ItemPalette(title, ed));
+        });
+        instance.pack();
+        instance.setVisible(true);
         return instance;
     }
-    /**
-     * Build the Control Panel Editor tabbed Item Panel frame &amp; menus
-     */
-    private ItemPalette() {
-        super(true, true);
-//        long t = System.currentTimeMillis();
+    
+    private ItemPalette(String title, Editor ed) {
+        super();
+        init(title, ed);
     }
     
     private void init(String title, Editor ed) {
@@ -464,7 +467,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         _tabIndex.put("Portal", itemPanel);
 
         _tabPane.addChangeListener(palette);
-//        _tabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);     
+//        _tabPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     }
 
     @Override
@@ -510,7 +513,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
                  jmri.jmrit.catalog.DirectorySearcher.instance().searchFS();
          });
          findIcon.add(searchItem);
-        
+
         setJMenuBar(menuBar);
         addHelpMenu("package.jmri.jmrit.display.ItemPalette", true);
     }
@@ -569,7 +572,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
              if (itemPanel instanceof FamilyItemPanel) {
              ((FamilyItemPanel)itemPanel).updateFamiliesPanel();
              }*/
-            ImageIndexEditor.indexChanged(true);
+            InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
             return true;
         }
         return false;
@@ -590,7 +593,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
             log.debug("removeIconMap for family \"" + family + " \" in type \"" + type + "\"");
         }
         _iconMaps.get(type).remove(family);
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
         if (log.isDebugEnabled()) {
             HashMap<String, HashMap<String, NamedIcon>> families = getFamilyMaps(type);
             if (families != null && families.size() > 0) {
@@ -628,7 +631,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         Iterator<String> iter = ItemPalette.getLevel4FamilyMaps(type).keySet().iterator();
         if (familyNameOK(frame, type, family, iter)) {
             getLevel4FamilyMaps(type).put(family, iconMap);
-            ImageIndexEditor.indexChanged(true);
+            InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
             return true;
         }
         return false;
@@ -639,7 +642,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
             String key, HashMap<String, NamedIcon> iconMap) {
         HashMap<String, HashMap<String, NamedIcon>> familyMap = getLevel4Family(type, family);
         familyMap.put(key, iconMap);
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
     }
 
     // Currently only needed for IndicatorTO type
@@ -666,7 +669,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         } else {
             _indicatorTOMaps.get(type).remove(family);
         }
-        ImageIndexEditor.indexChanged(true);
+        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
     }
 
     /**

@@ -12,6 +12,7 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 import java.util.HashMap;
+import jmri.InstanceManager;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.PositionableLabel;
@@ -27,7 +28,7 @@ public class DropJLabel extends PositionableLabel implements DropTargetListener 
     private HashMap<String, NamedIcon> _iconMap;
     private boolean _update;
 
-    DropJLabel(NamedIcon icon, HashMap<String, NamedIcon> iconMap, boolean update) {
+    public DropJLabel(NamedIcon icon, HashMap<String, NamedIcon> iconMap, boolean update) {
         super(icon, null);
         _iconMap = iconMap;
         _update = update;
@@ -111,7 +112,7 @@ public class DropJLabel extends PositionableLabel implements DropTargetListener 
         label.setToolTipText(label.getText());
         _iconMap.put(label.getName(), newIcon);
         if (!_update) {  // only prompt for save from palette
-            ImageIndexEditor.indexChanged(true);
+            InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
         }
         e.dropComplete(true);
         if (log.isDebugEnabled()) {

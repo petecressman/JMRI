@@ -618,9 +618,9 @@ public class Warrant extends jmri.implementation.AbstractNamedBean
             _student = null;
         }
         if (_engineer != null) {
-            _engineer.stopRun(abort);    // release throttle
+            _speedUtil.stopRun(!abort); // don't write speed profile measurements
+            _engineer.stopRun(abort);   // release throttle
             _engineer = null;
-            _speedUtil.stopRun(!abort);     // don't write speed profile measurements
         }
         deAllocate();
         int oldMode = _runMode;
@@ -777,6 +777,12 @@ public class Warrant extends jmri.implementation.AbstractNamedBean
     public void notifyFailedThrottleRequest(DccLocoAddress address, String reason) {
         abortWarrant( Bundle.getMessage("noThrottle", (reason +" "+ (address!=null?address.getNumber():getDisplayName()))));
         fireRunStatus("throttleFail", null, reason);
+    }
+
+    @Override
+    public void notifyStealThrottleRequired(DccLocoAddress address){
+        // this is an automatically stealing impelementation.
+        InstanceManager.throttleManagerInstance().stealThrottleRequest(address, this, true);
     }
     
     protected void releaseThrottle(DccThrottle throttle) {
@@ -1834,6 +1840,15 @@ public class Warrant extends jmri.implementation.AbstractNamedBean
                 block.getDisplayName(), speedType); 
          return speedType;
     }
+    
+    private float getPathLength(BlockOrder bo) {
+        float len = bo.getPath().getLengthMm();
+        if (len <= 0) {
+            log.warn(Bundle.getMessage("zeroPathLength", bo.getPathName(), bo.getBlock().getDisplayName()));
+            len = 100;
+        }
+        return len;
+    }
 
     /**
      * Called to set the correct speed for the train when the
@@ -1999,18 +2014,18 @@ public class Warrant extends jmri.implementation.AbstractNamedBean
                 if (dist < 0) {
                     switch (position) {
                         case BEG:
-                            dist =  blkOrder.getPath().getLengthMm();
+                            dist =  getPathLength(blkOrder);
                             break;
                         case MID:
-                            dist =  blkOrder.getPath().getLengthMm() / 2;
+                            dist =  getPathLength(blkOrder) / 2;
                             break;
                         default:    // END:
                             dist = 0;
                     }
                 }
-                availDist += blkOrder.getPath().getLengthMm() - dist;
+                availDist += getPathLength(blkOrder) - dist;
             } else {
-                availDist += blkOrder.getPath().getLengthMm();                
+                availDist += getPathLength(blkOrder);                
             }
             blkSpeedInfo = _speedInfo.get(idxBlockOrder);
             
