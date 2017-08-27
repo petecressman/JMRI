@@ -21,8 +21,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -60,7 +58,7 @@ public class TrainIconAnimationTest {
         // create and register a panel
         jmri.jmrit.display.panelEditor.PanelEditor editor = new jmri.jmrit.display.panelEditor.PanelEditor(
                 "Train Test Panel");
-        PanelMenu.instance().addEditorPanel(editor);
+        InstanceManager.getDefault(PanelMenu.class).addEditorPanel(editor);
 
         // confirm panel creation
         JmriJFrame f = JmriJFrame.getFrame("Train Test Panel");
@@ -385,11 +383,10 @@ public class TrainIconAnimationTest {
 
     @After
     public void tearDown() {
-        jmri.util.JUnitOperationsUtil.resetOperationsManager();
         jmri.util.JUnitUtil.resetInstanceManager();
         apps.tests.Log4JFixture.tearDown();
     }
 
-    private final static Logger log = LoggerFactory.getLogger(TrainIconAnimationTest.class.getName());
+//    private final static Logger log = LoggerFactory.getLogger(TrainIconAnimationTest.class.getName());
 
 }

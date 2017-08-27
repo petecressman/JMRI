@@ -29,16 +29,13 @@ public class PositionablePointTest {
     @Before
     public void setUp() throws Exception {
         apps.tests.Log4JFixture.setUp();
-        // dispose of the single PanelMenu instance
-        jmri.jmrit.display.PanelMenu.dispose();
         // reset the instance manager.
         JUnitUtil.resetInstanceManager();
     }
 
     @After
     public void tearDown() throws Exception {
-        // dispose of the single PanelMenu instance
-        jmri.jmrit.display.PanelMenu.dispose();
+        JUnitUtil.resetWindows(false);
         JUnitUtil.resetInstanceManager();
         apps.tests.Log4JFixture.tearDown();
     }

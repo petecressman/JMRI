@@ -90,15 +90,12 @@ public class LayoutEditorWindowTest extends jmri.util.SwingTestCase {
         JUnitUtil.initInternalTurnoutManager();
         JUnitUtil.initInternalSensorManager();
         JUnitUtil.initShutDownManager();
-        // dispose of the single PanelMenu instance
-        jmri.jmrit.display.PanelMenu.dispose();
     }
 
     @Override
     protected void tearDown() throws Exception {
+        JUnitUtil.resetWindows(false);
         apps.tests.Log4JFixture.tearDown();
-        // dispose of the single PanelMenu instance
-        jmri.jmrit.display.PanelMenu.dispose();
         JUnitUtil.resetInstanceManager();
         super.tearDown();
     }

@@ -1042,7 +1042,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
                 switch (selectedValue) {
                     case 0:
                         _targetFrame.setVisible(false);   // doesn't remove the editor!
-                        jmri.jmrit.display.PanelMenu.instance().updateEditorPanel(this);
+                        InstanceManager.getDefault(PanelMenu.class).updateEditorPanel(this);
                         break;
                     case 1:
                         if (deletePanel()) { // disposes everything
@@ -1052,7 +1052,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
                     case 2:
                         showCloseInfoMessage = false;
                         _targetFrame.setVisible(false);   // doesn't remove the editor!
-                        jmri.jmrit.display.PanelMenu.instance().updateEditorPanel(this);
+                        InstanceManager.getDefault(PanelMenu.class).updateEditorPanel(this);
                         break;
                     default:    // dialog closed - do nothing
                         _targetFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -1063,7 +1063,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             }
         } else {
             _targetFrame.setVisible(false);   // doesn't remove the editor!
-            jmri.jmrit.display.PanelMenu.instance().updateEditorPanel(this);
+            InstanceManager.getDefault(PanelMenu.class).updateEditorPanel(this);
         }
     }
 
@@ -1100,7 +1100,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             ed.setSize(getSize());
 //            ed.pack();
             ed.setVisible(true);
-            jmri.jmrit.display.PanelMenu.instance().addEditorPanel(ed);
+            InstanceManager.getDefault(PanelMenu.class).addEditorPanel(ed);
             dispose(false);
             return ed;
         } catch (ClassNotFoundException cnfe) {
@@ -2655,7 +2655,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         if (cm != null) {
             cm.deregister(this);
         }
-        jmri.jmrit.display.PanelMenu.instance().deletePanel(this);
+        InstanceManager.getDefault(PanelMenu.class).deletePanel(this);
         Editor.editors.remove(this);
         setVisible(false);
         if (clear) {

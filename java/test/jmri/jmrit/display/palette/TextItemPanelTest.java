@@ -10,10 +10,11 @@ import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class TextItemPanelTest {
 
+    // allow creation in lambda expression
     private ItemPalette ip = null;
 
     @Test
@@ -24,8 +25,9 @@ public class TextItemPanelTest {
             ip = ItemPalette.getDefault("Test ItemPalette", null);
             ip.pack();
         });
-        TextItemPanel t = new TextItemPanel(ip,"test",es);
-        Assert.assertNotNull("exists",t);
+        TextItemPanel t = new TextItemPanel(ip, "test", es);
+        Assert.assertNotNull("exists", t);
+        ip.dispose();
     }
 
     // The minimal setup for log4J
@@ -37,10 +39,10 @@ public class TextItemPanelTest {
 
     @After
     public void tearDown() {
+        ip = null;
         jmri.util.JUnitUtil.resetInstanceManager();
         apps.tests.Log4JFixture.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(TextItemPanelTest.class.getName());
-
 }

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class DetectionPanelTest {
 
@@ -26,9 +26,10 @@ public class DetectionPanelTest {
             ip = ItemPalette.getDefault("Test ItemPalette", null);
             ip.pack();
         });
-        TextItemPanel tip = new TextItemPanel(ip,"test",es);
+        TextItemPanel tip = new TextItemPanel(ip, "test", es);
         DetectionPanel t = new DetectionPanel(tip);
-        Assert.assertNotNull("exists",t);
+        Assert.assertNotNull("exists", t);
+        ip.dispose();
     }
 
     // The minimal setup for log4J
