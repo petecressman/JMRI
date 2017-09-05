@@ -63,7 +63,7 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         pos._hidden = _hidden;
         pos._positionable = _positionable;
         pos._showTooltip = _showTooltip;
-        pos.setTooltip(getTooltip());
+        pos.setToolTip(getToolTip());
         pos._editable = _editable;
         if (getPopupUtility() == null) {
             pos.setPopupUtility(null);
@@ -142,19 +142,23 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         return _displayLevel;
     }
 
-    public void setShowTooltip(boolean set) {
+    @Override
+    public void setShowToolTip(boolean set) {
         _showTooltip = set;
     }
 
-    public boolean showTooltip() {
+    @Override
+    public boolean showToolTip() {
         return _showTooltip;
     }
 
-    public void setTooltip(ToolTip tip) {
+    @Override
+    public void setToolTip(ToolTip tip) {
         _tooltip = tip;
     }
 
-    public ToolTip getTooltip() {
+    @Override
+    public ToolTip getToolTip() {
         return _tooltip;
     }
     

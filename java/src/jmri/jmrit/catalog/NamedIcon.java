@@ -143,5 +143,5 @@ public class NamedIcon extends ImageIcon {
     private String mURL = null;
     
 
-    private final static Logger log = LoggerFactory.getLogger(NamedIcon.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(NamedIcon.class);
 }

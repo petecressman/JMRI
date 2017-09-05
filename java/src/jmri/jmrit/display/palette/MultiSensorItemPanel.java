@@ -412,5 +412,5 @@ public class MultiSensorItemPanel extends TableItemPanel {
         }
     }
 
-    private final static Logger log = LoggerFactory.getLogger(MultiSensorItemPanel.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(MultiSensorItemPanel.class);
 }

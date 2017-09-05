@@ -92,5 +92,5 @@ public class MemoryInputIconXml extends PositionableLabelXml {
         textField.setBackground(l.getPopupUtility().getBackgroundColor());            
     }
 
-    private final static Logger log = LoggerFactory.getLogger(MemoryInputIconXml.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(MemoryInputIconXml.class);
 }

@@ -228,7 +228,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
     public void notify(Measurement m) {
         // only honor measurements to this icon if filtered
         if (filterNumber != null && m.getReading() != null
-                && !filterNumber.equals(m.getReading().getID())) {
+                && !filterNumber.equals(m.getReading().getId())) {
             return;
         }
 
@@ -244,7 +244,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
         }
 
         if (isText()) {
-            super.setText("" + m.getReading().getID());
+            super.setText("" + m.getReading().getId());
         }
         displayState();
 

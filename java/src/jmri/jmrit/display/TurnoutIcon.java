@@ -570,5 +570,5 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         return clone;
     }
 
-    private final static Logger log = LoggerFactory.getLogger(TurnoutIcon.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(TurnoutIcon.class);
 }

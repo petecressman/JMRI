@@ -163,5 +163,5 @@ public abstract class ItemPanel extends JPanel {
         }
     }
 
-    private final static Logger log = LoggerFactory.getLogger(ItemPanel.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(ItemPanel.class);
 }

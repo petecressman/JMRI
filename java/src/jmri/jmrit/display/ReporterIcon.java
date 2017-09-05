@@ -166,5 +166,5 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
         super.dispose();
     }
 
-    private final static Logger log = LoggerFactory.getLogger(ReporterIcon.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(ReporterIcon.class);
 }

@@ -145,5 +145,5 @@ public class DragJLabel extends PositionableLabel implements DragGestureListener
         return null;
     }
 
-    private final static Logger log = LoggerFactory.getLogger(DragJLabel.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(DragJLabel.class);
 }

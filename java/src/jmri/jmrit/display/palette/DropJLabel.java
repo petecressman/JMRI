@@ -121,5 +121,5 @@ public class DropJLabel extends PositionableLabel implements DropTargetListener 
         }
     }
 
-    private final static Logger log = LoggerFactory.getLogger(DropJLabel.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(DropJLabel.class);
 }

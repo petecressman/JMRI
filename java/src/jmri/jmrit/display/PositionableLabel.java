@@ -346,13 +346,12 @@ public class PositionableLabel extends PositionableJComponent {
 
     protected void edit() {
         makeIconEditorFrame(this, "Icon", false, null);
-        _iconEditor.setIcon(0, "plainIcon", _namedIcon);
+        NamedIcon icon = new NamedIcon(_namedIcon);
+        _iconEditor.setIcon(0, "plainIcon", icon);
         _iconEditor.makeIconPanel(false);
 
-        ActionListener addIconAction = new ActionListener() {
-            public void actionPerformed(ActionEvent a) {
-                editIcon();
-            }
+        ActionListener addIconAction = (ActionEvent a) -> {
+            editIcon();
         };
         _iconEditor.complete(addIconAction, true, false, true);
 
@@ -530,5 +529,5 @@ public class PositionableLabel extends PositionableJComponent {
         return null;
     }
 
-    private final static Logger log = LoggerFactory.getLogger(PositionableLabel.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(PositionableLabel.class);
 }

@@ -320,12 +320,12 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
     }
 
     @Override
-    public String getUrl() {
+    public String getURL() {
         return _url;
     }
 
     @Override
-    public void setUrl(String u) {
+    public void setULRL(String u) {
         _url = u;
     }
 
@@ -429,5 +429,5 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
         
        g2d.dispose();
     }
-    private static final Logger log = LoggerFactory.getLogger(AnalogClock2Display.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(AnalogClock2Display.class);
 }

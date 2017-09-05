@@ -246,7 +246,7 @@ public class PositionablePopupUtil {
             // add to button group
             fontButtonGroup.add(fontMenuItem);
             // set (de)selected
-            fontMenuItem.setSelected(defaultFontFamilyName == fontFamilyName);
+            fontMenuItem.setSelected(defaultFontFamilyName.equals(fontFamilyName));
             // add to font menu
             fontMenu.add(fontMenuItem);
         }
@@ -544,14 +544,14 @@ public class PositionablePopupUtil {
     private int justification = CENTRE; //Default is always Centre
 
     public void setJustification(int just) {
-        log.debug("setJustification: justification=" + just);
+        log.debug("setJustification: justification={}", just);
         justification = just;
         setHorizontalAlignment(justification);
         _parent.updateSize();
     }
 
     public void setJustification(String just) {
-        log.debug("setJustification: justification =" + just);
+        log.debug("setJustification: justification ={}", just);
         switch (just) {
             case "right":
                 justification = RIGHT;
@@ -570,7 +570,7 @@ public class PositionablePopupUtil {
     }
 
     public int getJustification() {
-        log.debug("getJustification: justification =" + justification);
+        log.debug("getJustification: justification ={}", justification);
         return justification;
     }
 
@@ -737,5 +737,5 @@ public class PositionablePopupUtil {
         });
     }
 
-    private final static Logger log = LoggerFactory.getLogger(PositionablePopupUtil.class.getName());
+    private final static Logger log = LoggerFactory.getLogger(PositionablePopupUtil.class);
 }
