@@ -12,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -62,14 +63,13 @@ import org.slf4j.LoggerFactory;
  * available in Layout Editor panels.
  * <P>
  * The tools in this module are accessed via the Tools menu in Layout Editor.
- * <P>
+ *
  * @author Dave Duchamp Copyright (c) 2007
  */
 public class LayoutEditorTools {
 
-    // Defined text resource
+    // Defined text resource, should be called by Bundle.getMessage() to allow reuse of shared keys via path
     static final ResourceBundle rb = ResourceBundle.getBundle("jmri.jmrit.display.layoutEditor.LayoutEditorBundle");
-    //static final ResourceBundle rbean = ResourceBundle.getBundle("jmri.NamedBeanBundle");
 
     // constants
     private int NONE = 0;  // Signal at Turnout Positions
@@ -95,79 +95,77 @@ public class LayoutEditorTools {
     public LayoutEditorTools(LayoutEditor thePanel) {
         layoutEditor = thePanel;
 
-        // defer these actions until all these actually exist...
-        SwingUtilities.invokeLater(() -> {
-            LayoutEditor.setupComboBox(turnoutComboBox, true, true);
+        LayoutEditor.setupComboBox(turnoutComboBox, true, true);
 
-            LayoutEditor.setupComboBox(throatContinuingSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(throatDivergingSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(continuingSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(divergingSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(throatContinuingSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(throatDivergingSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(continuingSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(divergingSignalHeadComboBox, true, true);
 
-            LayoutEditor.setupComboBox(block1IDComboBox, true, true);
-            LayoutEditor.setupComboBox(block2IDComboBox, true, true);
+        LayoutEditor.setupComboBox(block1IDComboBox, true, true);
+        LayoutEditor.setupComboBox(block2IDComboBox, true, true);
 
-            LayoutEditor.setupComboBox(eastBoundSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(westBoundSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(eastBoundSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(westBoundSignalHeadComboBox, true, true);
 
-            LayoutEditor.setupComboBox(a1ComboBox, true, true);
-            LayoutEditor.setupComboBox(a2ComboBox, true, true);
-            LayoutEditor.setupComboBox(b1ComboBox, true, true);
-            LayoutEditor.setupComboBox(b2ComboBox, true, true);
-            LayoutEditor.setupComboBox(c1ComboBox, true, true);
-            LayoutEditor.setupComboBox(c2ComboBox, true, true);
-            LayoutEditor.setupComboBox(d1ComboBox, true, true);
-            LayoutEditor.setupComboBox(d2ComboBox, true, true);
+        LayoutEditor.setupComboBox(a1ComboBox, true, true);
+        LayoutEditor.setupComboBox(a2ComboBox, true, true);
+        LayoutEditor.setupComboBox(b1ComboBox, true, true);
+        LayoutEditor.setupComboBox(b2ComboBox, true, true);
+        LayoutEditor.setupComboBox(c1ComboBox, true, true);
+        LayoutEditor.setupComboBox(c2ComboBox, true, true);
+        LayoutEditor.setupComboBox(d1ComboBox, true, true);
+        LayoutEditor.setupComboBox(d2ComboBox, true, true);
 
-            LayoutEditor.setupComboBox(blockAComboBox, true, true);
-            LayoutEditor.setupComboBox(blockCComboBox, true, true);
+        LayoutEditor.setupComboBox(blockAComboBox, true, true);
+        LayoutEditor.setupComboBox(blockCComboBox, true, true);
 
-            LayoutEditor.setupComboBox(aSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(bSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(cSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(dSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(aSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(bSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(cSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(dSignalHeadComboBox, true, true);
 
-            LayoutEditor.setupComboBox(turnout1ComboBox, true, true);
-            LayoutEditor.setupComboBox(turnout2ComboBox, true, true);
+        LayoutEditor.setupComboBox(turnout1ComboBox, true, true);
+        log.debug("turnout1ComboBox set up, size: {}", turnout1ComboBox.getItemCount());
+        LayoutEditor.setupComboBox(turnout2ComboBox, true, true);
+        log.debug("turnout2ComboBox set up, size: {}", turnout1ComboBox.getItemCount());
+        LayoutEditor.setupComboBox(a1TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(a2TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(b1TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(b2TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(c1TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(c2TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(d1TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(d2TToTSignalHeadComboBox, true, true);
 
-            LayoutEditor.setupComboBox(a1TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(a2TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(b1TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(b2TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(c1TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(c2TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(d1TToTSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(d2TToTSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(turnoutAComboBox, true, true);
+        LayoutEditor.setupComboBox(turnoutBComboBox, true, true);
 
-            LayoutEditor.setupComboBox(turnoutAComboBox, true, true);
-            LayoutEditor.setupComboBox(turnoutBComboBox, true, true);
+        LayoutEditor.setupComboBox(a1_3WaySignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(a2_3WaySignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(a3_3WaySignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(b_3WaySignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(c_3WaySignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(d_3WaySignalHeadComboBox, true, true);
 
-            LayoutEditor.setupComboBox(a1_3WaySignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(a2_3WaySignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(a3_3WaySignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(b_3WaySignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(c_3WaySignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(d_3WaySignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(signalMastsTurnoutComboBox, true, true);
 
-            LayoutEditor.setupComboBox(signalMastsTurnoutComboBox, true, true);
+        LayoutEditor.setupComboBox(xingBlockAComboBox, true, true);
+        LayoutEditor.setupComboBox(xingBlockCComboBox, true, true);
 
-            LayoutEditor.setupComboBox(xingBlockAComboBox, true, true);
-            LayoutEditor.setupComboBox(xingBlockCComboBox, true, true);
+        LayoutEditor.setupComboBox(sensorsTurnoutComboBox, true, true);
 
-            LayoutEditor.setupComboBox(sensorsTurnoutComboBox, true, true);
+        LayoutEditor.setupComboBox(xingSensorsBlockAComboBox, true, true);
+        LayoutEditor.setupComboBox(xingSensorsBlockCComboBox, true, true);
 
-            LayoutEditor.setupComboBox(xingSensorsBlockAComboBox, true, true);
-            LayoutEditor.setupComboBox(xingSensorsBlockCComboBox, true, true);
-
-            LayoutEditor.setupComboBox(a1SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(a2SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(b1SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(b2SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(c1SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(c2SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(d1SlipSignalHeadComboBox, true, true);
-            LayoutEditor.setupComboBox(d2SlipSignalHeadComboBox, true, true);
-        });
+        LayoutEditor.setupComboBox(a1SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(a2SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(b1SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(b2SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(c1SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(c2SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(d1SlipSignalHeadComboBox, true, true);
+        LayoutEditor.setupComboBox(d2SlipSignalHeadComboBox, true, true);
     }
 
     /**
@@ -254,12 +252,11 @@ public class LayoutEditorTools {
 
             JPanel panel1 = new JPanel(new FlowLayout());
             if (turnoutFromMenu) {
-                JLabel turnoutNameLabel = new JLabel(Bundle.getMessage("BeanNameTurnout") + " "
-                        + Bundle.getMessage("Name") + " : " + layoutTurnout.getTurnoutName());
+                JLabel turnoutNameLabel = new JLabel(Bundle.getMessage("MakeLabel", Bundle.getMessage("BeanNameTurnout"))
+                        + layoutTurnout.getTurnoutName());
                 panel1.add(turnoutNameLabel);
             } else {
-                JLabel turnoutNameLabel = new JLabel(Bundle.getMessage("BeanNameTurnout") + " "
-                        + Bundle.getMessage("Name"));
+                JLabel turnoutNameLabel = new JLabel(Bundle.getMessage("BeanNameTurnout"));
                 panel1.add(turnoutNameLabel);
                 panel1.add(turnoutComboBox);
                 turnoutComboBox.setToolTipText(rb.getString("SignalsTurnoutNameHint"));
@@ -380,7 +377,7 @@ public class LayoutEditorTools {
             setSignalsDone.addActionListener((ActionEvent e) -> {
                 setSignalsDonePressed(e);
             });
-            setSignalsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setSignalsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -648,7 +645,7 @@ public class LayoutEditorTools {
                     }
                 }
             }
-            for (LayoutTurnout t : layoutEditor.turnoutList) {
+            for (LayoutTurnout t : layoutEditor.getLayoutTurnouts()) {
                 if (t.getTurnout() == turnout) {
                     layoutTurnout = t;
                     if (((t.getTurnoutType() == LayoutTurnout.DOUBLE_XOVER)
@@ -1066,7 +1063,7 @@ public class LayoutEditorTools {
      */
     public LayoutTurnout getLayoutTurnoutFromTurnout(Turnout turnout, boolean requireDoubleXover,
             String str, JFrame theFrame) {
-        for (LayoutTurnout t : layoutEditor.turnoutList) {
+        for (LayoutTurnout t : layoutEditor.getLayoutTurnouts()) {
             if (t.getTurnout() == turnout) {
                 // have the layout turnout corresponding to the turnout
                 if ((t.getTurnoutType() == LayoutTurnout.DOUBLE_XOVER)
@@ -1299,7 +1296,7 @@ public class LayoutEditorTools {
     public boolean isHeadAssignedAnywhere(SignalHead head) {
         String sName = head.getSystemName();
         String uName = head.getUserName();
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSignalA1Name() != null)
                     && (to.getSignalA1Name().equals(sName) || ((uName != null)
                     && (to.getSignalA1Name().equals(uName))))) {
@@ -1346,7 +1343,7 @@ public class LayoutEditorTools {
                 return true;
             }
         }
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if ((po.getEastBoundSignal().equals(sName) || ((uName != null)
                     && (po.getEastBoundSignal().equals(uName))))) {
                 return true;
@@ -1356,7 +1353,7 @@ public class LayoutEditorTools {
                 return true;
             }
         }
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSignalAName() != null)
                     && (x.getSignalAName().equals(sName) || ((uName != null)
                     && (x.getSignalAName().equals(uName))))) {
@@ -1388,7 +1385,7 @@ public class LayoutEditorTools {
     public void removeAssignment(SignalHead head) {
         String sName = head.getSystemName();
         String uName = head.getUserName();
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSignalA1Name() != null)
                     && (to.getSignalA1Name().equals(sName) || ((uName != null)
                     && (to.getSignalA1Name().equals(uName))))) {
@@ -1435,7 +1432,7 @@ public class LayoutEditorTools {
                 to.setSignalD2Name("");
             }
         }
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if (po.getEastBoundSignal().equals(sName) || po.getEastBoundSignal().equals(uName)) {
                 po.setEastBoundSignal("");
             }
@@ -1443,7 +1440,7 @@ public class LayoutEditorTools {
                 po.setWestBoundSignal("");
             }
         }
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSignalAName() != null)
                     && (x.getSignalAName().equals(sName) || ((uName != null)
                     && (x.getSignalAName().equals(uName))))) {
@@ -1889,7 +1886,7 @@ public class LayoutEditorTools {
 	 * "track" is a TrackSegment connected to "point".
 	 *	"point" is an anchor point serving as a block boundary.
      */
-    public boolean isAtWestEndOfAnchor(TrackSegment t, PositionablePoint p) {
+    public static boolean isAtWestEndOfAnchor(TrackSegment t, PositionablePoint p) {
         if (p.getType() == PositionablePoint.EDGE_CONNECTOR) {
             if (p.getConnect1() == t) {
                 if (p.getConnect1Dir() == jmri.Path.NORTH || p.getConnect1Dir() == jmri.Path.WEST) {
@@ -1916,23 +1913,23 @@ public class LayoutEditorTools {
 
         Point2D coords1;
         if (t.getConnect1() == p) {
-            coords1 = layoutEditor.getCoords(t.getConnect2(), t.getType2());
+            coords1 = LayoutEditor.getCoords(t.getConnect2(), t.getType2());
         } else {
-            coords1 = layoutEditor.getCoords(t.getConnect1(), t.getType1());
+            coords1 = LayoutEditor.getCoords(t.getConnect1(), t.getType1());
         }
 
         Point2D coords2;
         if (tx != null) {
             if (tx.getConnect1() == p) {
-                coords2 = layoutEditor.getCoords(tx.getConnect2(), tx.getType2());
+                coords2 = LayoutEditor.getCoords(tx.getConnect2(), tx.getType2());
             } else {
-                coords2 = layoutEditor.getCoords(tx.getConnect1(), tx.getType1());
+                coords2 = LayoutEditor.getCoords(tx.getConnect1(), tx.getType1());
             }
         } else {
             if (t.getConnect1() == p) {
-                coords2 = layoutEditor.getCoords(t.getConnect1(), t.getType1());
+                coords2 = LayoutEditor.getCoords(t.getConnect1(), t.getType1());
             } else {
-                coords2 = layoutEditor.getCoords(t.getConnect2(), t.getType2());
+                coords2 = LayoutEditor.getCoords(t.getConnect2(), t.getType2());
             }
         }
 
@@ -2131,7 +2128,7 @@ public class LayoutEditorTools {
             setSignalsAtBoundaryDone.addActionListener((ActionEvent e) -> {
                 setSignalsAtBoundaryDonePressed(e);
             });
-            setSignalsAtBoundaryDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setSignalsAtBoundaryDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -2286,10 +2283,8 @@ public class LayoutEditorTools {
             if (block2 == null) {
                 return false;
             }
-            PositionablePoint p = null;
             boundary = null;
-            for (int i = 0; (i < layoutEditor.pointList.size()) && (boundary == null); i++) {
-                p = layoutEditor.pointList.get(i);
+            for (PositionablePoint p : layoutEditor.getPositionablePoints()) {
                 if (p.getType() == PositionablePoint.ANCHOR) {
                     LayoutBlock bA = null;
                     LayoutBlock bB = null;
@@ -2303,6 +2298,7 @@ public class LayoutEditorTools {
                         if (((bA == block1) && (bB == block2))
                                 || ((bA == block2) && (bB == block1))) {
                             boundary = p;
+                            break;
                         }
                     }
                 }
@@ -2320,9 +2316,9 @@ public class LayoutEditorTools {
         TrackSegment track1 = boundary.getConnect1();
         Point2D coords1;
         if (track1.getConnect1() == boundary) {
-            coords1 = layoutEditor.getCoords(track1.getConnect2(), track1.getType2());
+            coords1 = LayoutEditor.getCoords(track1.getConnect2(), track1.getType2());
         } else {
-            coords1 = layoutEditor.getCoords(track1.getConnect1(), track1.getType1());
+            coords1 = LayoutEditor.getCoords(track1.getConnect1(), track1.getType1());
         }
         TrackSegment track2 = boundary.getConnect2();
 
@@ -2341,9 +2337,9 @@ public class LayoutEditorTools {
         }
         Point2D coords2;
         if (track2.getConnect1() == boundary) {
-            coords2 = layoutEditor.getCoords(track2.getConnect2(), track2.getType2());
+            coords2 = LayoutEditor.getCoords(track2.getConnect2(), track2.getType2());
         } else {
-            coords2 = layoutEditor.getCoords(track2.getConnect1(), track2.getType1());
+            coords2 = LayoutEditor.getCoords(track2.getConnect1(), track2.getType1());
         }
 
         placeSignalDirectionDEG = MathUtil.wrap360(90.0 - MathUtil.computeAngleDEG(coords2, coords1));
@@ -2636,7 +2632,7 @@ public class LayoutEditorTools {
         if (!xoverFromMenu) {
             //TODO: convert to use turnout ComboBox
             xoverTurnoutName = JOptionPane.showInputDialog(layoutEditor,
-                Bundle.getMessage("MakeLabel", rb.getString("EnterXOverTurnout")));
+                    Bundle.getMessage("MakeLabel", rb.getString("EnterXOverTurnout")));
             if (xoverTurnoutName.length() < 3) {
                 return;	 // cancelled
             }
@@ -2676,7 +2672,7 @@ public class LayoutEditorTools {
             });
             getSavedXoverSignalHeads.setToolTipText(rb.getString("GetSavedHint"));
             theContentPane.add(panel2);
-                        
+
             theContentPane.add(new JSeparator(JSeparator.HORIZONTAL));
             JPanel panel2a = new JPanel(new FlowLayout());
             panel2a.add(new JLabel("   "));
@@ -2851,7 +2847,7 @@ public class LayoutEditorTools {
             setXoverSignalsDone.addActionListener((ActionEvent e) -> {
                 setXoverSignalsDonePressed(e);
             });
-            setXoverSignalsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setXoverSignalsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -3668,13 +3664,12 @@ public class LayoutEditorTools {
 
             JPanel panel11 = new JPanel(new FlowLayout());
             if (xingFromMenu) {
-                JLabel blockANameLabel = new JLabel(Bundle.getMessage("BeanNameBlock") + " 1 "
-                        + Bundle.getMessage("Name") + " : " + levelXing.getBlockNameAC());
+                JLabel blockANameLabel = new JLabel(Bundle.getMessage("MakeLabel", (Bundle.getMessage("BeanNameBlock") + " 1"))
+                        + " " + levelXing.getBlockNameAC());
 
                 panel11.add(blockANameLabel);
             } else {
-                JLabel blockANameLabel = new JLabel(Bundle.getMessage("BeanNameBlock") + " 1 "
-                        + Bundle.getMessage("Name") + " : ");
+                JLabel blockANameLabel = new JLabel(Bundle.getMessage("MakeLabel", (Bundle.getMessage("BeanNameBlock") + " 1")));
                 panel11.add(blockANameLabel);
                 panel11.add(blockAComboBox);
                 blockAComboBox.setToolTipText(rb.getString("SignalsBlockNameHint"));
@@ -3683,13 +3678,12 @@ public class LayoutEditorTools {
 
             JPanel panel12 = new JPanel(new FlowLayout());
             if (xingFromMenu) {
-                JLabel blockCNameLabel = new JLabel(Bundle.getMessage("BeanNameBlock") + " 2 "
-                        + Bundle.getMessage("Name") + " : " + levelXing.getBlockNameBD());
+                JLabel blockCNameLabel = new JLabel(Bundle.getMessage("MakeLabel", (Bundle.getMessage("BeanNameBlock") + " 2"))
+                        + " " + levelXing.getBlockNameBD());
 
                 panel12.add(blockCNameLabel);
             } else {
-                JLabel blockCNameLabel = new JLabel(Bundle.getMessage("BeanNameBlock") + " 2 "
-                        + Bundle.getMessage("Name") + " : ");
+                JLabel blockCNameLabel = new JLabel(Bundle.getMessage("MakeLabel", (Bundle.getMessage("BeanNameBlock") + " 2")));
                 panel12.add(blockCNameLabel);
                 panel12.add(blockCComboBox);
                 blockCComboBox.setToolTipText(rb.getString("SignalsBlockNameHint"));
@@ -3707,7 +3701,7 @@ public class LayoutEditorTools {
             });
             getSavedXingSignalHeads.setToolTipText(rb.getString("GetSavedHint"));
             theContentPane.add(panel2);
-                        
+
             theContentPane.add(new JSeparator(JSeparator.HORIZONTAL));
             JPanel panel2a = new JPanel(new FlowLayout());
             panel2a.add(new JLabel("   "));
@@ -3810,7 +3804,7 @@ public class LayoutEditorTools {
             setXingSignalsDone.addActionListener((ActionEvent e) -> {
                 setXingSignalsDonePressed(e);
             });
-            setXingSignalsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setXingSignalsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -4064,13 +4058,14 @@ public class LayoutEditorTools {
     private boolean getLevelCrossingInformation() {
         if (!xingFromMenu) {
             levelXing = null;
-            if (layoutEditor.xingList.size() <= 0) {
+            List<LevelXing> levelXings = layoutEditor.getLevelXings();
+            if (levelXings.size() <= 0) {
                 JOptionPane.showMessageDialog(setSignalsAtXingFrame,
                         rb.getString("SignalsError15"),
                         Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
                 return false;
-            } else if (layoutEditor.xingList.size() == 1) {
-                levelXing = layoutEditor.xingList.get(0);
+            } else if (levelXings.size() == 1) {
+                levelXing = levelXings.get(0);
             } else {
                 LayoutBlock xingBlockA = null;
                 LayoutBlock xingBlockC = null;
@@ -4088,7 +4083,7 @@ public class LayoutEditorTools {
                 int foundCount = 0;
                 // make two block tests first
                 if (xingBlockC != null) {
-                    for (LevelXing x : layoutEditor.xingList) {
+                    for (LevelXing x : layoutEditor.getLevelXings()) {
                         LayoutBlock xA = null;
                         LayoutBlock xB = null;
                         LayoutBlock xC = null;
@@ -4122,7 +4117,7 @@ public class LayoutEditorTools {
                 }
                 if (foundCount == 0) {
                     // try one block test
-                    for (LevelXing x : layoutEditor.xingList) {
+                    for (LevelXing x : layoutEditor.getLevelXings()) {
                         if ((xingBlockA == x.getLayoutBlockAC()) || (xingBlockA == x.getLayoutBlockBD())) {
                             levelXing = x;
                             foundCount++;
@@ -4462,7 +4457,7 @@ public class LayoutEditorTools {
     private SignalHead d1TToTHead = null;
     private SignalHead d2TToTHead = null;
 
-    public void setThroatToThroatFromMenu(LayoutTurnout to, String linkedTurnoutName,
+    public void setSignalsAtThroatToThroatTurnoutsFromMenu(LayoutTurnout to, String linkedTurnoutName,
             MultiIconEditor theEditor, JFrame theFrame) {
         ttotFromMenu = true;
         ttotTurnoutName1 = to.getTurnoutName();
@@ -4477,10 +4472,10 @@ public class LayoutEditorTools {
         d1TToTSignalHeadComboBox.setText("");
         d2TToTSignalHeadComboBox.setText("");
 
-        setSignalsAtTToTTurnouts(theEditor, theFrame);
+        setSignalsAtThroatToThroatTurnouts(theEditor, theFrame);
     }
 
-    public void setSignalsAtTToTTurnouts(MultiIconEditor theEditor, JFrame theFrame) {
+    public void setSignalsAtThroatToThroatTurnouts(MultiIconEditor theEditor, JFrame theFrame) {
         signalIconEditor = theEditor;
         signalFrame = theFrame;
         if (setSignalsAtTToTOpen) {
@@ -4536,7 +4531,7 @@ public class LayoutEditorTools {
             getSavedTToTSignalHeads.setToolTipText(rb.getString("GetSavedHint"));
             theContentPane.add(panel20);
             theContentPane.add(new JSeparator(JSeparator.HORIZONTAL));
-                       
+
             JPanel panel2a = new JPanel(new FlowLayout());
             panel2a.add(new JLabel("   "));
             panel2a.add(setPlaceAllHeads);
@@ -4726,7 +4721,7 @@ public class LayoutEditorTools {
             setTToTSignalsDone.addActionListener((ActionEvent e) -> {
                 setTToTSignalsDonePressed(e);
             });
-            setTToTSignalsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setTToTSignalsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -5858,7 +5853,7 @@ public class LayoutEditorTools {
     private SignalHead c3WayHead = null;	// saved in B1 of Turnout B - at continuing
     private SignalHead d3WayHead = null;	// saved in C1 of Turnout B - at diverging B
 
-    public void set3WayFromMenu(String aName, String bName,
+    public void setSignalsAt3WayTurnoutFromMenu(String aName, String bName,
             MultiIconEditor theEditor, JFrame theFrame) {
         turnoutAComboBox.setText(aName);
         turnoutBComboBox.setText(bName);
@@ -5887,14 +5882,14 @@ public class LayoutEditorTools {
             theContentPane.setLayout(new BoxLayout(theContentPane, BoxLayout.Y_AXIS));
 
             JPanel panel1 = new JPanel(new FlowLayout());
-            JLabel turnoutANameLabel = new JLabel(rb.getString("TurnoutAName"));
+            JLabel turnoutANameLabel = new JLabel(Bundle.getMessage("MakeLabel", rb.getString("TurnoutAName")));
             panel1.add(turnoutANameLabel);
             panel1.add(turnoutAComboBox);
             turnoutAComboBox.setToolTipText(rb.getString("SignalsTurnoutNameHint"));
             theContentPane.add(panel1);
 
             JPanel panel11 = new JPanel(new FlowLayout());
-            JLabel turnoutBNameLabel = new JLabel(rb.getString("TurnoutBName"));
+            JLabel turnoutBNameLabel = new JLabel(Bundle.getMessage("MakeLabel", rb.getString("TurnoutBName")));
             panel11.add(turnoutBNameLabel);
             panel11.add(turnoutBComboBox);
             turnoutBComboBox.setToolTipText(rb.getString("SignalsTurnoutNameHint"));
@@ -5912,7 +5907,7 @@ public class LayoutEditorTools {
             });
             getSaved3WaySignalHeads.setToolTipText(rb.getString("GetSavedHint"));
             theContentPane.add(panel2);
-                       
+
             theContentPane.add(new JSeparator(JSeparator.HORIZONTAL));
             JPanel panel2a = new JPanel(new FlowLayout());
             panel2a.add(new JLabel("   "));
@@ -6061,7 +6056,7 @@ public class LayoutEditorTools {
             set3WaySignalsDone.addActionListener((ActionEvent e) -> {
                 set3WaySignalsDonePressed(e);
             });
-            set3WaySignalsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            set3WaySignalsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -7142,7 +7137,7 @@ public class LayoutEditorTools {
             setSensorsAtBoundaryDone.addActionListener((ActionEvent e) -> {
                 setSensorsAtBoundaryDonePressed(e);
             });
-            setSensorsAtBoundaryDone.setToolTipText(rb.getString("SensorDoneHint"));
+            setSensorsAtBoundaryDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -7222,7 +7217,7 @@ public class LayoutEditorTools {
      * do allow the same sensor to be allocated in both directions.
      */
     public boolean isSensorAssignedAnywhere(Sensor sensor) {
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             //We allow the same sensor to be allocated in both directions.
             if (po != boundary) {
                 if (po.getEastBoundSensor() == sensor) {
@@ -7238,7 +7233,7 @@ public class LayoutEditorTools {
                 }
             }
         }
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSensorA() != null) && to.getSensorA() == sensor) {
                 if (!sensorAssignedElseWhere(sensor.getDisplayName())) {
                     return true;
@@ -7261,7 +7256,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LayoutSlip to : layoutEditor.slipList) {
+        for (LayoutSlip to : layoutEditor.getLayoutSlips()) {
             if ((to.getSensorA() != null) && to.getSensorA() == sensor) {
                 if (!sensorAssignedElseWhere(sensor.getDisplayName())) {
                     return true;
@@ -7284,7 +7279,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSensorA() != null) && x.getSensorA() == sensor) {
                 if (!sensorAssignedElseWhere(sensor.getDisplayName())) {
                     return true;
@@ -7329,7 +7324,7 @@ public class LayoutEditorTools {
             return;
         }
 
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if (po.getEastBoundSensor() == sensor) {
                 po.setEastBoundSensor(null);
             }
@@ -7337,7 +7332,7 @@ public class LayoutEditorTools {
                 po.setWestBoundSensor(null);
             }
         }
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if (to.getSensorA() == sensor) {
                 to.setSensorA(null);
             }
@@ -7352,7 +7347,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LayoutSlip to : layoutEditor.slipList) {
+        for (LayoutSlip to : layoutEditor.getLayoutSlips()) {
             if (to.getSensorA() == sensor) {
                 to.setSensorA(null);
             }
@@ -7370,7 +7365,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if (x.getSensorA() == sensor) {
                 x.setSensorAName(null);
             }
@@ -7672,7 +7667,7 @@ public class LayoutEditorTools {
             setSignalMastsAtBoundaryDone.addActionListener((ActionEvent e) -> {
                 setSignalMastsAtBoundaryDonePressed(e);
             });
-            setSignalMastsAtBoundaryDone.setToolTipText(rb.getString("SignalMastDoneHint"));
+            setSignalMastsAtBoundaryDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -7739,7 +7734,7 @@ public class LayoutEditorTools {
      * panel, regardless of whether an icon is displayed or not
      */
     public boolean isSignalMastAssignedAnywhere(SignalMast signalMast) {
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if ((po.getEastBoundSignalMast() != null) && po.getEastBoundSignalMast() == signalMast) {
                 return true;
             }
@@ -7748,7 +7743,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSignalAMast() != null) && to.getSignalDMast() == signalMast) {
                 return true;
             }
@@ -7763,7 +7758,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LayoutSlip to : layoutEditor.slipList) {
+        for (LayoutSlip to : layoutEditor.getLayoutSlips()) {
             if ((to.getSignalAMast() != null) && to.getSignalDMast() == signalMast) {
                 return true;
             }
@@ -7778,7 +7773,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSignalAMast() != null) && x.getSignalAMast() == signalMast) {
                 return true;
             }
@@ -7805,7 +7800,7 @@ public class LayoutEditorTools {
             return;
         }
 
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if ((po.getEastBoundSignalMast() != null) && po.getEastBoundSignalMast() == signalMast) {
                 po.setEastBoundSignalMast(null);
             }
@@ -7813,7 +7808,7 @@ public class LayoutEditorTools {
                 po.setWestBoundSignalMast(null);
             }
         }
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSignalAMast() != null) && to.getSignalAMast() == signalMast) {
                 to.setSignalAMast(null);
             }
@@ -7828,7 +7823,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LayoutSlip to : layoutEditor.slipList) {
+        for (LayoutSlip to : layoutEditor.getLayoutSlips()) {
             if ((to.getSignalAMast() != null) && to.getSignalAMast() == signalMast) {
                 to.setSignalAMast(null);
             }
@@ -7846,7 +7841,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSignalAMast() != null) && x.getSignalAMast() == signalMast) {
                 x.setSignalAMast(null);
             }
@@ -8157,9 +8152,9 @@ public class LayoutEditorTools {
 
         Point2D pt2;
         if (t.getConnect1() == boundary) {
-            pt2 = layoutEditor.getCoords(t.getConnect2(), t.getType2());
+            pt2 = LayoutEditor.getCoords(t.getConnect2(), t.getType2());
         } else {
-            pt2 = layoutEditor.getCoords(t.getConnect1(), t.getType1());
+            pt2 = LayoutEditor.getCoords(t.getConnect1(), t.getType1());
         }
         setIconOnPanel(t, icon, dir, p, pt2, isRightSide, fromPoint);
     }
@@ -8179,9 +8174,9 @@ public class LayoutEditorTools {
 
         Point2D pt2;
         if (t.getConnect1() == boundary) {
-            pt2 = layoutEditor.getCoords(t.getConnect2(), t.getType2());
+            pt2 = LayoutEditor.getCoords(t.getConnect2(), t.getType2());
         } else {
-            pt2 = layoutEditor.getCoords(t.getConnect1(), t.getType1());
+            pt2 = LayoutEditor.getCoords(t.getConnect1(), t.getType1());
         }
         setIconOnPanel(t, icon, dir, p, pt2, isRightSide, fromPoint);
 
@@ -8646,7 +8641,7 @@ public class LayoutEditorTools {
 
     void createListUsedSignalMasts() {
         usedMasts = new ArrayList<jmri.NamedBean>();
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             //We allow the same sensor to be allocated in both directions.
             if (po != boundary) {
                 if (po.getEastBoundSignalMast() != null) {
@@ -8658,7 +8653,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if (to.getSignalAMast() != null) {
                 usedMasts.add(to.getSignalAMast());
             }
@@ -8672,7 +8667,7 @@ public class LayoutEditorTools {
                 usedMasts.add(to.getSignalDMast());
             }
         }
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if (x.getSignalAMast() != null) {
                 usedMasts.add(x.getSignalAMast());
             }
@@ -8686,7 +8681,7 @@ public class LayoutEditorTools {
                 usedMasts.add(x.getSignalDMast());
             }
         }
-        for (LayoutSlip sl : layoutEditor.slipList) {
+        for (LayoutSlip sl : layoutEditor.getLayoutSlips()) {
             if (sl.getSignalAMast() != null) {
                 usedMasts.add(sl.getSignalAMast());
             }
@@ -8804,7 +8799,7 @@ public class LayoutEditorTools {
             setSignalMastsDone.addActionListener((ActionEvent e) -> {
                 setSignalMastsDonePressed(e);
             });
-            setSignalMastsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setSignalMastsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
 
             // make this button the default button (return or enter activates)
             // Note: We have to invoke this later because we don't currently have a root pane
@@ -8913,7 +8908,7 @@ public class LayoutEditorTools {
     public void removeAssignment(SignalMast mast) {
         String sName = mast.getSystemName();
         String uName = mast.getUserName();
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSignalAMastName() != null)
                     && (to.getSignalAMastName().equals(sName) || ((uName != null)
                     && (to.getSignalAMastName().equals(uName))))) {
@@ -8935,7 +8930,7 @@ public class LayoutEditorTools {
                 to.setSignalDMast("");
             }
         }
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if (po.getEastBoundSignalMastName().equals(sName) || po.getEastBoundSignalMastName().equals(uName)) {
                 po.setEastBoundSignalMast("");
             }
@@ -8943,7 +8938,7 @@ public class LayoutEditorTools {
                 po.setWestBoundSignalMast("");
             }
         }
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSignalAMastName() != null)
                     && (x.getSignalAMastName().equals(sName) || ((uName != null)
                     && (x.getSignalAMastName().equals(uName))))) {
@@ -9179,7 +9174,7 @@ public class LayoutEditorTools {
                 signalMastsTurnoutComboBox.setText(str);
             }
         }
-        for (LayoutTurnout t : layoutEditor.turnoutList) {
+        for (LayoutTurnout t : layoutEditor.getLayoutTurnouts()) {
             if (t.getTurnout() == turnout) {
                 layoutTurnout = t;
             }
@@ -9202,9 +9197,9 @@ public class LayoutEditorTools {
             TrackSegment ts = (TrackSegment) obj;
             Point2D endPoint;
             if (ts.getConnect1() == layoutTurnout) {
-                endPoint = layoutEditor.getCoords(ts.getConnect2(), ts.getType2());
+                endPoint = LayoutEditor.getCoords(ts.getConnect2(), ts.getType2());
             } else {
-                endPoint = layoutEditor.getCoords(ts.getConnect1(), ts.getType1());
+                endPoint = LayoutEditor.getCoords(ts.getConnect1(), ts.getType1());
             }
             boolean isEast = false;
 
@@ -9361,7 +9356,7 @@ public class LayoutEditorTools {
             setSlipSignalMastsDone.addActionListener((ActionEvent e) -> {
                 setSlipSignalMastsDonePressed(e);
             });
-            setSlipSignalMastsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setSlipSignalMastsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
             panel6.add(setSlipSignalMastsCancel = new JButton(Bundle.getMessage("ButtonCancel")));
             setSlipSignalMastsCancel.addActionListener((ActionEvent e) -> {
                 setSlipSignalMastsCancelPressed(e);
@@ -9445,13 +9440,14 @@ public class LayoutEditorTools {
     private boolean getSlipMastInformation() {
         if (!slipMastFromMenu) {
             layoutSlip = null;
-            if (layoutEditor.slipList.size() <= 0) {
+            List<LayoutSlip> layoutSlips = layoutEditor.getLayoutSlips();
+            if (layoutSlips.size() <= 0) {
                 JOptionPane.showMessageDialog(signalMastsAtSlipFrame,
                         rb.getString("SignalsError15"),
                         Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
                 return false;
-            } else if (layoutEditor.slipList.size() == 1) {
-                layoutSlip = layoutEditor.slipList.get(0);
+            } else if (layoutSlips.size() == 1) {
+                layoutSlip = layoutSlips.get(0);
             } else {
                 LayoutBlock slipBlockA = null;
                 //LayoutBlock slipBlockC = null;
@@ -9462,7 +9458,7 @@ public class LayoutEditorTools {
 
                 int foundCount = 0;
                 // make two block tests first
-                for (LayoutSlip x : layoutEditor.slipList) {
+                for (LayoutSlip x : layoutEditor.getLayoutSlips()) {
                     LayoutBlock xA = null;
                     LayoutBlock xB = null;
                     LayoutBlock xC = null;
@@ -9494,7 +9490,7 @@ public class LayoutEditorTools {
                 }
                 if (foundCount == 0) {
                     // try one block test
-                    for (LayoutSlip x : layoutEditor.slipList) {
+                    for (LayoutSlip x : layoutEditor.getLayoutSlips()) {
                         if (slipBlockA == x.getLayoutBlock()) {
                             layoutSlip = x;
                             foundCount++;
@@ -9858,7 +9854,7 @@ public class LayoutEditorTools {
             setXingSignalMastsDone.addActionListener((ActionEvent e) -> {
                 setXingSignalMastsDonePressed(e);
             });
-            setXingSignalMastsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setXingSignalMastsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
             panel6.add(setXingSignalMastsCancel = new JButton(Bundle.getMessage("ButtonCancel")));
             setXingSignalMastsCancel.addActionListener((ActionEvent e) -> {
                 setXingSignalMastsCancelPressed(e);
@@ -9944,13 +9940,14 @@ public class LayoutEditorTools {
     private boolean getLevelCrossingMastInformation() {
         if (!xingMastFromMenu) {
             levelXing = null;
-            if (layoutEditor.xingList.size() <= 0) {
+            List<LevelXing> levelXings = layoutEditor.getLevelXings();
+            if (levelXings.size() <= 0) {
                 JOptionPane.showMessageDialog(signalMastsAtXingFrame,
                         rb.getString("SignalsError15"),
                         Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
                 return false;
-            } else if (layoutEditor.xingList.size() == 1) {
-                levelXing = layoutEditor.xingList.get(0);
+            } else if (levelXings.size() == 1) {
+                levelXing = levelXings.get(0);
             } else {
                 LayoutBlock xingBlockA = null;
                 LayoutBlock xingBlockC = null;
@@ -9970,7 +9967,7 @@ public class LayoutEditorTools {
                 int foundCount = 0;
                 // make two block tests first
                 if (xingBlockC != null) {
-                    for (LevelXing x : layoutEditor.xingList) {
+                    for (LevelXing x : layoutEditor.getLevelXings()) {
                         LayoutBlock xA = null;
                         LayoutBlock xB = null;
                         LayoutBlock xC = null;
@@ -10004,7 +10001,7 @@ public class LayoutEditorTools {
                 }
                 if (foundCount == 0) {
                     // try one block test
-                    for (LevelXing x : layoutEditor.xingList) {
+                    for (LevelXing x : layoutEditor.getLevelXings()) {
                         if ((xingBlockA == x.getLayoutBlockAC()) || (xingBlockA == x.getLayoutBlockBD())) {
                             levelXing = x;
                             foundCount++;
@@ -10355,7 +10352,7 @@ public class LayoutEditorTools {
             setSensorsDone.addActionListener((ActionEvent e) -> {
                 setSensorsDonePressed(e);
             });
-            setSensorsDone.setToolTipText(rb.getString("SensorDoneHint"));
+            setSensorsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
             panel6.add(setSensorsCancel = new JButton(Bundle.getMessage("ButtonCancel")));
             setSensorsCancel.addActionListener((ActionEvent e) -> {
                 setSensorsCancelPressed(e);
@@ -10453,7 +10450,7 @@ public class LayoutEditorTools {
     }
 
     public void removeAssignment(Sensor sensor) {
-        for (LayoutTurnout to : layoutEditor.turnoutList) {
+        for (LayoutTurnout to : layoutEditor.getLayoutTurnouts()) {
             if ((to.getSensorA() != null) && to.getSensorA() == sensor) {
                 to.setSensorA(null);
             }
@@ -10467,7 +10464,7 @@ public class LayoutEditorTools {
                 to.setSensorD(null);
             }
         }
-        for (LayoutSlip to : layoutEditor.slipList) {
+        for (LayoutSlip to : layoutEditor.getLayoutSlips()) {
             if ((to.getSensorA() != null) && to.getSensorA() == sensor) {
                 to.setSensorA(null);
             }
@@ -10482,7 +10479,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (PositionablePoint po : layoutEditor.pointList) {
+        for (PositionablePoint po : layoutEditor.getPositionablePoints()) {
             if ((po.getEastBoundSensor() != null) && po.getEastBoundSensor() == sensor) {
                 po.setEastBoundSensor(null);
             }
@@ -10491,7 +10488,7 @@ public class LayoutEditorTools {
             }
         }
 
-        for (LevelXing x : layoutEditor.xingList) {
+        for (LevelXing x : layoutEditor.getLevelXings()) {
             if ((x.getSensorA() != null) && x.getSensorA() == sensor) {
                 x.setSensorAName(null);
             }
@@ -10718,7 +10715,7 @@ public class LayoutEditorTools {
                 sensorsTurnoutComboBox.setText(str);
             }
         }
-        for (LayoutTurnout t : layoutEditor.turnoutList) {
+        for (LayoutTurnout t : layoutEditor.getLayoutTurnouts()) {
             if (t.getTurnout() == turnout) {
                 layoutTurnout = t;
             }
@@ -10892,7 +10889,7 @@ public class LayoutEditorTools {
             setXingSensorsDone.addActionListener((ActionEvent e) -> {
                 setXingSensorsDonePressed(e);
             });
-            setXingSensorsDone.setToolTipText(rb.getString("SensorDoneHint"));
+            setXingSensorsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
             panel6.add(setXingSensorsCancel = new JButton(Bundle.getMessage("ButtonCancel")));
             setXingSensorsCancel.addActionListener((ActionEvent e) -> {
                 setXingSensorsCancelPressed(e);
@@ -10964,13 +10961,14 @@ public class LayoutEditorTools {
     private boolean getLevelCrossingSensorInformation() {
         if (!xingSensorFromMenu) {
             levelXing = null;
-            if (layoutEditor.xingList.size() <= 0) {
+            List<LevelXing> levelXings = layoutEditor.getLevelXings();
+            if (levelXings.size() <= 0) {
                 JOptionPane.showMessageDialog(sensorsAtXingFrame,
                         rb.getString("SignalsError15"),
                         Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
                 return false;
-            } else if (layoutEditor.xingList.size() == 1) {
-                levelXing = layoutEditor.xingList.get(0);
+            } else if (levelXings.size() == 1) {
+                levelXing = levelXings.get(0);
             } else {
                 LayoutBlock xingSensorBlockA = null;
                 LayoutBlock xingSensorBlockC = null;
@@ -10989,7 +10987,7 @@ public class LayoutEditorTools {
                 int foundCount = 0;
                 // make two block tests first
                 if (xingSensorBlockC != null) {
-                    for (LevelXing x : layoutEditor.xingList) {
+                    for (LevelXing x : layoutEditor.getLevelXings()) {
                         LayoutBlock xA = null;
                         LayoutBlock xB = null;
                         LayoutBlock xC = null;
@@ -11023,7 +11021,7 @@ public class LayoutEditorTools {
                 }
                 if (foundCount == 0) {
                     // try one block test
-                    for (LevelXing x : layoutEditor.xingList) {
+                    for (LevelXing x : layoutEditor.getLevelXings()) {
                         if ((xingSensorBlockA == x.getLayoutBlockAC()) || (xingSensorBlockA == x.getLayoutBlockBD())) {
                             levelXing = x;
                             foundCount++;
@@ -11244,20 +11242,17 @@ public class LayoutEditorTools {
             }
             block2 = getBlockFromEntry(block2IDComboBox);
             if (block2 == null) {
-                PositionablePoint p = null;
-                for (int i = 0; (i < layoutEditor.pointList.size()) && (boundary == null); i++) {
-                    p = layoutEditor.pointList.get(i);
+                for (PositionablePoint p : layoutEditor.getPositionablePoints()) {
                     if (p.getType() == PositionablePoint.END_BUMPER) {
                         boundary = p;
+                        break;
                     } else {
                         return false;
                     }
                 }
             }
-            PositionablePoint p = null;
             boundary = null;
-            for (int i = 0; (i < layoutEditor.pointList.size()) && (boundary == null); i++) {
-                p = layoutEditor.pointList.get(i);
+            for (PositionablePoint p : layoutEditor.getPositionablePoints()) {
                 if (p.getType() == PositionablePoint.ANCHOR) {
                     LayoutBlock bA = null;
                     LayoutBlock bB = null;
@@ -11271,6 +11266,7 @@ public class LayoutEditorTools {
                         if (((bA == block1) && (bB == block2))
                                 || ((bA == block2) && (bB == block1))) {
                             boundary = p;
+                            break;
                         }
                     }
                 }
@@ -11423,7 +11419,7 @@ public class LayoutEditorTools {
             setSlipSensorsDone.addActionListener((ActionEvent e) -> {
                 setSlipSensorsDonePressed(e);
             });
-            setSlipSensorsDone.setToolTipText(rb.getString("SensorDoneHint"));
+            setSlipSensorsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
             panel6.add(setSlipSensorsCancel = new JButton(Bundle.getMessage("ButtonCancel")));
             setSlipSensorsCancel.addActionListener((ActionEvent e) -> {
                 setSlipSensorsCancelPressed(e);
@@ -11495,13 +11491,14 @@ public class LayoutEditorTools {
     private boolean getSlipSensorInformation() {
         if (!slipSensorFromMenu) {
             layoutSlip = null;
-            if (layoutEditor.slipList.size() <= 0) {
+            List<LayoutSlip> layoutSlips = layoutEditor.getLayoutSlips();
+            if (layoutSlips.size() <= 0) {
                 JOptionPane.showMessageDialog(sensorsAtSlipFrame,
                         rb.getString("SignalsError15"),
                         Bundle.getMessage("ErrorTitle"), JOptionPane.ERROR_MESSAGE);
                 return false;
-            } else if (layoutEditor.slipList.size() == 1) {
-                layoutSlip = layoutEditor.slipList.get(0);
+            } else if (layoutSlips.size() == 1) {
+                layoutSlip = layoutSlips.get(0);
             } else {
                 LayoutBlock slipSensorBlockA = null;
                 slipSensorBlockA = getBlockFromEntry(xingSensorsBlockAComboBox);
@@ -11510,7 +11507,7 @@ public class LayoutEditorTools {
                 }
 
                 int foundCount = 0;
-                for (LayoutSlip x : layoutEditor.slipList) {
+                for (LayoutSlip x : layoutEditor.getLayoutSlips()) {
                     LayoutBlock xA = null;
                     LayoutBlock xB = null;
                     LayoutBlock xC = null;
@@ -11542,7 +11539,7 @@ public class LayoutEditorTools {
                 }
                 if (foundCount == 0) {
                     // try one block test
-                    for (LayoutSlip x : layoutEditor.slipList) {
+                    for (LayoutSlip x : layoutEditor.getLayoutSlips()) {
                         if (slipSensorBlockA == x.getLayoutBlock()) {
                             layoutSlip = x;
                             foundCount++;
@@ -11954,7 +11951,7 @@ public class LayoutEditorTools {
     private JPanel dblSlipB2SigPanel;
     private boolean slipSignalFromMenu = false;
 
-    public void setSlipFromMenu(LayoutSlip ls,
+    public void setSignalsAtSlipFromMenu(LayoutSlip ls,
             MultiIconEditor theEditor, JFrame theFrame) {
         layoutSlip = ls;
         a1SlipSignalHeadComboBox.setText("");
@@ -11990,7 +11987,7 @@ public class LayoutEditorTools {
                     + Bundle.getMessage("Name"));
             panel1.add(turnout1NameLabel);
             panel1.add(slipNameCombo);
-            for (LayoutSlip slip : layoutEditor.slipList) {
+            for (LayoutSlip slip : layoutEditor.getLayoutSlips()) {
                 slipNameCombo.addItem(slip.getDisplayName());
             }
 
@@ -12003,7 +12000,7 @@ public class LayoutEditorTools {
                 slipNameCombo.setSelectedIndex(0);
             }
             slipNameCombo.addActionListener((ActionEvent e) -> {
-                for (LayoutSlip slip : layoutEditor.slipList) {
+                for (LayoutSlip slip : layoutEditor.getLayoutSlips()) {
                     if (slip.getDisplayName().equals(slipNameCombo.getSelectedItem())) {
                         //slip1NameField.setText(slip.getDisplayName());
                         getSlipTurnoutSignalsGetSaved(e);
@@ -12020,7 +12017,7 @@ public class LayoutEditorTools {
             });
             theContentPane.add(panel1);
             theContentPane.add(new JSeparator(JSeparator.HORIZONTAL));
-                     
+
             JPanel panel2a = new JPanel(new FlowLayout());
             panel2a.add(new JLabel("   "));
             panel2a.add(setPlaceAllHeads);
@@ -12219,7 +12216,7 @@ public class LayoutEditorTools {
             setSlipSignalsDone.addActionListener((ActionEvent e) -> {
                 setSlipSignalsDonePressed(e);
             });
-            setSlipSignalsDone.setToolTipText(rb.getString("SignalDoneHint"));
+            setSlipSignalsDone.setToolTipText(Bundle.getMessage("DoneHint", Bundle.getMessage("ButtonDone")));
             panel6.add(setSlipSignalsCancel = new JButton(Bundle.getMessage("ButtonCancel")));
             setSlipSignalsCancel.addActionListener((ActionEvent e) -> {
                 setSlipSignalsCancelPressed(e);
@@ -12271,7 +12268,7 @@ public class LayoutEditorTools {
         turnout1 = null;
         turnout2 = null;
         layoutSlip = null;
-        for (LayoutSlip ls : layoutEditor.slipList) {
+        for (LayoutSlip ls : layoutEditor.getLayoutSlips()) {
             if (ls.getDisplayName().equals(slipNameCombo.getSelectedItem())) {
                 turnout1 = ls.getTurnout();
                 turnout2 = ls.getTurnoutB();
@@ -13207,7 +13204,7 @@ public class LayoutEditorTools {
         turnout = turnout1 = turnoutA = jmri.InstanceManager.turnoutManagerInstance().getTurnout(inTurnoutNameA);
         turnout2 = turnoutB = jmri.InstanceManager.turnoutManagerInstance().getTurnout(inTurnoutNameB);
         // map those to layout turnouts (if possible)
-        for (LayoutTurnout lt : layoutEditor.turnoutList) {
+        for (LayoutTurnout lt : layoutEditor.getLayoutTurnouts()) {
             Turnout to = lt.getTurnout();
             if (to != null) {
                 String uname = to.getUserName();
@@ -13255,7 +13252,7 @@ public class LayoutEditorTools {
             addInfoToMenu("D " + continuing, layoutTurnout.getSignalD1Name(), inMenu);
             addInfoToMenu("D " + diverging, layoutTurnout.getSignalD2Name(), inMenu);
         } else if (linkType == LayoutTurnout.NO_LINK) {
-            JMenuItem jmi = inMenu.add(rb.getString("Turnout"));
+            JMenuItem jmi = inMenu.add(Bundle.getMessage("BeanNameTurnout"));
             jmi.setEnabled(false);
             inMenu.add(new JSeparator());
             before_mcc += 2;
@@ -13265,7 +13262,7 @@ public class LayoutEditorTools {
             addInfoToMenu(diverging, layoutTurnout.getSignalC1Name(), inMenu);
         } else if (linkType == LayoutTurnout.THROAT_TO_THROAT) {
             String text = rb.getString("ThroatToThroat") + " (";
-            text += rb.getString("Turnout") + ", " + rb.getString("Route");
+            text += Bundle.getMessage("BeanNameTurnout") + ", " + Bundle.getMessage("BeanNameRoute");
             text += ", " + rb.getString("Signal") + ":)";
             JMenuItem jmi = inMenu.add(text);
             jmi.setEnabled(false);

@@ -73,6 +73,9 @@ public interface Positionable extends Cloneable {
     public void setEditor(Editor ed);
 
     public void updateSize();
+    
+    public Rectangle getBounds(Rectangle rv);
+    
     /**
      * Make a deep copy of Positional object. Implementation should create a new
      * object and immediately pass the object to finishClone() returning the

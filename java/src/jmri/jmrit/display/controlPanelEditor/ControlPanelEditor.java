@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1111,15 +1110,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         if (_selectionGroup == null) {
             return null;
         }
-        double x = event.getX();
-        double y = event.getY();
-
         for (Positionable p : _selectionGroup) {
-            Rectangle2D.Double rect2D = new Rectangle2D.Double(p.getX() * _paintScale,
-                    p.getY() * _paintScale,
-                    p.getWidth() * _paintScale,
-                    p.getHeight() * _paintScale);
-            if (rect2D.contains(x, y)) {
+            if (pointOnItem(p, event)) {
                 return p;
             }
         }
@@ -1185,11 +1177,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         repaint();
     }
 
-    /**
-     * Handle mouse events.
-     *
-     * @param event the moust event to handle
-     */
+    ///////////////// Handle mouse events ////////////////
+
     private long _mouseDownTime = 0;
     @Override
     public void mousePressed(MouseEvent event) {

@@ -2,9 +2,9 @@ package jmri.jmrit.display;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
@@ -14,6 +14,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
+import jmri.util.SystemType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +27,6 @@ import org.slf4j.LoggerFactory;
  * @author Bob Jacobsen Copyright (c) 2002
  */
 public class PositionableLabel extends PositionableJComponent {
-
-    public static final ResourceBundle rbean = ResourceBundle.getBundle("jmri.NamedBeanBundle");
 
     private boolean debug = false;
     private String _textString;
@@ -54,8 +53,8 @@ public class PositionableLabel extends PositionableJComponent {
         _namedIcon = s;
         debug = log.isDebugEnabled();
         if (debug) {
-            log.debug("PositionableLabel ctor (icon) " + s.getName());
-        }
+            log.debug("PositionableLabel ctor (icon) {}", s != null ? s.getName() : null);
+       }
         updateSize();
      }
 
@@ -225,6 +224,7 @@ public class PositionableLabel extends PositionableJComponent {
         setScale(scale);
         return scale;
     }
+
 
     public boolean isBackground() {
         return (getDisplayLevel() == Editor.BKG);
@@ -443,8 +443,23 @@ public class PositionableLabel extends PositionableJComponent {
     protected void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.transform(getTransform());
+
+        // set antialiasing hint for macOS and Windows
+        // note: antialiasing has performance problems on constrained systems
+        // like the Raspberry Pi, assuming Linux variants are constrained
+        if (SystemType.isMacOSX() || SystemType.isWindows()) {
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            // Turned off due to poor performance, see Issue #3850 and PR #3855 for background
+            // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+            //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        }
         super.paintComponent(g2d);
-        
+
         int iconWidth = getIconWidth();
         int iconHeight = getIconHeight();
         int textWidth = getTextWidth();

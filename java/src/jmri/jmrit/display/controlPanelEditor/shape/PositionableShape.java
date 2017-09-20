@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright (c) 2012
  */
-public class PositionableShape extends PositionableJComponent implements PropertyChangeListener {
+public abstract class PositionableShape extends PositionableJComponent implements PropertyChangeListener {
 
     private Shape _shape;
     protected Color _lineColor = Color.black;
@@ -71,12 +71,20 @@ public class PositionableShape extends PositionableJComponent implements Propert
     }
 
     public PathIterator getPathIterator(AffineTransform at) {
-        return _shape.getPathIterator(at);
+        return getShape().getPathIterator(at);
     }
 
     protected void setShape(@Nonnull Shape s) {
         _shape = s;
         updateSize();
+    }
+
+    @Nonnull
+    protected Shape getShape() {
+        if (_shape == null) {
+            _shape = makeShape();
+        }
+        return _shape;
     }
 
     public void setWidth(int w) {
@@ -109,19 +117,11 @@ public class PositionableShape extends PositionableJComponent implements Propert
 
     /**
      * Create the shape returned by {@link #getShape()}.
-     * <p>
-     * This should be abstract, but {@link #deepClone()} requires this class not
-     * be abstract, and we never want to accept a null return value from this
-     * method, so the default implementation throws an uncaught exception
-     * instead.
      *
      * @return the created shape
      */
- //   @Nonnull
-    public Shape makeShape() {
-//        throw new UnsupportedOperationException("Must be overridden by an implementing class.");
-        return _shape;
-    }
+    @Nonnull
+    protected abstract Shape makeShape();
 
     /**
      * Force the shape to be regenerated next time it is needed.
@@ -164,7 +164,7 @@ public class PositionableShape extends PositionableJComponent implements Propert
 
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST", justification = "Cast required due to how Graphics2D was implemented in Java 1.2")
-    public void paint(Graphics g) {
+    public void paintComponent(Graphics g) {
         if (!getEditor().isEditable() && !isVisible()) {
             return;
         }
@@ -185,20 +185,19 @@ public class PositionableShape extends PositionableJComponent implements Propert
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
 
+        g2d.transform(getTransform());
         g2d.setClip(null);
-        AffineTransform _transform = getTransform();
-        if (_transform != null) {
-            g2d.transform(_transform);
-        }
+        Shape shape = getShape();
+        
         if (_fillColor != null) {
             g2d.setColor(_fillColor);
-            g2d.fill(_shape);
+            g2d.fill(shape);
         }
         if (_lineColor != null) {
             BasicStroke stroke = new BasicStroke(_lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f);
             g2d.setColor(_lineColor);
             g2d.setStroke(stroke);
-            g2d.draw(_shape);
+            g2d.draw(shape);
         }
         paintHandles(g2d);
     }
@@ -227,10 +226,7 @@ public class PositionableShape extends PositionableJComponent implements Propert
     }
 
     @Override
-    public Positionable deepClone() {
-        PositionableShape pos = new PositionableShape(_editor);
-        return finishClone(pos);
-    }
+    public abstract Positionable deepClone();
 
     protected Positionable finishClone(PositionableShape pos) {
         pos._lineWidth = _lineWidth;
