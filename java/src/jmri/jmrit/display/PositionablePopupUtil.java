@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -14,6 +15,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -492,6 +496,9 @@ public class PositionablePopupUtil {
                 } else {
                     setColorButton(_parent.getBackground(), color, r);                    
                 }
+            default:
+                log.warn("Unhandled color type code: {}", colorType);
+                break;
         }
         colorButtonGroup.add(r);
         menu.add(r);
@@ -645,7 +652,7 @@ public class PositionablePopupUtil {
     }
 
     public void setTextOrientationMenu(JPopupMenu popup) {
-        JMenu oriMenu = new JMenu("Orientation");
+        JMenu oriMenu = new JMenu(Bundle.getMessage("Orientation"));
         addOrientationMenuEntry(oriMenu, HORIZONTAL);
         addOrientationMenuEntry(oriMenu, VERTICAL_UP);
         addOrientationMenuEntry(oriMenu, VERTICAL_DOWN);

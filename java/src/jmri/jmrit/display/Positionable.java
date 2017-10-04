@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
+import javax.swing.border.Border;
 
 /**
  * Defines display objects.
@@ -76,6 +77,8 @@ public interface Positionable extends Cloneable {
     
     public Rectangle getBounds(Rectangle rv);
     
+    public void setBorder(Border border);
+
     /**
      * Make a deep copy of Positional object. Implementation should create a new
      * object and immediately pass the object to finishClone() returning the
