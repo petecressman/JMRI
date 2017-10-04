@@ -634,21 +634,31 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
         @Override
         public void paint(Graphics g) {
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.scale(_paintScale, _paintScale);
+            Graphics2D g2d = null;
+            if (g instanceof Graphics2D) {
+                g2d = (Graphics2D) g;
+                g2d.scale(_paintScale, _paintScale);                
+            }
             super.paint(g);
             paintTargetPanel(g);
-            Stroke stroke = g2d.getStroke();
-            Color color = g2d.getColor();
+            Stroke stroke = new BasicStroke();
+            if (g2d != null) {
+                stroke = g2d.getStroke();
+            }
+            Color color = g.getColor();                
             if (_selectRect != null) {
                 //Draw a rectangle on top of the image.
-                g2d.setStroke(_selectRectStroke);
-                g2d.setColor(_selectRectColor);
+                if (g2d != null) {
+                    g2d.setStroke(_selectRectStroke);                    
+                }
+                g.setColor(_selectRectColor);
                 g.drawRect(_selectRect.x, _selectRect.y, _selectRect.width, _selectRect.height);
             }
             if (_selectionGroup != null) {
-                g2d.setColor(_selectGroupColor);
-                g2d.setStroke(new BasicStroke(2.0f));
+                g.setColor(_selectGroupColor);
+                if (g2d != null) {
+                    g2d.setStroke(new BasicStroke(2.0f));                    
+                }
                 for (Positionable p : _selectionGroup) {
                     drawSelectedItem(p, g2d);
                 }
@@ -659,13 +669,17 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             }
             //Draws a border around the highlighted component
             if (_highlightcomponent != null) {
-                g2d.setColor(_highlightColor);
-                g2d.setStroke(new BasicStroke(2.0f));
+                g.setColor(_highlightColor);
+                if (g2d != null) {
+                    g2d.setStroke(new BasicStroke(2.0f));                    
+                }
                 g.drawRect(_highlightcomponent.x, _highlightcomponent.y,
                         _highlightcomponent.width, _highlightcomponent.height);
             }
-            g2d.setColor(color);
-            g2d.setStroke(stroke);
+            g.setColor(color);
+            if (g2d != null) {
+                g2d.setStroke(stroke);
+            }
             if (_tooltip != null) {
                 _tooltip.paint(g2d, _paintScale);
             }
@@ -673,7 +687,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
         private void drawSelectedItem(Positionable p, Graphics2D g2d) {
             if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                java.awt.geom.AffineTransform r = p.getTransform();
+                AffineTransform r = p.getTransform();
                 Rectangle bds = p.getContentBounds(null);
                 Rectangle rect = new Rectangle(0, 0, bds.width, bds.height);
                 AffineTransform t = AffineTransform.getTranslateInstance(bds.x, bds.y);

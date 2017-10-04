@@ -35,6 +35,10 @@ public class PositionableLabel extends PositionableJComponent {
     private boolean _text = false;
     protected boolean _control = false;
 
+    /**
+     * {@inheritDoc}
+     * @param editor where this label is displayed
+     */
     public PositionableLabel(String s, Editor editor) {
         super(editor);
         _text = true;

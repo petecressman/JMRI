@@ -260,7 +260,7 @@ public class MultiSensorItemPanel extends TableItemPanel {
             for (int i = 0; i < size; i++) {
                 _positions[i] = -1;
             }
-            _selections = new ArrayList<NamedBean>(size);
+            _selections = new ArrayList<>(size);
             _nextPosition = 0;
         }
 
@@ -296,7 +296,7 @@ public class MultiSensorItemPanel extends TableItemPanel {
                     _positions[i] = -1;
                 }
             }
-            _selections = new ArrayList<NamedBean>(_positions.length);
+            _selections = new ArrayList<>(_positions.length);
             _nextPosition = 0;
         }
 
