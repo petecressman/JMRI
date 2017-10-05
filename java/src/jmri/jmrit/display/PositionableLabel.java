@@ -445,6 +445,7 @@ public class PositionableLabel extends PositionableJComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
+//        setBorder();
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.transform(getTransform());
 
@@ -537,6 +538,7 @@ public class PositionableLabel extends PositionableJComponent {
             g2d.setColor(getForeground());
             g2d.drawString(_textString, hOffSet, vOffSet);             
         }
+//        super.paintComponent(g2d);
         g2d.dispose();
     }
 

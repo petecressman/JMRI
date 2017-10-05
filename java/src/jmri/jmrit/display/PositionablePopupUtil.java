@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -15,9 +14,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +91,7 @@ public class PositionablePopupUtil {
 
     public final void setBorderSize(int border) {
         _borderSize = border;
+//        _parent.setBorder();
     }
 
     public int getBorderSize() {
@@ -103,6 +100,7 @@ public class PositionablePopupUtil {
 
     public final void setBorderColor(Color color) {
         _borderColor = color;
+//        _parent.setBorder();
     }
 
     public Color getBorderColor() {
@@ -111,6 +109,7 @@ public class PositionablePopupUtil {
 
     public final void setMarginSize(int margin) {
         _marginSize = margin;
+//        _parent.setBorder();
     }
 
     public int getMarginSize() {
@@ -122,6 +121,8 @@ public class PositionablePopupUtil {
         if (!(_textComponent instanceof PositionableJComponent)) {
             _textComponent.setBackground(color);
         }
+        _parent.setBackground(color);
+//        _parent.setBorder();
     }
 
     public Color getBackgroundColor() {
@@ -168,11 +169,12 @@ public class PositionablePopupUtil {
     public Color getForeground() {
         return _textComponent.getForeground();
     }
-    public Color getBackground() {
+/*    public Color getTextBackground() {
         return _textComponent.getBackground();            
-    }
+    }*/
 
-/************************* menu methods ************************************/
+//////////////////// menu methods /////////////////////////
+    
     public void propertyUtil(JPopupMenu popup) {
         JMenuItem edit = new JMenuItem(Bundle.getMessage("MenuItemProperties") + "...");
         edit.addActionListener((ActionEvent e) -> {
@@ -496,6 +498,7 @@ public class PositionablePopupUtil {
                 } else {
                     setColorButton(_parent.getBackground(), color, r);                    
                 }
+                break;
             default:
                 log.warn("Unhandled color type code: {}", colorType);
                 break;

@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -15,7 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -473,12 +471,43 @@ public class PositionableJComponent extends JComponent implements Positionable {
             return bds;
         }
     }
+
+    public void setBorder() {
+        Color color = _popupUtil.getBackgroundColor();
+        setBackground(color);
+        int size = _popupUtil.getMarginSize();
+        Border borderMargin;        
+        if (isOpaque()) {
+//            borderMargin = new LineBorder(color, size);
+            borderMargin = BorderFactory.createLineBorder(color, size);
+        } else {
+            borderMargin = BorderFactory.createEmptyBorder(size, size, size, size);
+        }
+        color = _popupUtil.getBorderColor();
+        size = _popupUtil.getBorderSize();
+        Border outlineBorder;
+        if (color != null) {
+//            outlineBorder = new LineBorder(color, size);
+            outlineBorder = BorderFactory.createLineBorder(color, size);
+        } else {
+            outlineBorder = BorderFactory.createEmptyBorder(size, size, size, size);
+        }
+        super.setBorder(new CompoundBorder(outlineBorder, borderMargin));
+        
+    }
     
     @Override
     protected void paintComponent(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g;
 
-        int borderSize = 0;
+        setBorder();
+        super.paintBorder(g);
+/*        if (!(g instanceof Graphics2D)) {
+            return;
+        }
+//        Graphics2D g2d = (Graphics2D)g;
+//        super.paintComponent(g2d);
+
+/*        int borderSize = 0;
         java.awt.Color backgroundColor = null;
         java.awt.Color borderColor = null;
         if (_popupUtil!=null) {
@@ -495,7 +524,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
             g2d.setColor(borderColor);
             g2d.setStroke(new java.awt.BasicStroke(borderSize));
             g2d.drawRect(borderRect.x, borderRect.y, borderRect.width, borderRect.height);
-        }            
+        }*/          
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableJComponent.class);

@@ -353,7 +353,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
                         log.debug("  getBackground(): {}", getBackground());
                         log.debug("  _editor.getTargetPanel().getBackground(): {}", _editor.getTargetPanel().getBackground());
                         log.debug("  setAttributes to getPopupUtility({}) with", getPopupUtility());
-                        log.debug("     getBackground() {}", getPopupUtility().getBackground());
+                        log.debug("     getBackgroundColor() {}", getPopupUtility().getBackgroundColor());
                         log.debug("    on editor {}", _editor);
                     }
 //                    _editor.setAttributes(getPopupUtility(), this);

@@ -1,5 +1,6 @@
 package jmri.jmrit.display;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -9,12 +10,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -484,6 +488,31 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         return _transformCA;
     }
     
+    public void setBorder() {
+        Color color = _popupUtil.getBackgroundColor();
+        setBackground(color);
+        int size = _popupUtil.getMarginSize();
+        Border borderMargin;        
+        if (isOpaque()) {
+//            borderMargin = new LineBorder(color, size);
+            borderMargin = BorderFactory.createLineBorder(color, size);
+        } else {
+            borderMargin = BorderFactory.createEmptyBorder(size, size, size, size);
+        }
+        color = _popupUtil.getBorderColor();
+        size = _popupUtil.getBorderSize();
+        Border outlineBorder;
+        if (color != null) {
+//            outlineBorder = new LineBorder(color, size);
+            outlineBorder = BorderFactory.createLineBorder(color, size);
+        } else {
+            outlineBorder = BorderFactory.createEmptyBorder(size, size, size, size);
+        }
+        super.setBorder(new CompoundBorder(outlineBorder, borderMargin));
+        
+    }
+    
+    
     @Override
     protected void paintComponent(Graphics g) {
 //        Graphics2D g2d = (Graphics2D)g;
@@ -498,8 +527,11 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2d.setClip(null);
+        
+//        setBorder();
+        super.paintBorder(g);
 
-        int borderSize = 0;
+/*        int borderSize = 0;
         java.awt.Color backgroundColor = null;
         java.awt.Color borderColor = null;
         if (_popupUtil!=null) {
@@ -525,6 +557,7 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         }
         super.paintComponent(g2d);
         g2d.dispose();
+        */
     }
     
     private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class.getName());

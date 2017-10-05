@@ -91,12 +91,12 @@ public interface Positionable extends Cloneable {
      * with statement return super.finishClone(p); See IndicatorTurnoutIcon
      * extends TurnoutIcon extends PositionableLabel for an example of how to
      * continue deep cloning a chain of subclasses.
+     * @return clone of the Positionable
      */
     public Positionable deepClone();
 
-    /**
-     * Methods to add popup menu items return true if a popup item is set
-     */
+    ////////// Methods to add popup menu items return true if a popup item is set
+
     public String getNameString();
 
     public boolean setRotateOrthogonalMenu(JPopupMenu popup);
@@ -123,6 +123,8 @@ public interface Positionable extends Cloneable {
 
     public int getDegrees();
     
+    public void setBorder();
+    
     public AffineTransform getTransform();
     
     public JComponent getTextComponent();
@@ -133,8 +135,8 @@ public interface Positionable extends Cloneable {
      * Store a permanent copy of this Positionable The editorXml will call this
      * method to find out whether it should store this Positionable item.
      *
-     * @return true if the Editor should store this in the configuration file
-     * @return false if if the Editor should not store this object
+     * @return true if the Editor should store this in the configuration file.
+     * false if if the Editor should not store this object
      */
     public boolean storeItem();
 
@@ -175,6 +177,8 @@ public interface Positionable extends Cloneable {
     /**
      * Get the bounding rectangle of the item as it is in the editor's content list
      * That is, untransformed by scaling, rotation or mirroring.
+     * @param r a rectangle that will be sized and returned
+     * @return the bounds of the item as it is in the content list
      */
     public Rectangle getContentBounds(Rectangle r);
 

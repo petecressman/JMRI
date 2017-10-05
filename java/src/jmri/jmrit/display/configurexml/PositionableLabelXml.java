@@ -89,11 +89,11 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         element.setAttribute("green", "" + util.getForeground().getGreen());
         element.setAttribute("blue", "" + util.getForeground().getBlue());
 
-        Color backGround = util.getBackground(); 
+        Color backGround = util.getBackgroundColor(); 
         if (backGround!=null) {
-            element.setAttribute("redBack", "" + util.getBackground().getRed());
-            element.setAttribute("greenBack", "" + util.getBackground().getGreen());
-            element.setAttribute("blueBack", "" + util.getBackground().getBlue());
+            element.setAttribute("redBack", "" + backGround.getRed());
+            element.setAttribute("greenBack", "" + backGround.getGreen());
+            element.setAttribute("blueBack", "" + backGround.getBlue());
         }
 
         if (util.getMarginSize() != 0) {

@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -1034,7 +1033,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
                     setColorButton(getForeground(), color, r);
                     break;
                 case BACKGROUND_COLOR:
-                    setColorButton(getBackground(), color, r);                       
+                    setColorButton(getBackgroundColor(), color, r);                       
                     break;
                 case BORDER_COLOR:
                     setColorButton(getBorderColor(), color, r);

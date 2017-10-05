@@ -563,9 +563,9 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 ((PositionableLabel) pos).setText(sample.getText());
             }
             if (sample.isOpaque()) {
-                pos.setBackground(sample.getBackground());                
+                pos.getPopupUtility().setBackgroundColor(sample.getBackground());                
             } else {
-                pos.setBackground(null);                
+                pos.getPopupUtility().setBackgroundColor(null);                
             }
 //            _util.setHasBackground(sample.isOpaque());
         }
