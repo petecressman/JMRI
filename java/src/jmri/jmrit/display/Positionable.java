@@ -1,5 +1,9 @@
 package jmri.jmrit.display;
 
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
@@ -77,8 +81,6 @@ public interface Positionable extends Cloneable {
     
     public Rectangle getBounds(Rectangle rv);
     
-    public void setBorder(Border border);
-
     /**
      * Make a deep copy of Positional object. Implementation should create a new
      * object and immediately pass the object to finishClone() returning the
@@ -203,23 +205,25 @@ public interface Positionable extends Cloneable {
 
     public int getHeight();
 
-    public java.awt.Container getParent();
+    public Container getParent();
 
     public void setOpaque(boolean isOpaque);
 
     public boolean isOpaque();
 
-    public void setBackground(java.awt.Color bg);
+    public void setBackground(Color bg);
 
-    public java.awt.Color getBackground();
+    public Color getBackground();
 
-    public void setForeground(java.awt.Color bg);
+    public void setForeground(Color bg);
 
-    public java.awt.Color getForeground();
+    public Color getForeground();
 
-    public java.awt.Font getFont();
+    public Font getFont();
 
-    public java.awt.Dimension getPreferredSize();
+    public void setBorder(Border border);
+
+    public Dimension getPreferredSize();
 
     public void invalidate();
 

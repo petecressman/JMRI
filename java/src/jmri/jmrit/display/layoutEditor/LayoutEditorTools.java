@@ -1593,7 +1593,7 @@ public class LayoutEditorTools {
                 }
                 signalName = to.getSignalA1Name();
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(to, type);
@@ -1621,7 +1621,7 @@ public class LayoutEditorTools {
                     signalName = to.getSignalC1Name();
                 }
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(to, type);
@@ -1649,7 +1649,7 @@ public class LayoutEditorTools {
                     signalName = to.getSignalB1Name();
                 }
                 if ((signalName == null) || signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(to, type);
@@ -1670,7 +1670,7 @@ public class LayoutEditorTools {
                 }
                 signalName = to.getSignalD1Name();
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(to, type);
@@ -1750,7 +1750,7 @@ public class LayoutEditorTools {
                 }
                 signalName = sl.getSignalA1Name();
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(sl, type);
@@ -1773,7 +1773,7 @@ public class LayoutEditorTools {
                 }
                 signalName = sl.getSignalB1Name();
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(sl, type);
@@ -1796,7 +1796,7 @@ public class LayoutEditorTools {
                 }
                 signalName = sl.getSignalC1Name();
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(sl, type);
@@ -1816,7 +1816,7 @@ public class LayoutEditorTools {
                 }
                 signalName = sl.getSignalD1Name();
                 if (signalName.isEmpty()) {
-                    if (!layoutEditor.skipIncludedTurnout) {
+                    if (!layoutEditor.isIncludedTurnoutSkipped()) {
                         return null;
                     }
                     t = getContinuingTrack(sl, type);
