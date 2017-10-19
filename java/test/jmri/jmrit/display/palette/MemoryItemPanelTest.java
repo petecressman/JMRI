@@ -10,8 +10,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -27,8 +25,8 @@ public class MemoryItemPanelTest {
         PickListModel tableModel = PickListModel.memoryPickModelInstance(); // N11N
         Editor editor = new EditorScaffold();
         jmri.util.ThreadingUtil.runOnGUI(() -> {
-           ip = ItemPalette.getDefault("test palette",editor);
-           ip.pack();
+            ip = ItemPalette.getDefault("test palette", editor);
+            ip.pack();
         });
         MemoryItemPanel t = new MemoryItemPanel(ip, "IM01", "", tableModel, editor);
         Assert.assertNotNull("exists", t);

@@ -16,6 +16,7 @@ public class PositionableCircle extends PositionableShape {
 
     public PositionableCircle(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Circle"));
     }
 
     public PositionableCircle(Editor editor, Shape shape) {

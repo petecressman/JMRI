@@ -148,6 +148,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
 
     /**
      * Delayed setDisplayLevel for DnD
+     * @param l display level
      */
     public void setLevel(int l) {
         _displayLevel = l;
@@ -473,6 +474,9 @@ public class PositionableJComponent extends JComponent implements Positionable {
     }
 
     public void setBorder() {
+        if (_popupUtil == null) {
+            return;
+        }
         Color color = _popupUtil.getBackgroundColor();
         setBackground(color);
         int size = _popupUtil.getMarginSize();
@@ -485,14 +489,14 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
         color = _popupUtil.getBorderColor();
         size = _popupUtil.getBorderSize();
-        Border outlineBorder;
+        Border borderOutline;
         if (color != null) {
-//            outlineBorder = new LineBorder(color, size);
-            outlineBorder = BorderFactory.createLineBorder(color, size);
+//            borderOutline = new LineBorder(color, size);
+            borderOutline = BorderFactory.createLineBorder(color, size);
         } else {
-            outlineBorder = BorderFactory.createEmptyBorder(size, size, size, size);
+            borderOutline = BorderFactory.createEmptyBorder(size, size, size, size);
         }
-        super.setBorder(new CompoundBorder(outlineBorder, borderMargin));
+        super.setBorder(new CompoundBorder(borderOutline, borderMargin));
         
     }
     

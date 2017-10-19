@@ -37,6 +37,7 @@ public class PositionableLabel extends PositionableJComponent {
 
     /**
      * {@inheritDoc}
+     * @param s text
      * @param editor where this label is displayed
      */
     public PositionableLabel(String s, Editor editor) {

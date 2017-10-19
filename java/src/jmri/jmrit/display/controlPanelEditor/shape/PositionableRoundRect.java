@@ -18,6 +18,7 @@ public class PositionableRoundRect extends PositionableRectangle {
 
     public PositionableRoundRect(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("roundRect"));
     }
 
     public PositionableRoundRect(Editor editor, Shape shape) {

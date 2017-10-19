@@ -14,6 +14,7 @@ public class PositionableRectangle extends PositionableShape {
 
     public PositionableRectangle(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Rectangle"));
     }
 
     public PositionableRectangle(Editor editor, Shape shape) {

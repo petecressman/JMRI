@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import javax.annotation.Nonnull;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -37,8 +38,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Container for adding items to control panels. Loads and stores icons used in
- * control editor panels. For background colors to work there needs to be an
- * ItemPalette instance for each editor instance
+ * control editor panels. For background colors to work on a particular editor
+ * instance, select the 'Item Palette' item under 'Add Items' menu to configure 
+ * ItemPalette for that editor.  Otherwise any item can be dragged and
+ * dropped to any editor.  The icons are displayed on the background 
+ * of the last editor to call the ItemPalette instance.
  *
  * @author Pete Cressman Copyright (c) 2010
  */
@@ -52,8 +56,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
     static HashMap<String, HashMap<String, HashMap<String, NamedIcon>>> _iconMaps;
     // for now, special case 4 level maps since IndicatorTO is the only case.
     static HashMap<String, HashMap<String, HashMap<String, HashMap<String, NamedIcon>>>> _indicatorTOMaps;
-    ItemPanel _currentItemPanel;
-    boolean _loaded = false;
+    private ItemPanel _currentItemPanel;
 
     /**
      * Store palette icons in preferences file catalogTrees.xml
@@ -344,20 +347,35 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         return familyTOMap;
     }
 
-    static public ItemPalette getDefault(String title, Editor ed) {
+    static public ItemPalette getDefault(String title, @Nonnull Editor ed) {
         if (GraphicsEnvironment.isHeadless()) {
             return null;
         }
         ItemPalette instance = InstanceManager.getOptionalDefault(ItemPalette.class).orElseGet(() -> {
             return InstanceManager.setDefault(ItemPalette.class, new ItemPalette(title, ed));
         });
+        Iterator<Entry<String, ItemPanel>> iter = _tabIndex.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<String, ItemPanel> entry = iter.next();
+            ItemPanel tab = entry.getValue();
+            tab.setEditor(ed);            
+        }
+        String name = ed.getName();
+        if (name == null || name.equals("")) {
+            name = Bundle.getMessage("untitled");
+        }
+        instance.setTitle(Bundle.getMessage("MenuItemItemPalette") + "-" + name);
+        // Either of these positioning calls puts the instance on the primary monitor. ???
+        java.awt.Point pt = ed.getLocation();
+        instance.setLocation(pt.x, pt.y);
+//        instance.setLocationRelativeTo(ed);            
         instance.pack();
         instance.setVisible(true);
         return instance;
     }
     
     private ItemPalette(String title, Editor ed) {
-        super();
+        super(false, false);
         init(title, ed);
     }
     
@@ -373,7 +391,6 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
         makeMenus();
         buildTabPane(this, ed);
-        _loaded = true;
 
         setLayout(new BorderLayout(5, 5));
         add(_tabPane, BorderLayout.CENTER);
@@ -384,7 +401,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         pack();
     }
 
-    /**
+    /*
      * Add the tabs on the the Control Panel Editor
      */
     static void buildTabPane(ItemPalette palette, Editor editor) {
@@ -482,10 +499,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
             _currentItemPanel.closeDialogs();
         }
         _currentItemPanel = p;
-//     java.awt.Dimension dim = p.getPreferredSize();
-//     setSize(dim.width+30, dim.height+50);
-//     repaint();
-//        System.out.println("Panel "+p._itemType+" built in "+ (System.currentTimeMillis()-t)+ " milliseconds.");
+        pack();
     }
 
     private void makeMenus() {
@@ -496,7 +510,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
         JMenuItem editItem = new JMenuItem(Bundle.getMessage("editIndexMenu"));
         editItem.addActionListener((ActionEvent e) -> {
-                ImageIndexEditor ii = ImageIndexEditor.getDefault();
+                ImageIndexEditor ii = InstanceManager.getDefault(ImageIndexEditor.class);
                 ii.pack();
                 ii.setVisible(true);
         });
@@ -505,12 +519,13 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
         JMenuItem openItem = new JMenuItem(Bundle.getMessage("openDirMenu"));
         openItem.addActionListener((ActionEvent e) -> {
+            jmri.jmrit.catalog.DirectorySearcher.instance().openDirectory();
         });
         findIcon.add(openItem);
 
          JMenuItem searchItem = new JMenuItem(Bundle.getMessage("searchFSMenu"));
          searchItem.addActionListener((ActionEvent e) -> {
-                 jmri.jmrit.catalog.DirectorySearcher.instance().searchFS();
+             jmri.jmrit.catalog.DirectorySearcher.instance().searchFS();
          });
          findIcon.add(searchItem);
 
@@ -537,7 +552,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
     /**
      * Look for duplicate name of family in the iterated set
      */
-    static boolean familyNameOK(java.awt.Frame frame, String type, String family, Iterator<String> it) {
+    private static boolean familyNameOK(java.awt.Frame frame, String type, String family, Iterator<String> it) {
         if (family == null || family.length() == 0) {
             JOptionPane.showMessageDialog(frame,
                     Bundle.getMessage("EnterFamilyName"),
@@ -558,6 +573,11 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
     /**
      * Adding a new Family of icons to the device type
+     * @param frame frame
+     * @param type type
+     * @param family family
+     * @param iconMap iconMap
+     * @return result
      */
     static protected boolean addFamily(java.awt.Frame frame, String type, String family, HashMap<String, NamedIcon> iconMap) {
         if (ItemPalette.getFamilyMaps(type) == null) {
@@ -580,6 +600,8 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
     /**
      * Getting all the Families of icons for a given device type
+     * @param type type
+     * @return map of families
      */
     static protected HashMap<String, HashMap<String, NamedIcon>> getFamilyMaps(String type) {
         return _iconMaps.get(type);
@@ -587,6 +609,8 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
     /**
      * Removing a Family of icons from the device type
+     * @param type type
+     * @param family family
      */
     static protected void removeIconMap(String type, String family) {
         if (log.isDebugEnabled()) {
@@ -605,7 +629,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         }
     }
 
-    /**
+    /*
      * Getting a clone of the Family of icons for a given device type and family
      */
     static protected HashMap<String, NamedIcon> getIconMap(String type, String family) {
@@ -624,6 +648,11 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
     /**
      * ************ Currently only needed for IndicatorTO type **************
+     * @param frame frame
+     * @param type type
+     * @param family family
+     * @param iconMap iconMap
+     * @return result
      */
     // add entire family
     static protected boolean addLevel4Family(java.awt.Frame frame, String type, String family,
@@ -672,9 +701,8 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
         InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
     }
 
-    /**
-     * ***********************************************************************
-     */
+    ///////////////////////////////////////////////////////////////////////////////
+    
     static protected HashMap<String, NamedIcon> cloneMap(HashMap<String, NamedIcon> map) {
         HashMap<String, NamedIcon> clone = new HashMap<String, NamedIcon>();
         if (map != null) {

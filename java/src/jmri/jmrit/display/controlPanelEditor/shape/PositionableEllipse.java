@@ -14,6 +14,7 @@ public class PositionableEllipse extends PositionableRectangle {
 
     public PositionableEllipse(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Ellipse"));
     }
 
     public PositionableEllipse(Editor editor, Shape shape) {
