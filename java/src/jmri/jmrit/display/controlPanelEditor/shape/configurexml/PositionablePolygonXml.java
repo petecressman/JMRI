@@ -103,6 +103,10 @@ public class PositionablePolygonXml extends PositionableShapeXml {
             }
         }
         PositionablePolygon ps = new PositionablePolygon(ed, path);
+        java.awt.Rectangle r = path.getBounds();
+        ps.setWidth(r.width);
+        ps.setHeight(r.height);
+        
         // get object class and determine editor being used
         ed.putItem(ps);
         // load individual item's option settings after editor has set its global settings

@@ -75,6 +75,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
     public Positionable finishClone(Positionable pos) {
         pos.setScale(_scale);
         pos.setDegrees(_degree);
+        pos.setFlip(_flip);
         pos.setLocation(getX(), getY());
         pos.setDisplayLevel(_displayLevel);
         pos.setControlling(_controlling);
@@ -158,8 +159,10 @@ public class PositionableJComponent extends JComponent implements Positionable {
         int oldDisplayLevel = _displayLevel;
         _displayLevel = l;
         if (oldDisplayLevel != l) {
+            if (_editor != null) {
+                _editor.displayLevelChange(this);
+            }
             log.debug("Changing label display level from " + oldDisplayLevel + " to " + _displayLevel);
-            _editor.displayLevelChange(this);
         }
     }
 
@@ -323,7 +326,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
     public final static int NOFLIP = 0X00;
     public final static int HORIZONTALFLIP = 0X01;
     public final static int VERTICALFLIP = 0X02;
-    public void flipIcon(int f) {
+    public void setFlip(int f) {
         _flip = f;
         updateSize();
     }
@@ -472,13 +475,23 @@ public class PositionableJComponent extends JComponent implements Positionable {
             return bds;
         }
     }
+    
+/*    public void setBackground(Color c) {
+        java.awt.Component[] comps = getComponents();
+        for (int i = 0; i < comps.length; i++) {
+            comps[i].setBackground(c);
+        }
+        super.setBackground(c);
+    }*/
 
     public void setBorder() {
         if (_popupUtil == null) {
             return;
         }
         Color color = _popupUtil.getBackgroundColor();
-        setBackground(color);
+        setOpaque(color != null);
+//        super.setBackground(color);
+        _popupUtil.setBackground(color);
         int size = _popupUtil.getMarginSize();
         Border borderMargin;        
         if (isOpaque()) {
@@ -503,7 +516,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
     @Override
     protected void paintComponent(Graphics g) {
 
-        setBorder();
+        this.setBorder();
         super.paintBorder(g);
 /*        if (!(g instanceof Graphics2D)) {
             return;

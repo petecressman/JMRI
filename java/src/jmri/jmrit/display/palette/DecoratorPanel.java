@@ -28,6 +28,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
+import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.jmrit.display.SensorIcon;
@@ -190,6 +191,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     /* Called by Editor's TextAttrDialog - i.e. update a panel item from menu */
     public void initDecoratorPanel(Positionable pos) {
         Positionable item = pos.deepClone();  // copy of PositionableLabel being edited
+        item.setDegrees(0);
+        item.setFlip(PositionableJComponent.NOFLIP);
         _util = item.getPopupUtility();
 
         if (pos instanceof SensorIcon && !((SensorIcon)pos).isIcon()) {
@@ -386,6 +389,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 public void keyReleased(KeyEvent E) {
                     JTextField tmp = (JTextField) E.getSource();
                     sample.setText(tmp.getText());
+                    updateSamples();
                 }
             }.init(sample));
             p.add(textField);            
@@ -477,6 +481,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             util.setMarginSize(_util.getMarginSize());
             util.setBorderSize(_util.getBorderSize());
             util.setBorderColor(_util.getBorderColor());
+            util.setBackgroundColor(_util.getBackgroundColor());
             sam.updateSize();
         }
         if (_dialog!=null) {

@@ -64,6 +64,8 @@ public class DrawCircle extends DrawFrame {
             Ellipse2D.Double rr = new Ellipse2D.Double(0, 0, dia, dia);
             _shape = new PositionableCircle(ed, rr);
             _shape.setLocation(r.x, r.y);
+            _shape.setWidth(dia);
+            _shape.setHeight(dia);
             _shape.updateSize();
             _shape.setEditFrame(this);
             setDisplayParams();

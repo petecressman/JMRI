@@ -196,6 +196,9 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         return _degree;
     }
 
+    public void setFlip(int f) {
+    }
+
     public JComponent getTextComponent() {
         return _popupUtil._textComponent;
     }

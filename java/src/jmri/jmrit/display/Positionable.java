@@ -127,6 +127,8 @@ public interface Positionable extends Cloneable {
     
     public void setBorder();
     
+    public void setFlip(int f);
+    
     public AffineTransform getTransform();
     
     public JComponent getTextComponent();

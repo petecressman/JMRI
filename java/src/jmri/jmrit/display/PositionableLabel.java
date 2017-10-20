@@ -314,7 +314,7 @@ public class PositionableLabel extends PositionableJComponent {
         r.addActionListener(new ActionListener() {
             final int f = flip;
             public void actionPerformed(ActionEvent e) {
-                flipIcon(f);
+                setFlip(f);
             }
         });
         if (getFlip() == flip) {

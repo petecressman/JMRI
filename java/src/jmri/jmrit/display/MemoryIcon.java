@@ -180,9 +180,9 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             if (e.getPropertyName().equals("IsForward")) {
                 Boolean boo = (Boolean) e.getNewValue();
                 if (boo) {
-                    flipIcon(PositionableJComponent.NOFLIP);
+                    setFlip(PositionableJComponent.NOFLIP);
                 } else {
-                    flipIcon(PositionableJComponent.HORIZONTALFLIP);
+                    setFlip(PositionableJComponent.HORIZONTALFLIP);
                 }
             }
         }
@@ -428,13 +428,13 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             reduceTo(getWidth(), getHeight(), 0.2);
 
             if (flipRosterIcon) {
-                flipIcon(PositionableJComponent.HORIZONTALFLIP);
+                setFlip(PositionableJComponent.HORIZONTALFLIP);
             }
             jmri.InstanceManager.throttleManagerInstance().attachListener(re.getDccLocoAddress(), this);
             Object isForward = jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(re.getDccLocoAddress(), "IsForward");
             if (isForward != null) {
                 if (!(Boolean) isForward) {
-                    flipIcon(PositionableJComponent.HORIZONTALFLIP);
+                    setFlip(PositionableJComponent.HORIZONTALFLIP);
                 }
             }
             return null;
