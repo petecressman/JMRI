@@ -129,13 +129,13 @@ public class PositionablePopupUtil {
         return _backgroundColor;
     }
     
-    protected void setBackground(Color color) {
+/*    protected void setBackground(Color color) {
         _parent.setOpaque(color != null);
         _parent.setBackground(color);
         _textComponent.setOpaque(color != null);
         _textComponent.setBackground(color);
         
-    }
+    }*/
 
     public int getFixedWidth() {
         return fixedWidth;

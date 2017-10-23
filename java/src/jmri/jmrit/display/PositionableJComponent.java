@@ -13,7 +13,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -436,6 +435,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         if (_editor!=null && _editor.getTargetPanel()!=null) {
             _editor.getTargetPanel().repaint();
         }
+        setBorder();
 //        System.out.println("updateSize: displayWidth="+displayWidth+" displayHeight="+displayHeight+
 //                " NameString="+" \""+getNameString()+"\""+" Name="+" \""+getName()+"\"");
         repaint();
@@ -490,18 +490,18 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
         Color color = _popupUtil.getBackgroundColor();
         setOpaque(color != null);
-//        super.setBackground(color);
-        _popupUtil.setBackground(color);
-        int size = _popupUtil.getMarginSize();
+        super.setBackground(color);
+//        _popupUtil.setBackground(color);
+        int marginSize = _popupUtil.getMarginSize();
         Border borderMargin;        
         if (isOpaque()) {
 //            borderMargin = new LineBorder(color, size);
-            borderMargin = BorderFactory.createLineBorder(color, size);
+            borderMargin = BorderFactory.createLineBorder(color, marginSize);
         } else {
-            borderMargin = BorderFactory.createEmptyBorder(size, size, size, size);
+            borderMargin = BorderFactory.createEmptyBorder(marginSize, marginSize, marginSize, marginSize);
         }
         color = _popupUtil.getBorderColor();
-        size = _popupUtil.getBorderSize();
+        int size = _popupUtil.getBorderSize();
         Border borderOutline;
         if (color != null) {
 //            borderOutline = new LineBorder(color, size);
@@ -509,14 +509,16 @@ public class PositionableJComponent extends JComponent implements Positionable {
         } else {
             borderOutline = BorderFactory.createEmptyBorder(size, size, size, size);
         }
-        super.setBorder(new CompoundBorder(borderOutline, borderMargin));
-        
+        if (marginSize > 0 && color != null) {
+            super.setBorder(new javax.swing.border.CompoundBorder(borderOutline, borderMargin));            
+        }
     }
     
     @Override
-    protected void paintComponent(Graphics g) {
+    public void paint(Graphics g) {
 
-        this.setBorder();
+        g.setFont(getFont());
+//        this.setBorder();
         super.paintBorder(g);
 /*        if (!(g instanceof Graphics2D)) {
             return;

@@ -48,7 +48,6 @@ public class PositionableLabel extends PositionableJComponent {
         if (debug) {
             log.debug("PositionableLabel ctor (text) " + s);
         }
-        setPopupUtility(new PositionablePopupUtil(this, this));
         updateSize();
     }
 
@@ -402,7 +401,8 @@ public class PositionableLabel extends PositionableJComponent {
     @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         if (getDisplayLevel() > Editor.BKG) {
-            return _editor.setShowRotationMenu(this, popup);
+            popup.add(CoordinateEdit.getRotateEditAction(this));
+            return true;
         }
         return false;
     }
@@ -445,10 +445,11 @@ public class PositionableLabel extends PositionableJComponent {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+    public void paint(Graphics g) {
 //        setBorder();
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.transform(getTransform());
+        g2d.setFont(getFont());
 
         // set antialiasing hint for macOS and Windows
         // note: antialiasing has performance problems on constrained systems
@@ -464,7 +465,7 @@ public class PositionableLabel extends PositionableJComponent {
             // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
-        super.paintComponent(g2d);
+        super.paint(g2d);
 
         int iconWidth = getIconWidth();
         int iconHeight = getIconHeight();
@@ -534,10 +535,20 @@ public class PositionableLabel extends PositionableJComponent {
 //            g2d.setStroke(new java.awt.BasicStroke(1));
 //            g2d.setColor(java.awt.Color.white);
 //            g2d.drawRect(borderSize, vOffSet, getWidth()-2*borderSize, height);
-            g2d.setClip(borderSize, vOffSet, getWidth()-2*borderSize, height);
+            g2d.setClip(0, 0, getWidth(), getHeight());
             vOffSet += ascent;
+            java.awt.Color bkgrnd = _popupUtil.getBackgroundColor();
+            setOpaque(bkgrnd != null);
+            g2d.setColor(bkgrnd);
+//            g2d.setColor(java.awt.Color.red);
+//            g2d.fillRect(0, 0, getWidth(), getHeight());
+            g2d.fillRect(borderSize+marginSize, borderSize+marginSize, 
+                    getWidth()-2*(borderSize+marginSize), 
+                    getHeight()-2*(borderSize+marginSize));
             g2d.setColor(getForeground());
             g2d.drawString(_textString, hOffSet, vOffSet);             
+        } else {
+            g2d.setClip(null);
         }
 //        super.paintComponent(g2d);
         g2d.dispose();

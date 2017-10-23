@@ -367,7 +367,7 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
         super.doMouseClicked(event);
     }
     @Override
-    protected void paintComponent(Graphics g) {
+    public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.transform(getTransform());
         g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
@@ -379,7 +379,7 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         g2d.setClip(null);
-        super.paintComponent(g2d);
+        super.paint(g2d);
         
         int iconWidth = clockIcon.getIconWidth();
         
