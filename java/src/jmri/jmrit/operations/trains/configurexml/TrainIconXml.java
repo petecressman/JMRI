@@ -1,6 +1,5 @@
 package jmri.jmrit.operations.trains.configurexml;
 
-import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.configurexml.LocoIconXml;
 import jmri.jmrit.operations.trains.TrainIcon;
 import jmri.jmrit.roster.RosterEntry;
@@ -38,15 +37,15 @@ public class TrainIconXml extends LocoIconXml {
         storeCommonAttributes(p, element);
 
         // include contents
-        if (p.getUnRotatedText() != null) {
-            element.setAttribute(Xml.TEXT, p.getUnRotatedText());
+        if (p.getText() != null) {
+            element.setAttribute(Xml.TEXT, p.getText());
         }
         storeTextInfo(p, element);
         element.setAttribute(Xml.ICON, Xml.YES);
         element.setAttribute(Xml.DOCK_X, "" + p.getDockX());
         element.setAttribute(Xml.DOCK_Y, "" + p.getDockY());
 //  element.setAttribute("iconId", p.getIconId());
-        element.addContent(storeIcon(Xml.ICON, (NamedIcon) p.getIcon()));
+        element.addContent(storeIcon(Xml.ICON, p.getIcon()));
         RosterEntry entry = p.getRosterEntry();
         if (entry != null) {
             element.setAttribute(Xml.ROSTERENTRY, entry.getId());

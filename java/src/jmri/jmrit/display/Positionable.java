@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
@@ -15,12 +16,12 @@ import javax.swing.border.Border;
  * Defines display objects.
  * <P>
  * These are capable of:
- * </p><UL>
+ * <UL>
  * <LI>Being positioned by being dragged around on the screen. (See
  * {@link #setPositionable})
  * <LI>Being hidden. (See {@link #setHidden})
  * <LI>Controlling the layout. (See {@link #setControlling})
- * </UL><p>
+ * </OL>
  * These are manipulated externally, for example by a subclass of
  * {@link Editor}. They are generally not stored directly as part of the state
  * of the object, though they could be, but as part of the state of the external
@@ -77,92 +78,41 @@ public interface Positionable extends Cloneable {
     public void setEditor(Editor ed);
 
     public void updateSize();
-
-    public int maxWidth();
-
-    public int maxHeight();
-
+    
+    public Rectangle getBounds(Rectangle rv);
+    
     /**
      * Make a deep copy of Positional object. Implementation should create a new
      * object and immediately pass the object to finishClone() returning the
-     * result of finishClone(). i.e. implementation must be:
+     * result of finishClone(). i.e. implementation must be: <br/>
+     * public Positionable deepClone() { Subtype t = new Subtype(); return finishClone(t); } <br/>
      * <p>
-     * {@code public Positionable deepClone() { Subtype t = new Subtype(); return finishClone(t);
-     * } }
-     * <p>
-     * Then finishClone() finishes the deep Copy of a Positional object.
-     * Implementation should make deep copies of the additional members of this
-     * sub class and then pass Positionable p to super.finishClone(). i.e.
-     * implementation must terminate with statement return super.finishClone(p);
-     * See IndicatorTurnoutIcon extends TurnoutIcon extends PositionableLabel
-     * for an example of how to continue deep cloning a chain of subclasses.
-     *
-     * @return the copy
+     * Then finishClone() finishes the deep Copy of a Positional object. Implementation should make
+     * deep copies of the additional members of this sub class and then pass
+     * Positionable p to super.finishClone(). i.e. implementation must terminate
+     * with statement return super.finishClone(p); See IndicatorTurnoutIcon
+     * extends TurnoutIcon extends PositionableLabel for an example of how to
+     * continue deep cloning a chain of subclasses.
+     * @return clone of the Positionable
      */
     public Positionable deepClone();
 
-    /**
-     * Get the name of the positional as a String. This is often the display
-     * name of the NamedBean being positioned.
-     *
-     * @return the name to display
-     */
+    ////////// Methods to add popup menu items return true if a popup item is set
+
     public String getNameString();
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setRotateOrthogonalMenu(JPopupMenu popup);
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setRotateMenu(JPopupMenu popup);
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setScaleMenu(JPopupMenu popup);
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setEditIconMenu(JPopupMenu popup);
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setEditItemMenu(JPopupMenu popup);
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setDisableControlMenu(JPopupMenu popup);
 
-    /**
-     * Add additional menu items to the menu.
-     *
-     * @param popup the menu to add the menu items to
-     * @return true if adding items; false otherwise
-     */
     public boolean setTextEditMenu(JPopupMenu popup);
 
     public boolean showPopUp(JPopupMenu popup);
@@ -171,33 +121,39 @@ public interface Positionable extends Cloneable {
 
     public double getScale();
 
-    public void rotate(int deg);
+    public void setDegrees(int deg);
 
     public int getDegrees();
-
+    
+    public void setBorder();
+    
+    public void setFlip(int f);
+    
+    public AffineTransform getTransform();
+    
     public JComponent getTextComponent();
 
     public void remove();
 
     /**
-     * Check if a permanent copy of this Positionable should be stored.
+     * Store a permanent copy of this Positionable The editorXml will call this
+     * method to find out whether it should store this Positionable item.
      *
-     * @return true if this Positionable should be stored; false otherwise
+     * @return true if the Editor should store this in the configuration file.
+     * false if if the Editor should not store this object
      */
     public boolean storeItem();
 
     /**
      * Use the 'Standard' presentation of the popup menu items. The editor will
-     * call this method to find out whether it should create any popup viewing
+     * call this method to find out whether it should creates any popup viewing
      * menu items.
      *
      * @return true if Editor may add the standardpopup menu items
      */
     public boolean doViemMenu();
-
-    /**
+    /*
      * Utility to handle Margins, Borders and other common popup items
-     *
      * @return null if these item do not apply
      */
     public PositionablePopupUtil getPopupUtility();
@@ -222,9 +178,15 @@ public interface Positionable extends Cloneable {
 
     public void doMouseExited(MouseEvent event);
 
-    // The following are common for all JComponents
-    public Rectangle getBounds(Rectangle r);
+    /**
+     * Get the bounding rectangle of the item as it is in the editor's content list
+     * That is, untransformed by scaling, rotation or mirroring.
+     * @param r a rectangle that will be sized and returned
+     * @return the bounds of the item as it is in the content list
+     */
+    public Rectangle getContentBounds(Rectangle r);
 
+    // The following are common for all JComponents
     public boolean contains(int x, int y);
 
     public int getX();

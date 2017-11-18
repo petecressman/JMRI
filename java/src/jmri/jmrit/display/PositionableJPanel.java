@@ -1,15 +1,24 @@
 package jmri.jmrit.display;
 
+import java.awt.Color;
 import java.awt.Container;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
+import javax.swing.BorderFactory;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +28,7 @@ import org.slf4j.LoggerFactory;
 public class PositionableJPanel extends JPanel implements Positionable, MouseListener, MouseMotionListener {
 
     protected Editor _editor = null;
+    protected boolean debug = false;
 
     private ToolTip _tooltip;
     protected boolean _showTooltip = true;
@@ -29,12 +39,19 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
     protected boolean _hidden = false;
     protected int _displayLevel;
     private double _scale = 1.0;    // scaling factor
+    private int _degree;
+    PositionablePopupUtil _popupUtil;
+
+    private AffineTransform _transformS = new AffineTransform();    // Scaled
+    private AffineTransform _transformR = new AffineTransform();   // Scaled & Rotated
+    private AffineTransform _transformCA = new AffineTransform();   // Scaled, Rotated & translated for coord alias
 
     JMenuItem lock = null;
     JCheckBoxMenuItem showTooltipItem = null;
 
     public PositionableJPanel(Editor editor) {
         _editor = editor;
+        debug = log.isDebugEnabled();
     }
 
     @Override
@@ -55,63 +72,52 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         if (getPopupUtility() == null) {
             pos.setPopupUtility(null);
         } else {
-            pos.setPopupUtility(getPopupUtility().clone(pos, pos.getTextComponent()));
+            pos.setPopupUtility(getPopupUtility().clone());
         }
         pos.updateSize();
         return pos;
     }
 
-    @Override
     public void setPositionable(boolean enabled) {
         _positionable = enabled;
     }
 
-    @Override
     public boolean isPositionable() {
         return _positionable;
     }
 
-    @Override
     public void setEditable(boolean enabled) {
         _editable = enabled;
     }
 
-    @Override
     public boolean isEditable() {
         return _editable;
     }
 
-    @Override
     public void setViewCoordinates(boolean enabled) {
         _viewCoordinates = enabled;
     }
 
-    @Override
     public boolean getViewCoordinates() {
         return _viewCoordinates;
     }
 
-    @Override
     public void setControlling(boolean enabled) {
         _controlling = enabled;
     }
 
-    @Override
     public boolean isControlling() {
         return _controlling;
     }
 
-    @Override
     public void setHidden(boolean hide) {
         _hidden = hide;
     }
 
-    @Override
     public boolean isHidden() {
         return _hidden;
     }
 
-    @Override
     public void showHidden() {
         if (!_hidden || _editor.isEditable()) {
             setVisible(true);
@@ -120,11 +126,13 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         }
     }
 
+    /**
+     * Delayed setDisplayLevel for DnD
+     */
     public void setLevel(int l) {
         _displayLevel = l;
     }
 
-    @Override
     public void setDisplayLevel(int l) {
         int oldDisplayLevel = _displayLevel;
         _displayLevel = l;
@@ -134,7 +142,6 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
         }
     }
 
-    @Override
     public int getDisplayLevel() {
         return _displayLevel;
     }
@@ -158,82 +165,89 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
     public ToolTip getToolTip() {
         return _tooltip;
     }
-
-    @Override
-    public void setScale(double s) {
-        _scale = s;
+    
+    public void displayState() {
     }
 
-    @Override
+    public void setScale(double s) {
+        if (s < .1) {
+            _scale = .1;
+            log.error(getName()+" Scale cannot be less than 10%!!");
+        } else {
+            _scale = s;            
+        }
+        _transformS = AffineTransform.getScaleInstance(_scale, _scale);
+        updateSize();
+        displayState();
+    }
+
+
     public double getScale() {
         return _scale;
     }
 
-    // no subclasses support rotations (yet)
-    @Override
-    public void rotate(int deg) {
+    public void setDegrees(int deg) {
+        _degree = deg % 360;
+        updateSize();
+        displayState();
     }
 
-    @Override
-    public int getDegrees() {
-        return 0;
+    public final int getDegrees() {
+        return _degree;
     }
 
-    @Override
+    public void setFlip(int f) {
+    }
+
     public JComponent getTextComponent() {
-        return this;
+        return _popupUtil._textComponent;
     }
 
-    @Override
     public String getNameString() {
         return getName();
     }
 
-    @Override
     public Editor getEditor() {
         return _editor;
     }
 
-    @Override
     public void setEditor(Editor ed) {
         _editor = ed;
     }
 
-    // overide where used - e.g. momentary
-    @Override
+    public void setPopupUtility(PositionablePopupUtil tu) {
+        _popupUtil = tu;
+    }
+
+    public PositionablePopupUtil getPopupUtility() {
+        return _popupUtil;
+    }
+   // overide where used - e.g. momentary
     public void doMousePressed(MouseEvent event) {
     }
 
-    @Override
     public void doMouseReleased(MouseEvent event) {
     }
 
-    @Override
     public void doMouseClicked(MouseEvent event) {
     }
 
-    @Override
     public void doMouseDragged(MouseEvent event) {
     }
 
-    @Override
     public void doMouseMoved(MouseEvent event) {
     }
 
-    @Override
     public void doMouseEntered(MouseEvent event) {
     }
 
-    @Override
     public void doMouseExited(MouseEvent event) {
     }
 
-    @Override
     public boolean storeItem() {
         return true;
     }
 
-    @Override
     public boolean doViemMenu() {
         return true;
     }
@@ -241,32 +255,26 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
     /**
      * For over-riding in the using classes: add item specific menu choices
      */
-    @Override
     public boolean setRotateOrthogonalMenu(JPopupMenu popup) {
         return false;
     }
 
-    @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         return false;
     }
 
-    @Override
     public boolean setScaleMenu(JPopupMenu popup) {
         return false;
     }
 
-    @Override
     public boolean setDisableControlMenu(JPopupMenu popup) {
         return false;
     }
 
-    @Override
     public boolean setTextEditMenu(JPopupMenu popup) {
         return false;
     }
 
-    @Override
     public boolean showPopUp(JPopupMenu popup) {
         return false;
     }
@@ -274,25 +282,26 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
     JFrame _iconEditorFrame;
     IconAdder _iconEditor;
 
-    @Override
     public boolean setEditIconMenu(JPopupMenu popup) {
         return false;
     }
 
-    @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
         return setEditIconMenu(popup);
     }
 
+    /**
+     * Utility
+     */
     protected void makeIconEditorFrame(Container pos, String name, boolean table, IconAdder editor) {
         if (editor != null) {
             _iconEditor = editor;
         } else {
-            _iconEditor = new IconAdder(name);
+            log.error("IconAdder missing for name={}. cannot make _iconEditorFrame", name);
+//            _iconEditor = new IconAdder(name, getEditor());
         }
         _iconEditorFrame = _editor.makeAddIconFrame(name, false, table, _iconEditor);
         _iconEditorFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
                 _iconEditorFrame.dispose();
                 _iconEditorFrame = null;
@@ -309,10 +318,9 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
     /**
      * ************** end Positionable methods *********************
      */
-    /**
+   /**
      * Removes this object from display and persistance
      */
-    @Override
     public void remove() {
         _editor.removeFromContents(this);
         cleanup();
@@ -329,159 +337,231 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
     boolean active = true;
 
     /**
-     * @return true if this object is still displayed, and should be stored;
-     *         false otherwise
+     * "active" means that the object is still displayed, and should be stored.
      */
     public boolean isActive() {
         return active;
     }
 
-    @Override
     public void mousePressed(MouseEvent e) {
         _editor.mousePressed(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
     public void mouseReleased(MouseEvent e) {
         _editor.mouseReleased(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
     public void mouseClicked(MouseEvent e) {
         _editor.mouseClicked(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
     public void mouseExited(MouseEvent e) {
-//     transferFocus();
+//    	transferFocus();
         _editor.mouseExited(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
     public void mouseEntered(MouseEvent e) {
         _editor.mouseEntered(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
     public void mouseMoved(MouseEvent e) {
         _editor.mouseMoved(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
     public void mouseDragged(MouseEvent e) {
         _editor.mouseDragged(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    /**
-     * ************************************************************
-     */
-    PositionablePopupUtil _popupUtil;
+    /**************************************************************/
 
-    @Override
-    public void setPopupUtility(PositionablePopupUtil tu) {
-        _popupUtil = tu;
-    }
-
-    @Override
-    public PositionablePopupUtil getPopupUtility() {
-        return _popupUtil;
-    }
-
-    /**
-     * Update the AWT and Swing size information due to change in internal
-     * state, e.g. if one or more of the icons that might be displayed is
-     * changed
-     */
-    @Override
-    public void updateSize() {
-        invalidate();
-        setSize(maxWidth(), maxHeight());
-        if (log.isDebugEnabled()) {
-//            javax.swing.JTextField text = (javax.swing.JTextField)_popupUtil._textComponent;
-            log.debug("updateSize: {}, text: w={} h={}",
-                    _popupUtil.toString(),
-                    getFontMetrics(_popupUtil.getFont()).stringWidth(_popupUtil.getText()),
-                    getFontMetrics(_popupUtil.getFont()).getHeight());
-        }
-        validate();
-        repaint();
-    }
-
-    @Override
-    public int maxWidth() {
-        int max = 0;
-        if (_popupUtil != null) {
-            if (_popupUtil.getFixedWidth() != 0) {
-                max = _popupUtil.getFixedWidth();
-                max += _popupUtil.getMargin() * 2;
-                if (max < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
-                    _popupUtil.setFixedWidth(PositionablePopupUtil.MIN_SIZE);
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
-            } else {
-                max = getPreferredSize().width;
-                /*
-                 if(_popupUtil._textComponent instanceof javax.swing.JTextField) {
-                 javax.swing.JTextField text = (javax.swing.JTextField)_popupUtil._textComponent;
-                 max = getFontMetrics(text.getFont()).stringWidth(text.getText());
-                 } */
-                max += _popupUtil.getMargin() * 2;
-                if (max < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
+    public int getWidth() {
+        int width = 0;
+        if (_popupUtil != null && _popupUtil.getFixedWidth() != 0) {
+            width = _popupUtil.getFixedWidth();
+            if (width < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
+                _popupUtil.setFixedWidth(PositionablePopupUtil.MIN_SIZE);
+                width = PositionablePopupUtil.MIN_SIZE;
+            }
+        } else {
+            width = getPreferredSize().width;
+            if (width < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
+                width = PositionablePopupUtil.MIN_SIZE;
             }
         }
-        log.debug("maxWidth= {} preferred width= {}", max, getPreferredSize().width);
-        return max;
+        if (_popupUtil != null) {
+            width += (_popupUtil.getBorderSize() + _popupUtil.getMarginSize()) * 2;
+        }
+        if (debug) {
+            log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
+        }
+        return width;
     }
 
-    @Override
-    public int maxHeight() {
-        int max = 0;
-        if (_popupUtil != null) {
-            if (_popupUtil.getFixedHeight() != 0) {
-                max = _popupUtil.getFixedHeight();
-                max += _popupUtil.getMargin() * 2;
-                if (max < PositionablePopupUtil.MIN_SIZE) {   // don't let item disappear
-                    _popupUtil.setFixedHeight(PositionablePopupUtil.MIN_SIZE);
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
-            } else {
-                max = getPreferredSize().height;
-                /*
-                 if(_popupUtil._textComponent!=null) {
-                 max = getFontMetrics(_popupUtil._textComponent.getFont()).getHeight();
-                 }  */
-                if (_popupUtil != null) {
-                    max += _popupUtil.getMargin() * 2;
-                }
-                if (max < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
+    public int getHeight() {
+        int height = 0;
+        if (_popupUtil != null && _popupUtil.getFixedHeight() != 0) {
+            height = _popupUtil.getFixedHeight();
+            if (height < PositionablePopupUtil.MIN_SIZE) {   // don't let item disappear
+                _popupUtil.setFixedHeight(PositionablePopupUtil.MIN_SIZE);
+                height = PositionablePopupUtil.MIN_SIZE;
+            }
+        } else {
+            height = getPreferredSize().height;
+            if (height < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
+                height = PositionablePopupUtil.MIN_SIZE;
             }
         }
-        log.debug("maxHeight= {} preferred width= {}", max, getPreferredSize().height);
-        return max;
+        if (_popupUtil != null) {
+            height += (_popupUtil.getBorderSize() + _popupUtil.getMarginSize()) * 2;
+        }
+        if (debug) {
+            log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
+        }
+        return height;
     }
 
-    @Override
     public jmri.NamedBean getNamedBean() {
         return null;
     }
+    
+    public Rectangle getContentBounds(Rectangle r) {
+        return getBounds(r);
+    }
 
-    private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class);
+    public void updateSize() {
+        int w = getWidth();
+        int h = getHeight();
+        int _displayWidth = w;
+        int _displayHeight = h;
+        int deg = _degree;
+        if (deg<0) {
+            deg = 360 + deg;
+        }
+        if (deg==0) {
+            _transformR = new AffineTransform();
+            _transformCA = new AffineTransform();
+        } else {
+            double rad = (Math.PI*deg)/180;
+            if (deg <= 90) {
+                _displayWidth = (int)(Math.round(w*Math.cos(rad)+h*Math.sin(rad)));
+                _displayHeight = (int)(Math.round(h*Math.cos(rad)+w*Math.sin(rad)));
+                _transformCA = AffineTransform.getTranslateInstance(h * Math.sin(rad), 0.0);
+            } else if (deg <= 180) {
+                _displayWidth = (int)(Math.round(-w*Math.cos(rad)+h*Math.sin(rad)));
+                _displayHeight = (int)(Math.round(-h*Math.cos(rad)+w*Math.sin(rad)));
+                _transformCA = AffineTransform.getTranslateInstance(h * Math.sin(rad) - w * Math.cos(rad), -h * Math.cos(rad));
+            } else if (deg <= 270) {
+                _displayWidth = (int)(Math.round(-h*Math.sin(rad)-w*Math.cos(rad)));
+                _displayHeight = (int)(Math.round(-w*Math.sin(rad)-h*Math.cos(rad)));
+                _transformCA = AffineTransform.getTranslateInstance(-w * Math.cos(rad), -w * Math.sin(rad) - h * Math.cos(rad));
+            } else {
+                _displayWidth = (int)(Math.round(-h*Math.sin(rad)+w*Math.cos(rad)));
+                _displayHeight = (int)(Math.round(-w*Math.sin(rad)+h*Math.cos(rad)));
+                _transformCA = AffineTransform.getTranslateInstance(0.0, -w * Math.sin(rad));
+            }
+            _transformR = AffineTransform.getRotateInstance(rad);
+            _transformCA.concatenate(_transformR);
+        }
+        if (_scale >= .01) {
+            _transformS = AffineTransform.getScaleInstance(_scale, _scale);                
+            _displayWidth = (int)Math.round(_scale*_displayWidth);
+            _displayHeight = (int)Math.round(_scale*_displayHeight);
+            _transformCA.concatenate(_transformS);
+        }
+        setSize(_displayWidth, _displayHeight);
+        repaint();
+//      System.out.println("displayWidth= "+_displayWidth+" displayHeight= "+_displayHeight);
+    }
+    
+    public final AffineTransform getTransform() {
+        return _transformCA;
+    }
+    
+    public void setBorder() {
+        Color color = _popupUtil.getBackgroundColor();
+        setBackground(color);
+        int size = _popupUtil.getMarginSize();
+        Border borderMargin;        
+        if (isOpaque()) {
+//            borderMargin = new LineBorder(color, size);
+            borderMargin = BorderFactory.createLineBorder(color, size);
+        } else {
+            borderMargin = BorderFactory.createEmptyBorder(size, size, size, size);
+        }
+        color = _popupUtil.getBorderColor();
+        size = _popupUtil.getBorderSize();
+        Border outlineBorder;
+        if (color != null) {
+//            outlineBorder = new LineBorder(color, size);
+            outlineBorder = BorderFactory.createLineBorder(color, size);
+        } else {
+            outlineBorder = BorderFactory.createEmptyBorder(size, size, size, size);
+        }
+        super.setBorder(new CompoundBorder(outlineBorder, borderMargin));
+        
+    }
+    
+    
+    @Override
+    protected void paintComponent(Graphics g) {
+//        Graphics2D g2d = (Graphics2D)g;
+        Graphics2D g2d = (Graphics2D)g.create();
+        g2d.transform(getTransform());
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setClip(null);
+        
+//        setBorder();
+        super.paintBorder(g);
+
+/*        int borderSize = 0;
+        java.awt.Color backgroundColor = null;
+        java.awt.Color borderColor = null;
+        if (_popupUtil!=null) {
+            borderSize = _popupUtil.getBorderSize();
+            backgroundColor = _popupUtil.getBackgroundColor();
+            borderColor = _popupUtil.getBorderColor();
+        }
+        Rectangle borderRect = new Rectangle (0, 0, getWidth(), getHeight());
+        if (backgroundColor!=null) {
+            g2d.setColor(backgroundColor);
+            g2d.fillRect(borderRect.x, borderRect.y, borderRect.width, borderRect.height);
+        }
+        if (borderColor!=null && borderSize>0) {
+            g2d.setColor(borderColor);
+            g2d.setStroke(new java.awt.BasicStroke(borderSize));
+            g2d.drawRect(borderRect.x, borderRect.y, borderRect.width, borderRect.height);
+        }            
+        getTextComponent().setBackground(backgroundColor);
+        this.setBackground(backgroundColor);
+        this.setOpaque(false);
+        if (backgroundColor==null) {
+            getTextComponent().setOpaque(false);            
+        }
+        super.paintComponent(g2d);
+        g2d.dispose();
+        */
+    }
+    
+    private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class.getName());
 }

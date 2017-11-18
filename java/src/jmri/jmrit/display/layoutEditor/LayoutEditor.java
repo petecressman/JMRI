@@ -5389,9 +5389,9 @@ public class LayoutEditor extends PanelEditor implements VetoableChangeListener,
             double w = 10.0;
             double h = 5.0;
 
-            if (s.isIcon() || s.isRotated()) {
-                w = s.maxWidth();
-                h = s.maxHeight();
+            if (s.isIcon() || s.getDegrees() % 360 != 0) {
+                w = s.getWidth();
+                h = s.getHeight();
             } else if (s.isText()) {
                 h = s.getFont().getSize();
                 w = (h * 2 * (s.getText().length())) / 3;
@@ -6343,8 +6343,10 @@ public class LayoutEditor extends PanelEditor implements VetoableChangeListener,
         g.setColor(new Color(204, 207, 88));
         g.setStroke(new BasicStroke(2.0f));
 
-        for (Positionable c : _positionableSelection) {
-            g.drawRect(c.getX(), c.getY(), c.maxWidth(), c.maxHeight());
+        if (_positionableSelection != null) {
+            for (Positionable c : _positionableSelection) {
+                g.drawRect(c.getX(), c.getY(), c.getWidth(), c.getHeight());
+            }
         }
 
         for (LayoutTrack lt : _layoutTrackSelection) {

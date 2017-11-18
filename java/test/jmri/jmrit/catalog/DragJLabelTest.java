@@ -6,7 +6,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ public class DragJLabelTest {
     @Test
     public void testCTor() throws java.lang.ClassNotFoundException {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        DragJLabel t = new DragJLabel(DataFlavor.stringFlavor);
+        DragJLabel t = new DragJLabel(DataFlavor.stringFlavor, "text");
         Assert.assertNotNull("exists",t);
     }
 

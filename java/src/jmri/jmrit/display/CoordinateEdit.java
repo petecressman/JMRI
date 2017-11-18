@@ -466,15 +466,15 @@ public class CoordinateEdit extends JmriJFrame {
 
     public void initMargin() {
         PositionablePopupUtil util = pl.getPopupUtility();
-        oldX = util.getMargin();
+        oldX = util.getMarginSize();
 
         textX = new JLabel();
-        textX.setText(Bundle.getMessage("Margin") + ": " + util.getMargin());
+        textX.setText(Bundle.getMessage("Margin") + ": " + util.getMarginSize());
         textX.setVisible(true);
 
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, 1000, 1);
         spinX = new JSpinner(model);
-        spinX.setValue(Integer.valueOf(util.getMargin()));
+        spinX.setValue(Integer.valueOf(util.getMarginSize()));
         spinX.setToolTipText("Enter margin size");
         spinX.setMaximumSize(new Dimension(
                 spinX.getMaximumSize().width, spinX.getPreferredSize().height));
@@ -488,7 +488,7 @@ public class CoordinateEdit extends JmriJFrame {
             public void actionPerformed(ActionEvent e) {
                 int l = ((Number) spinX.getValue()).intValue();
                 PositionablePopupUtil util = pl.getPopupUtility();
-                pl.getPopupUtility().setMargin(l);
+                pl.getPopupUtility().setMarginSize(l);
                 pl.getEditor().setAttributes(util, pl);
                 textX.setText(Bundle.getMessage("Margin") + ": " + l);
                 dispose();
@@ -498,7 +498,7 @@ public class CoordinateEdit extends JmriJFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pl.getPopupUtility().setMargin(oldX);
+                pl.getPopupUtility().setMarginSize(oldX);
                 dispose();
             }
         });
@@ -640,13 +640,13 @@ public class CoordinateEdit extends JmriJFrame {
 
     public void initText() {
         PositionableLabel pLabel = (PositionableLabel) pl;
-        oldStr = pLabel.getUnRotatedText();
+        oldStr = pLabel.getText();
         textX = new JLabel();
         textX.setText(Bundle.getMessage("TextLabel") + ":");
         textX.setVisible(true);
 
         xTextField = new JTextField(15);
-        xTextField.setText(pLabel.getUnRotatedText());
+        xTextField.setText(pLabel.getText());
         xTextField.setToolTipText(Bundle.getMessage("TooltipEnterText"));
 
         getContentPane().setLayout(new GridBagLayout());
@@ -657,17 +657,20 @@ public class CoordinateEdit extends JmriJFrame {
             public void actionPerformed(ActionEvent e) {
                 PositionableLabel pp = (PositionableLabel) pl;
                 String t = xTextField.getText();
-                boolean hasText = (t != null && t.length() > 0);
-                if (pp.isIcon() || hasText) {
-                    pp._text = hasText;
+                if (pp.isIcon()) {
                     if (pp instanceof SensorIcon) {
-                        ((SensorIcon) pp).setOriginalText(t);
+                       ((SensorIcon)pp).setOverlayText(t); 
+                       pp.updateSize();
+                       dispose();
+                    } else {
+                        if (t != null && t.length() > 0) {
+                            pp.setText(t);                                                                            
+                            pp.updateSize();
+                            dispose();
+                        } else {
+                            xTextField.setText("Item may disappear with null text!");
+                        }
                     }
-                    pp.setText(t);
-                    pp.updateSize();
-                    dispose();
-                } else {
-                    xTextField.setText(Bundle.getMessage("warningNullText"));
                 }
             }
         });

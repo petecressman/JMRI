@@ -12,7 +12,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -1216,11 +1215,18 @@ public class LayoutEditorTools {
         l.setIcon(Bundle.getMessage("SignalHeadStateLunar"), signalIconEditor.getIcon(8));
         l.setIcon(Bundle.getMessage("SignalHeadStateFlashingLunar"), signalIconEditor.getIcon(9));
         l.setLocation(xLoc, yLoc);
-        if (rotation > 0) {
-            Iterator<String> e = l.getIconStateNames();
-            while (e.hasNext()) {
-                l.getIcon(e.next()).setRotation(rotation, l);
-            }
+        switch (rotation % 4) {
+            case 1:
+                l.setDegrees(90);
+                break;
+            case 2:
+                l.setDegrees(180);
+                break;
+            case 3:
+                l.setDegrees(270);
+                break;
+            default:
+                l.setDegrees(0);
         }
         layoutEditor.putSignal(l);
     }
@@ -1250,13 +1256,10 @@ public class LayoutEditorTools {
         l.setIcon(Bundle.getMessage("SignalHeadStateFlashingLunar"), signalIconEditor.getIcon(9));
 
         if (directionDEG > 0) {
-            Iterator<String> e = l.getIconStateNames();
-            while (e.hasNext()) {
-                l.getIcon(e.next()).rotate((int) directionDEG, l);
-            }
+            l.setDegrees((int)directionDEG);
         }
 
-        l.setLocation(xLoc - (int) (l.maxWidth() / 2.0), yLoc - (int) (l.maxHeight() / 2.0));
+        l.setLocation(xLoc - (int) (l.getWidth() / 2.0), yLoc - (int) (l.getHeight() / 2.0));
 
         layoutEditor.putSignal(l);
     }
@@ -8370,7 +8373,7 @@ public class LayoutEditorTools {
             int rotation, int xLoc, int yLoc) {
         l.setLocation(xLoc, yLoc);
         if (rotation > 0) {
-            l.rotate(rotation);
+            l.setDegrees(rotation);
         }
         if (l instanceof SignalMastIcon) {
             layoutEditor.putSignalMast((SignalMastIcon) l);
@@ -8486,8 +8489,8 @@ public class LayoutEditorTools {
                 log.debug(Math.toDegrees(angletanRAD) + " = atan2(" + o + ", " + a + ") (" + tanx + ")");
             }
 
-            int oldHeight = l.maxHeight();
-            int oldWidth = l.maxWidth();
+            int oldHeight = l.getHeight();
+            int oldWidth = l.getWidth();
 
             //pt1 is always our boundary point
             //East side
@@ -8496,12 +8499,12 @@ public class LayoutEditorTools {
                 if (pt2y > pt1y) {
                     //"South East Corner"
                     rotateDEG = rotateDEG + 270;  //Correct for SM111, sm101, sm121, SM80
-                    l.rotate(rotateDEG);
+                    l.setDegrees(rotateDEG);
                     loc = southEastToNorthWest(pt1, l, oldWidth, oldHeight, rotateDEG, isRightSide, fromPoint);
                 } else {
                     //"North East corner" //correct for sm110, sm70, sm131
                     rotateDEG = 270 - rotateDEG;
-                    l.rotate(rotateDEG);
+                    l.setDegrees(rotateDEG);
                     loc = northEastToSouthWest(pt1, l, oldWidth, oldHeight, rotateDEG, isRightSide, fromPoint);
                 }
 
@@ -8509,13 +8512,13 @@ public class LayoutEditorTools {
                 //West Side
                 if (pt2y > pt1y) {
                     //South West //WORKING FOR SM141, sm130, SM71
-                    l.rotate(rotateDEG - 90);
+                    l.setDegrees(rotateDEG - 90);
                     //South West
                     loc = southWestToNorthEast(pt1, l, oldWidth, oldHeight, rotateDEG, isRightSide, fromPoint);
                 } else {
                     //North West //Working FOR SM140, SM81, sm120
                     rotateDEG = (180 - rotateDEG) + 90;
-                    l.rotate(rotateDEG);
+                    l.setDegrees(rotateDEG);
                     loc = northWestToSouthEast(pt1, l, oldWidth, oldHeight, rotateDEG, isRightSide, fromPoint);
                 }
             }
@@ -8529,17 +8532,17 @@ public class LayoutEditorTools {
         if (right) {
             offsetx = (int) p.getX() + offSetFromPoint;
         } else {
-            offsetx = (int) p.getX() - offSetFromPoint - l.maxWidth();
+            offsetx = (int) p.getX() - offSetFromPoint - l.getWidth();
         }
         return new Point(offsetx, offsety);
     }
 
     Point northToSouth(Point2D p, PositionableIcon l, boolean right, double fromPoint) {
-        l.rotate(180);
+        l.setDegrees(180);
         int offsetx = 0;
-        int offsety = (int) (p.getY() - (offSetFromPoint + fromPoint) - l.maxHeight());
+        int offsety = (int) (p.getY() - (offSetFromPoint + fromPoint) - l.getHeight());
         if (right) {
-            offsetx = (int) p.getX() - offSetFromPoint - l.maxWidth();
+            offsetx = (int) p.getX() - offSetFromPoint - l.getWidth();
         } else {
             offsetx = (int) p.getX() + offSetFromPoint;
         }
@@ -8547,23 +8550,23 @@ public class LayoutEditorTools {
     }
 
     Point westToEast(Point2D p, PositionableIcon l, boolean right, double fromPoint) {
-        l.rotate(90);
-        int offsetx = (int) (p.getX() - (l.maxWidth() + (offSetFromPoint + fromPoint - 1)));
+        l.setDegrees(90);
+        int offsetx = (int) (p.getX() - (l.getWidth() + (offSetFromPoint + fromPoint - 1)));
         int offsety = 0;
         if (right) {
             offsety = (int) p.getY() + (offSetFromPoint - 1);
         } else {
-            offsety = (int) p.getY() - (offSetFromPoint) - l.maxHeight();
+            offsety = (int) p.getY() - (offSetFromPoint) - l.getHeight();
         }
         return new Point(offsetx, offsety);
     }
 
     Point eastToWest(Point2D p, PositionableIcon l, boolean right, double fromPoint) {
-        l.rotate(-90);
+        l.setDegrees(-90);
         int offsetx = (int) (p.getX() + offSetFromPoint + fromPoint);
         int offsety = 0;
         if (right) {
-            offsety = (int) p.getY() - (offSetFromPoint - 1) - l.maxHeight();
+            offsety = (int) p.getY() - (offSetFromPoint - 1) - l.getHeight();
         } else {
             offsety = (int) p.getY() + (offSetFromPoint);
         }
@@ -8597,7 +8600,7 @@ public class LayoutEditorTools {
         if (log.isDebugEnabled()) {
             log.debug("north east to south west " + angleDEG);
             log.debug("oldWidth " + oldWidth + " oldHeight " + oldHeight);
-            log.debug("newWidth " + l.maxWidth() + " newHeight " + l.maxHeight());
+            log.debug("newWidth " + l.getWidth() + " newHeight " + l.getHeight());
             log.debug("Icon adj: " + iconAdj + " opp adj: " + iconAdjOpp);
             log.debug("boundary point opp " + bpo);
             log.debug("boundary point adj " + bpa);
@@ -8611,7 +8614,7 @@ public class LayoutEditorTools {
             //double y_dist_to_Icon = bpa+bpo+l.maxHeight();
 
             double x_dist_to_Icon = (iconAdjOpp) - (bpa - to);
-            double y_dist_to_Icon = ta + bpo + l.maxHeight();
+            double y_dist_to_Icon = ta + bpo + l.getHeight();
 
             log.debug("x dist " + x_dist_to_Icon + ", y dist " + y_dist_to_Icon);
 
@@ -8663,7 +8666,7 @@ public class LayoutEditorTools {
         if (log.isDebugEnabled()) {
             log.debug("south west to north east " + angleDEG);
             log.debug("oldWidth " + oldWidth + " oldHeight " + oldHeight);
-            log.debug("newWidth " + l.maxWidth() + " newHeight " + l.maxHeight());
+            log.debug("newWidth " + l.getWidth() + " newHeight " + l.getHeight());
             log.debug("Icon adj: " + iconAdj + " opp adj: " + iconAdjOpp);
             log.debug("boundary point opp " + bpo);
             log.debug("boundary point adj " + bpa);
@@ -8684,9 +8687,9 @@ public class LayoutEditorTools {
             ypos = (int) (p.getY() + y_dist_to_Icon);
             log.debug("yPos " + ypos);
         } else {
-            double x_dist_to_Icon = (bpa + to) + l.maxWidth();
+            double x_dist_to_Icon = (bpa + to) + l.getWidth();
             //double y_dist_to_Icon = (iconAdj+(ta-bpo));
-            double y_dist_to_Icon = (bpo - ta) - (l.maxHeight() - iconAdjOpp);
+            double y_dist_to_Icon = (bpo - ta) - (l.getHeight() - iconAdjOpp);
             //double y_dist_to_Icon = (iconAdj+(ta-bpo));
             log.debug("x dist " + x_dist_to_Icon + ", y dist " + y_dist_to_Icon);
             xpos = (int) (p.getX() - x_dist_to_Icon);
@@ -8714,7 +8717,7 @@ public class LayoutEditorTools {
             oldHeight = tmpWidth;
         }
         log.debug("oldWidth " + oldWidth + " oldHeight " + oldHeight);
-        log.debug("newWidth " + l.maxWidth() + " newHeight " + l.maxHeight());
+        log.debug("newWidth " + l.getWidth() + " newHeight " + l.getHeight());
         //double ang = angle;
         double oppAng = 90 - angleDEG;
         double angleRAD = Math.toRadians(angleDEG);
@@ -8730,7 +8733,7 @@ public class LayoutEditorTools {
         if (log.isDebugEnabled()) {
             log.debug("north west to south east " + angleDEG);
             log.debug("oldWidth " + oldWidth + " oldHeight " + oldHeight);
-            log.debug("newWidth " + l.maxWidth() + " newHeight " + l.maxHeight());
+            log.debug("newWidth " + l.getWidth() + " newHeight " + l.getHeight());
             log.debug("Icon adj: " + iconAdj + " opp adj: " + iconAdjOpp);
             log.debug("boundary point opp " + bpo);
             log.debug("boundary point adj " + bpa);
@@ -8742,7 +8745,7 @@ public class LayoutEditorTools {
         if (right) {
             //double x_dist_to_Icon = bpa+bpo+l.maxWidth();
             //double y_dist_to_Icon = bpa-(l.maxHeight()-iconAdj);
-            double x_dist_to_Icon = (l.maxWidth() + ta + bpo);
+            double x_dist_to_Icon = (l.getWidth() + ta + bpo);
             double y_dist_to_Icon = iconAdj + (bpa - to);
 
             log.debug("right x dist " + x_dist_to_Icon + ", y dist " + y_dist_to_Icon);
@@ -8754,7 +8757,7 @@ public class LayoutEditorTools {
             //double y_dist_to_Icon = bpa+bpo+l.maxHeight();
             //double x_dist_to_Icon = iconAdj+(bpa-bpo);
 
-            double y_dist_to_Icon = l.maxHeight() + bpa + to;//+(l.maxWidth()-iconAdj);
+            double y_dist_to_Icon = l.getHeight() + bpa + to;//+(l.maxWidth()-iconAdj);
             //double y_dist_to_Icon = bpa-(l.maxHeight()-iconAdj);
             //double y_dist_to_Icon = ta+bpo+l.maxHeight();
             double x_dist_to_Icon = (iconAdjOpp) + (bpo - ta);
@@ -8800,7 +8803,7 @@ public class LayoutEditorTools {
         if (log.isDebugEnabled()) {
             log.debug("south east to north west " + angleDEG);
             log.debug("oldWidth " + oldWidth + " oldHeight " + oldHeight);
-            log.debug("newWidth " + l.maxWidth() + " newHeight " + l.maxHeight());
+            log.debug("newWidth " + l.getWidth() + " newHeight " + l.getHeight());
             log.debug("Icon adj: " + iconAdj + " opp adj: " + iconAdjOpp);
             log.debug("boundary point opp " + bpo);
             log.debug("boundary point adj " + bpa);
@@ -8813,9 +8816,9 @@ public class LayoutEditorTools {
             //double x_dist_to_Icon = bpa+bpo;
             //double y_dist_to_Icon = (iconAdj+bpa-bpo);
             double x_dist_to_Icon = bpa + to;
-            double y_dist_to_Icon = (bpo - ta) - (l.maxHeight() - iconAdjOpp);
+            double y_dist_to_Icon = (bpo - ta) - (l.getHeight() - iconAdjOpp);
 
-            log.debug(Double.toString((bpo - ta) - (l.maxHeight() - iconAdjOpp)));
+            log.debug(Double.toString((bpo - ta) - (l.getHeight() - iconAdjOpp)));
             log.debug(Double.toString(bpo - (iconAdj + ta)));
             /*if(angleDeg<45){
 			 y_dist_to_Icon = (bpo-ta)-(l.maxHeight()-iconAdjOpp);
@@ -8830,7 +8833,7 @@ public class LayoutEditorTools {
             //double x_dist_to_Icon = l.maxWidth()-(iconAdj+(bpa-bpo));
             //double y_dist_to_Icon = bpa+bpo;
 
-            double x_dist_to_Icon = (bpa - to) - (l.maxWidth() - iconAdj);
+            double x_dist_to_Icon = (bpa - to) - (l.getWidth() - iconAdj);
             double y_dist_to_Icon = bpo + ta;
 
             xpos = (int) (p.getX() + x_dist_to_Icon);
@@ -13589,7 +13592,7 @@ public class LayoutEditorTools {
         l.setIcon(Bundle.getMessage("SignalHeadStateHeld"), signalIconEditor.getIcon(7));
         l.setIcon(Bundle.getMessage("SignalHeadStateLunar"), signalIconEditor.getIcon(8));
         l.setIcon(Bundle.getMessage("SignalHeadStateFlashingLunar"), signalIconEditor.getIcon(9));
-        l.rotate(90);
+        l.setDegrees(90);
         return l;
     }
 

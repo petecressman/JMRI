@@ -44,8 +44,8 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         storeCommonAttributes(p, element);
 
         if (p.isText()) {
-            if (p.getUnRotatedText() != null) {
-                element.setAttribute("text", p.getUnRotatedText());
+            if (p.getText() != null) {
+                element.setAttribute("text", p.getText());
             }
             storeTextInfo(p, element);
         }
@@ -89,15 +89,15 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         element.setAttribute("green", "" + util.getForeground().getGreen());
         element.setAttribute("blue", "" + util.getForeground().getBlue());
 
-        element.setAttribute("hasBackground", util.hasBackground() ? "yes" : "no");
-        if (util.hasBackground()) {
-            element.setAttribute("redBack", "" + util.getBackground().getRed());
-            element.setAttribute("greenBack", "" + util.getBackground().getGreen());
-            element.setAttribute("blueBack", "" + util.getBackground().getBlue());
+        Color backGround = util.getBackgroundColor(); 
+        if (backGround!=null) {
+            element.setAttribute("redBack", "" + backGround.getRed());
+            element.setAttribute("greenBack", "" + backGround.getGreen());
+            element.setAttribute("blueBack", "" + backGround.getBlue());
         }
 
-        if (util.getMargin() != 0) {
-            element.setAttribute("margin", "" + util.getMargin());
+        if (util.getMarginSize() != 0) {
+            element.setAttribute("margin", "" + util.getMarginSize());
         }
         if (util.getBorderSize() != 0) {
             element.setAttribute("borderSize", "" + util.getBorderSize());
@@ -125,23 +125,6 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
                 break;
         }
         element.setAttribute("justification", just);
-
-        if (util.getOrientation() != PositionablePopupUtil.HORIZONTAL) {
-            String ori;
-            switch (util.getOrientation()) {
-                case PositionablePopupUtil.VERTICAL_DOWN:
-                    ori = "vertical_down";
-                    break;
-                case PositionablePopupUtil.VERTICAL_UP:
-                    ori = "vertical_up";
-                    break;
-                default:
-                    ori = "horizontal";
-                    break;
-            }
-            element.setAttribute("orientation", ori);
-        }
-        //return element;
     }
 
     /**
@@ -177,12 +160,12 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         }
         Element element = new Element(elemName);
         element.setAttribute("url", icon.getURL());
-        element.setAttribute("degrees", String.valueOf(icon.getDegrees()));
+/*        element.setAttribute("degrees", String.valueOf(icon.getDegrees()));
         element.setAttribute("scale", String.valueOf(icon.getScale()));
 
         // the "rotate" attribute was deprecated in 2.9.4, replaced by the "rotation" element
         element.addContent(new Element("rotation").addContent(String.valueOf(icon.getRotation())));
-
+*/
         return element;
     }
 
@@ -221,17 +204,13 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
                     }
                 }
             }
-            // abort if name != yes and have null icon
-            if (icon == null && !name.equals("yes")) {
-                log.info("PositionableLabel icon removed for url= {}", name);
-                return;
-            }
+            // allow null icons for now
             l = new PositionableLabel(icon, editor);
             try {
                 Attribute a = element.getAttribute("rotate");
                 if (a != null && icon != null) {
                     int rotation = element.getAttribute("rotate").getIntValue();
-                    icon.setRotation(rotation, l);
+                    doRotationConversion(rotation, l);
                 }
             } catch (org.jdom2.DataConversionException e) {
             }
@@ -239,13 +218,18 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
             if (name.equals("yes")) {
                 NamedIcon nIcon = loadIcon(l, "icon", element, "PositionableLabel ", editor);
                 if (nIcon != null) {
-                    l.updateIcon(nIcon);
+                    l.setIcon(nIcon);
                 } else {
                     log.info("PositionableLabel icon removed for url= {}", name);
                     return;
                 }
             } else {
-                l.updateIcon(icon);
+                if (icon == null) {
+                    log.info("PositionableLabel icon removed for url= " + name);
+                    return;
+                } else {
+                    l.setIcon(icon);
+                }
             }
         }
 
@@ -339,25 +323,17 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         } catch (NullPointerException e) {  // considered normal if the attributes are not present
         }
 
-        a = element.getAttribute("hasBackground");
-        if (a != null) {
-            util.setHasBackground("yes".equals(a.getValue()));
-        } else {
-            util.setHasBackground(true);
-        }
-        if (util.hasBackground()) {
-            try {
-                int red = element.getAttribute("redBack").getIntValue();
-                int blue = element.getAttribute("blueBack").getIntValue();
-                int green = element.getAttribute("greenBack").getIntValue();
-                util.setBackgroundColor(new Color(red, green, blue));
-            } catch (org.jdom2.DataConversionException e) {
-                log.warn("Could not parse background color attributes!");
-            } catch (NullPointerException e) {
-                util.setHasBackground(false);// if the attributes are not listed, we consider the background as clear.
-            }
-        }
-
+        try {
+            int red = element.getAttribute("redBack").getIntValue();
+            int blue = element.getAttribute("blueBack").getIntValue();
+            int green = element.getAttribute("greenBack").getIntValue();
+            util.setBackgroundColor(new Color(red, green, blue));
+        } catch (org.jdom2.DataConversionException e) {
+            log.warn("Could not parse background color attributes!");
+        } catch (NullPointerException e) {
+            util.setBackgroundColor(null);
+        }            
+        
         int fixedWidth = 0;
         int fixedHeight = 0;
         try {
@@ -376,9 +352,11 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         if (!(fixedWidth == 0 && fixedHeight == 0)) {
             util.setFixedSize(fixedWidth, fixedHeight);
         }
+        int margin = 0;
         if ((util.getFixedWidth() == 0) || (util.getFixedHeight() == 0)) {
             try {
-                util.setMargin(element.getAttribute("margin").getIntValue());
+                margin = element.getAttribute("margin").getIntValue();
+                util.setMarginSize(margin);
             } catch (org.jdom2.DataConversionException e) {
                 log.warn("Could not parse margin attribute!");
             } catch (NullPointerException e) {  // considered normal if the attributes are not present
@@ -403,9 +381,14 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         }
         a = element.getAttribute("orientation");
         if (a != null) {
-            util.setOrientation(a.getValue());
-        } else {
-            util.setOrientation("horizontal");
+           String val = a.getValue();
+            if (val.equals("vertical_up")) {
+                l.setDegrees(-90);                
+            } else if (val.equals("vertical_down")) {
+                l.setDegrees(90);                
+            } else {
+                l.setDegrees(0);                
+            }
         }
 
         int deg = 0;
@@ -413,13 +396,10 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
             a = element.getAttribute("degrees");
             if (a != null) {
                 deg = a.getIntValue();
-                l.rotate(deg);
+                l.setDegrees(deg);
             }
         } catch (DataConversionException ex) {
             log.warn("invalid 'degrees' value (non integer)");
-        }
-        if (deg == 0 && util.hasBackground()) {
-            l.setOpaque(true);
         }
     }
 
@@ -522,7 +502,7 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
                     if (a != null) {
                         scale = elem.getAttribute("scale").getDoubleValue();
                     }
-                    icon.setLoad(deg, scale, l);
+
                     if (deg == 0) {
                         // "rotate" attribute is JMRI 2.9.3 and before
                         a = elem.getAttribute("rotate");
@@ -530,7 +510,7 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
                             int rotation = a.getIntValue();
                             // 2.9.3 and before, only unscaled icons rotate
                             if (scale == 1.0) {
-                                icon.setRotation(rotation, l);
+                                doRotationConversion(rotation, l);
                             }
                         }
                         // "rotation" element is JMRI 2.9.4 and after
@@ -538,14 +518,39 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
                         if (e != null) {
                             // ver 2.9.4 allows orthogonal rotations of scaled icons
                             int rotation = Integer.parseInt(e.getText());
-                            icon.setRotation(rotation, l);
+                            doRotationConversion(rotation, l);
                         }
                     }
                 }
+                l.setIcon(icon);
+                l.setScale(scale);
+                l.setDegrees(deg);
             } catch (org.jdom2.DataConversionException dce) {
             }
         }
         return icon;
+    }
+
+    /**
+     * Use general rotation code for orthogonal rotations.
+     * @param rotation
+     * @param l
+     */
+    protected void doRotationConversion(int rotation, PositionableLabel l) {
+        switch(rotation) {
+            case 1:
+                l.setDegrees(90);
+                break;
+            case 2:
+                l.setDegrees(180);
+                break;
+            case 3:
+                l.setDegrees(270);
+                break;
+            default:
+                l.setDegrees(0);
+                break;
+        }        
     }
 
     protected NamedIcon getNamedIcon(String childName, Element element,

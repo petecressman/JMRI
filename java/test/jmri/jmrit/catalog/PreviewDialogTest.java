@@ -1,17 +1,16 @@
 package jmri.jmrit.catalog;
 
 import java.awt.GraphicsEnvironment;
+import jmri.util.JmriJFrame;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import jmri.util.JmriJFrame;
 
 /**
  *
@@ -27,7 +26,7 @@ public class PreviewDialogTest {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         JmriJFrame jf = new JmriJFrame("PreviewDialog test frame");
         // the second paramter is a key for the bundle
-        PreviewDialog t = new PreviewDialog(jf,"catalogs",folder.getRoot(),new String[0]);
+        PreviewDialog t = new PreviewDialog(jf,"catalogs",folder.getRoot(),new String[0],false);
         Assert.assertNotNull("exists",t);
     }
 

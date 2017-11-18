@@ -85,11 +85,11 @@ public class DrawRectangle extends DrawFrame {
     protected void makeFigure(MouseEvent event, Editor ed) {
         Rectangle r = ed.getSelectRect();
         if (r != null) {
-            _width = r.width;
-            _height = r.height;
             Rectangle2D.Double rr = new Rectangle2D.Double(0, 0, _width, _height);
             _shape = new PositionableRectangle(ed, rr);
             _shape.setLocation(r.x, r.y);
+            _shape.setWidth(r.width);
+            _shape.setHeight(r.height);
             _shape.updateSize();
             _shape.setEditFrame(this);
             setDisplayParams();

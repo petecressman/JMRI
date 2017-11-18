@@ -61,11 +61,11 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     }
 
     protected Positionable finishClone(MultiSensorIcon pos) {
-        pos.setInactiveIcon(cloneIcon(getInactiveIcon(), pos));
-        pos.setInconsistentIcon(cloneIcon(getInconsistentIcon(), pos));
-        pos.setUnknownIcon(cloneIcon(getUnknownIcon(), pos));
+        pos.setInactiveIcon(new NamedIcon(getInactiveIcon()));
+        pos.setInconsistentIcon(new NamedIcon(getInconsistentIcon()));
+        pos.setUnknownIcon(new NamedIcon(getUnknownIcon()));
         for (int i = 0; i < entries.size(); i++) {
-            pos.addEntry(getSensorName(i), cloneIcon(getSensorIcon(i), pos));
+            pos.addEntry(getSensorName(i), new NamedIcon(getSensorIcon(i)));
         }
         return super.finishClone(pos);
     }
@@ -185,7 +185,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     /**
      * ****** popup AbstractAction.actionPerformed method overrides ********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         for (int i = 0; i < entries.size(); i++) {
             NamedIcon icon = entries.get(i).icon;
@@ -221,7 +221,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
         unknown.rotate(deg, this);
         inconsistent.rotate(deg, this);
         displayState();
-    }
+    }*/
 
     @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
@@ -410,7 +410,6 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
 
     // Use largest size. If icons are not same size, 
     // this can result in drawing artifacts.
-    @Override
     public int maxHeight() {
         int size = Math.max(
                 ((inactive != null) ? inactive.getIconHeight() : 0),
@@ -427,7 +426,6 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
 
     // Use largest size. If icons are not same size, 
     // this can result in drawing artifacts.
-    @Override
     public int maxWidth() {
         int size = Math.max(
                 ((inactive != null) ? inactive.getIconWidth() : 0),

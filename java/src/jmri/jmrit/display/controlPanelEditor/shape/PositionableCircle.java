@@ -16,6 +16,7 @@ public class PositionableCircle extends PositionableShape {
 
     public PositionableCircle(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Circle"));
     }
 
     public PositionableCircle(Editor editor, Shape shape) {
@@ -29,7 +30,7 @@ public class PositionableCircle extends PositionableShape {
     }
 
     @Override
-    protected Shape makeShape() {
+    public Shape makeShape() {
         return new Ellipse2D.Double(0, 0, _width, _width);
     }
 

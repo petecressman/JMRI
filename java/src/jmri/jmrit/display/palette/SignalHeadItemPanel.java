@@ -23,6 +23,7 @@ import jmri.SignalHead;
 import jmri.jmrit.catalog.DragJLabel;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.SignalHeadIcon;
 import jmri.jmrit.picker.PickListModel;
 import jmri.util.JmriJFrame;
@@ -36,7 +37,7 @@ public class SignalHeadItemPanel extends TableItemPanel {//implements ListSelect
     }
 
     @Override
-    protected JPanel initTablePanel(PickListModel model, Editor editor) {
+    protected JPanel initTablePanel(PickListModel model) {
         _table = model.makePickTable();
         ROW_HEIGHT = _table.getRowHeight();
         JPanel topPanel = new JPanel();
@@ -168,7 +169,7 @@ public class SignalHeadItemPanel extends TableItemPanel {//implements ListSelect
     }
 
     @Override
-    protected JLabel getDragger(DataFlavor flavor, HashMap<String, 
+    protected PositionableLabel getDragger(DataFlavor flavor, HashMap<String, 
             NamedIcon> map, NamedIcon icon) {
         return new IconDragJLabel(flavor, map, icon);
     }

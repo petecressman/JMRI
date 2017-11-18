@@ -2109,7 +2109,7 @@ public class SwitchboardEditor extends Editor {
             g2d.setStroke(new java.awt.BasicStroke(2.0f));
             for (Positionable p : _secondSelectionGroup) {
                 if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                    g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
+                    g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
                 }
             }
         }
