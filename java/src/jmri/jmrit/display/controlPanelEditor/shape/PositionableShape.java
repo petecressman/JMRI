@@ -248,6 +248,33 @@ public abstract class PositionableShape extends PositionableJComponent implement
     }
 
     @Override
+/*<<<<<<< HEAD
+=======
+    public Dimension getSize(Dimension rv) {
+        return new Dimension(maxWidth(), maxHeight());
+    }
+
+    @Override
+    public void updateSize() {
+        Rectangle r = getShape().getBounds();
+        setWidth(r.width);
+        setHeight(r.height);
+        setSize(r.width, r.height);
+        getEditor().repaint();
+    }
+
+    @Override
+    public int maxWidth() {
+        return getSize().width;
+    }
+
+    @Override
+    public int maxHeight() {
+        return getSize().height;
+    }
+
+    @Override
+>>>>>>> branch 'cumberlandwest' of https://github.com/petecressman/JMRI.git*/
     public boolean showPopUp(JPopupMenu popup) {
         return false;
     }
