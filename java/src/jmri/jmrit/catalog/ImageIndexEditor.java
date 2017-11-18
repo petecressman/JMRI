@@ -104,7 +104,7 @@ public final class ImageIndexEditor extends JmriJFrame {
         });
         findIcon.add(searchItem);
 
-        JMenu editMenu = new JMenu(Bundle.getMessage("EditIndexMenu"));
+        JMenu editMenu = new JMenu(Bundle.getMessage("MenuEdit"));
         menuBar.add(editMenu);
         JMenuItem addItem = new JMenuItem(Bundle.getMessage("addNode"));
         addItem.addActionListener(new ActionListener() {
@@ -269,7 +269,7 @@ public final class ImageIndexEditor extends JmriJFrame {
         CatalogTreeNode selectedNode = _index.getSelectedNode();
         if (selectedNode == null) {
             JOptionPane.showMessageDialog(this, Bundle.getMessage("selectAddNode"),
-                    Bundle.getMessage("info"), JOptionPane.INFORMATION_MESSAGE);
+                    Bundle.getMessage("MessageTitle"), JOptionPane.INFORMATION_MESSAGE);
         } else {
             String name = JOptionPane.showInputDialog(this, Bundle.getMessage("nameAddNode"),
                     Bundle.getMessage("QuestionTitle"), JOptionPane.QUESTION_MESSAGE);
@@ -287,7 +287,7 @@ public final class ImageIndexEditor extends JmriJFrame {
         CatalogTreeNode selectedNode = _index.getSelectedNode();
         if (selectedNode == null) {
             JOptionPane.showMessageDialog(this, Bundle.getMessage("selectRenameNode"),
-                    Bundle.getMessage("info"), JOptionPane.INFORMATION_MESSAGE);
+                    Bundle.getMessage("MessageTitle"), JOptionPane.INFORMATION_MESSAGE);
         } else {
             String name = JOptionPane.showInputDialog(this, Bundle.getMessage("newNameNode"),
                     selectedNode.getUserObject());
@@ -306,7 +306,7 @@ public final class ImageIndexEditor extends JmriJFrame {
         CatalogTreeNode selectedNode = _index.getSelectedNode();
         if (selectedNode == null) {
             JOptionPane.showMessageDialog(this, Bundle.getMessage("selectDeleteNode"),
-                    Bundle.getMessage("info"), JOptionPane.INFORMATION_MESSAGE);
+                    Bundle.getMessage("MessageTitle"), JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         if (log.isDebugEnabled()) {
@@ -314,7 +314,7 @@ public final class ImageIndexEditor extends JmriJFrame {
         }
         if (selectedNode.getLevel() <= 1) {
             JOptionPane.showMessageDialog(this, Bundle.getMessage("deleteRootNode"),
-                    Bundle.getMessage("info"), JOptionPane.INFORMATION_MESSAGE);
+                    Bundle.getMessage("MessageTitle"), JOptionPane.INFORMATION_MESSAGE);
             return;
         } else {
             int numNodes = countSubNodes(selectedNode);

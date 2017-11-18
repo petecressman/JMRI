@@ -54,7 +54,8 @@ public abstract class FamilyItemPanel extends ItemPanel {
     static boolean _suppressNamePrompts = false;
 
     /**
-     * Constructor types with multiple families and multiple icon families
+     * Constructor types with multiple families and multiple icon families.
+     *
      * @param parentFrame parentFrame
      * @param type type
      * @param family family
@@ -66,7 +67,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
     }
 
     /**
-     * Init for creation
+     * Init for creation.
      */
     @Override
     public void init() {
@@ -82,7 +83,8 @@ public abstract class FamilyItemPanel extends ItemPanel {
 
     /**
      * Init for update of existing track block _bottom3Panel has "Update Panel"
-     * button put into _bottom1Panel
+     * button put into _bottom1Panel.
+     *
      * @param doneAction doneAction
      * @param iconMap iconMap
      */
@@ -99,7 +101,8 @@ public abstract class FamilyItemPanel extends ItemPanel {
     }
 
     /**
-     * Init for conversion of plain track to indicator track
+     * Init for conversion of plain track to indicator track.
+     *
      * @param doneAction doneAction
      */
     public void init(ActionListener doneAction) {
@@ -203,7 +206,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
 
     /**
      * iconMap is existing map of the icon. Check whether map is one of the
-     * families. if so, return. if not, does user want to add it to families? if
+     * families. If so, return. If not, does user want to add it to families? If
      * so, add. If not, save for return when updated.
      */
     private void checkCurrentMap(HashMap<String, NamedIcon> iconMap) {
@@ -246,7 +249,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
     }
 
     /**
-     * Find the family name of the map in a fanilies HashMap
+     * Find the family name of the map in a fanilies HashMap.
      *
      * @return null if map is not in the family
      */
@@ -325,8 +328,8 @@ public abstract class FamilyItemPanel extends ItemPanel {
         reset();
     }
 
-    /*
-     * Set actions of radioButtons to change family
+    /**
+     * Set actions of radioButtons to change family.
      */
     protected JPanel makeFamilyButtons(Iterator<String> it, boolean setDefault) {
         String thisType = null;
@@ -349,6 +352,8 @@ public abstract class FamilyItemPanel extends ItemPanel {
             thisType = "BeanNameLight";
         } else if ("Portal".equals(_itemType)) {
             thisType = "BeanNamePortal";
+        } else if ("RPSReporter".equals(_itemType)) {
+            thisType = "RPSreporter"; // adapt for slightly different spelling of Bundle key (2nd r lower case)
         } else {
             thisType = _itemType;
         }
@@ -736,7 +741,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
     }
 
     /**
-     * return icon set to panel icon display class
+     * Create icon set to panel icon display class.
      *
      * @return updating map
      */
@@ -752,4 +757,5 @@ public abstract class FamilyItemPanel extends ItemPanel {
     }
 
     private final static Logger log = LoggerFactory.getLogger(FamilyItemPanel.class);
+
 }

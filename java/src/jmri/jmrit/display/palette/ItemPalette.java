@@ -402,7 +402,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
     }
 
     /*
-     * Add the tabs on the the Control Panel Editor
+     * Add the tabs on the the Control Panel Editor.
      */
     static void buildTabPane(ItemPalette palette, Editor editor) {
         _tabPane = new JTabbedPane();
@@ -463,7 +463,7 @@ public class ItemPalette extends JmriJFrame implements ChangeListener {
 
         iconPanel = new RPSItemPanel(palette, "RPSReporter", null, editor);
 //        itemPanel.init();  // show panel on start
-        _tabPane.add(new JScrollPane(iconPanel), Bundle.getMessage("RPSReporter"));
+        _tabPane.add(new JScrollPane(iconPanel), Bundle.getMessage("RPSreporter")); // stored in jmri.jmrit.display.DisplayBundle
         _tabIndex.put("RPSReporter", iconPanel);
 
         iconPanel = new ClockItemPanel(palette, "FastClock", editor);
