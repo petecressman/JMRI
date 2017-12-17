@@ -380,9 +380,6 @@ public abstract class FamilyItemPanel extends ItemPanel {
 
                 ActionListener init(String f) {
                     fam = f;
-                    if (log.isDebugEnabled()) {
-                        log.debug("ActionListener.init : for type \"" + _itemType + "\", family \"" + fam + "\"");
-                    }
                     return this;
                 }
             }.init(family));

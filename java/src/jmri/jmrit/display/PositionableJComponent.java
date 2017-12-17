@@ -87,6 +87,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return pos;
     }
 
+    @Override
     public JComponent getTextComponent() {
         return this;
     }
@@ -97,47 +98,58 @@ public class PositionableJComponent extends JComponent implements Positionable {
     /**
      * *************** Positionable methods *********************
      */
+    @Override
     public void setPositionable(boolean enabled) {
         _positionable = enabled;
     }
 
+    @Override
     public boolean isPositionable() {
         return _positionable;
     }
 
+    @Override
     public void setEditable(boolean enabled) {
         _editable = enabled;
         showHidden();
     }
 
+    @Override
     public boolean isEditable() {
         return _editable;
     }
 
+    @Override
     public void setViewCoordinates(boolean enabled) {
         _viewCoordinates = enabled;
     }
 
+    @Override
     public boolean getViewCoordinates() {
         return _viewCoordinates;
     }
 
+    @Override
     public void setControlling(boolean enabled) {
         _controlling = enabled;
     }
 
+    @Override
     public boolean isControlling() {
         return _controlling;
     }
 
+    @Override
     public void setHidden(boolean hide) {
         _hidden = hide;
     }
 
+    @Override
     public boolean isHidden() {
         return _hidden;
     }
 
+    @Override
     public void showHidden() {
         if (!_hidden || _editor.isEditable()) {
             setVisible(true);
@@ -154,6 +166,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         _displayLevel = l;
     }
 
+    @Override
     public void setDisplayLevel(int l) {
         int oldDisplayLevel = _displayLevel;
         _displayLevel = l;
@@ -165,6 +178,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
     }
 
+    @Override
     public int getDisplayLevel() {
         return _displayLevel;
     }
@@ -189,6 +203,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return _tooltip;
     }
     
+    @Override
     public void setScale(double s) {
         if (s < .01) {
             _scale = .1;
@@ -201,58 +216,73 @@ public class PositionableJComponent extends JComponent implements Positionable {
         displayState();
     }
 
+    @Override
     public final double getScale() {
         return _scale;
     }
 
+    @Override
     public void setDegrees(int deg) {
         _degree = deg % 360;
         updateSize();
         displayState();
     }
 
+    @Override
     public final int getDegrees() {
         return _degree;
     }
 
+    @Override
     public String getNameString() {
         return getName();
     }
 
+    @Override
     public final Editor getEditor() {
         return _editor;
     }
 
+    @Override
     public final void setEditor(Editor ed) {
         _editor = ed;
     }
 
     // overide where used - e.g. momentary
+    @Override
     public void doMousePressed(MouseEvent event) {
     }
 
+    @Override
     public void doMouseReleased(MouseEvent event) {
     }
 
+    @Override
     public void doMouseClicked(MouseEvent event) {
     }
 
+    @Override
     public void doMouseDragged(MouseEvent event) {
     }
 
+    @Override
     public void doMouseMoved(MouseEvent event) {
     }
 
+    @Override
     public void doMouseEntered(MouseEvent event) {
     }
 
+    @Override
     public void doMouseExited(MouseEvent event) {
     }
 
+    @Override
     public boolean storeItem() {
         return true;
     }
 
+    @Override
     public boolean doViemMenu() {
         return true;
     }
@@ -260,42 +290,52 @@ public class PositionableJComponent extends JComponent implements Positionable {
     /**
      * For over-riding in the using classes: add item specific menu choices
      */
+    @Override
     public boolean setRotateOrthogonalMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean setScaleMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean setDisableControlMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean setTextEditMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean showPopUp(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public boolean setEditIconMenu(JPopupMenu popup) {
         return false;
     }
 
+    @Override
     public void setPopupUtility(PositionablePopupUtil tu) {
         _popupUtil = tu;
     }
 
+    @Override
     public PositionablePopupUtil getPopupUtility() {
         return _popupUtil;
     }
@@ -311,6 +351,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
         _iconEditorFrame = _editor.makeAddIconFrame(name, false, table, _iconEditor);
         _iconEditorFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
                 _iconEditorFrame.dispose();
                 _iconEditorFrame = null;
@@ -325,6 +366,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
     public final static int NOFLIP = 0X00;
     public final static int HORIZONTALFLIP = 0X01;
     public final static int VERTICALFLIP = 0X02;
+    @Override
     public void setFlip(int f) {
         _flip = f;
         updateSize();
@@ -345,6 +387,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
     /**
      * Removes this object from display and persistance
      */
+    @Override
     public void remove() {
         _editor.removeFromContents(this);
         cleanup();
@@ -368,6 +411,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return active;
     }
 
+    @Override
     public jmri.NamedBean getNamedBean() {
         return null;
     }
@@ -378,6 +422,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
      * whenever any property may change the display size of the object.
      * Done so the class "display" members can make more efficient repaints.
      */
+    @Override
     public void updateSize() {
         int w = getWidth();
         int h = getHeight();
@@ -441,6 +486,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         repaint();
     }
     
+    @Override
     public final AffineTransform getTransform() {
         return _transformCA;
     }
@@ -450,6 +496,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return _displayDim;
     }
 
+    @Override
     public Rectangle getContentBounds(Rectangle r) {
         return super.getBounds(r);
     }
@@ -484,6 +531,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         super.setBackground(c);
     }*/
 
+    @Override
     public void setBorder() {
         if (_popupUtil == null) {
             return;
@@ -518,32 +566,14 @@ public class PositionableJComponent extends JComponent implements Positionable {
     public void paint(Graphics g) {
 
         g.setFont(getFont());
-//        this.setBorder();
-        super.paintBorder(g);
-/*        if (!(g instanceof Graphics2D)) {
-            return;
-        }
-//        Graphics2D g2d = (Graphics2D)g;
-//        super.paintComponent(g2d);
-
-/*        int borderSize = 0;
-        java.awt.Color backgroundColor = null;
-        java.awt.Color borderColor = null;
         if (_popupUtil!=null) {
-            borderSize = _popupUtil.getBorderSize();
-            backgroundColor = _popupUtil.getBackgroundColor();
-            borderColor = _popupUtil.getBorderColor();
+            java.awt.Color backgroundColor = _popupUtil.getBackgroundColor();
+            if (backgroundColor!=null) {
+                g.setColor(backgroundColor);
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
         }
-        Rectangle borderRect = new Rectangle (0, 0, getWidth(), getHeight());
-        if (backgroundColor!=null) {
-            g2d.setColor(backgroundColor);
-            g2d.fillRect(borderRect.x, borderRect.y, borderRect.width, borderRect.height);
-        }
-        if (borderColor!=null && borderSize>0) {
-            g2d.setColor(borderColor);
-            g2d.setStroke(new java.awt.BasicStroke(borderSize));
-            g2d.drawRect(borderRect.x, borderRect.y, borderRect.width, borderRect.height);
-        }*/          
+        super.paintBorder(g);
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableJComponent.class);

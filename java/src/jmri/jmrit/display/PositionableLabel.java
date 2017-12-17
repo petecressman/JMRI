@@ -460,7 +460,7 @@ public class PositionableLabel extends PositionableJComponent {
     }
 
     @Override
-    protected void paintComponent(Graphics g) {
+    public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.transform(getTransform());
 
@@ -478,7 +478,7 @@ public class PositionableLabel extends PositionableJComponent {
             // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
-        super.paintComponent(g2d);
+        super.paint(g2d);
 
         int iconWidth = getIconWidth();
         int iconHeight = getIconHeight();

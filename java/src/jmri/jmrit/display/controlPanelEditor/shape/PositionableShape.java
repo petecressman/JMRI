@@ -166,14 +166,12 @@ public abstract class PositionableShape extends PositionableJComponent implement
 
     @Override
 //    @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST", justification = "Cast required due to how Graphics2D was implemented in Java 1.2")
-    public void paintComponent(Graphics g) {
+    public void paint(Graphics g) {
         if (!getEditor().isEditable() && !isVisible()) {
             return;
         }
-        if (!(g instanceof Graphics2D)) {
-            return;
-        }
-        Graphics2D g2d = (Graphics2D) g;
+        Graphics2D g2d = (Graphics2D)g.create();
+        g2d.transform(getTransform());
 
         // set antialiasing hint for macOS and Windows
         // note: antialiasing has performance problems on constrained systems
@@ -190,7 +188,6 @@ public abstract class PositionableShape extends PositionableJComponent implement
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
 
-        g2d.transform(getTransform());
         g2d.setClip(null);
         Shape shape = getShape();
         

@@ -1832,6 +1832,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 if (item == null) {
                     return;
                 }
+                if (pt == null) {
+                    pt = new Point(0, 0);
+                }
                 item.setLocation(pt.x, pt.y);
                 // now set display level in the pane.
                 item.setDisplayLevel(item.getDisplayLevel());
