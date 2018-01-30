@@ -1,12 +1,12 @@
 package jmri.jmrit.display;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
-import java.awt.Image;
+import java.awt.Graphics2D;
 import java.awt.Polygon;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -44,12 +44,8 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
     Color color = Color.black;
 
     // Define common variables
-    Image logo;
-    Image scaledLogo;
-    Image clockFace;
-    NamedIcon jmriIcon;
-    NamedIcon scaledIcon;
-    NamedIcon clockIcon;
+    NamedIcon jmriIcon = new NamedIcon("resources/logo.gif", "resources/logo.gif");
+    NamedIcon clockIcon = new NamedIcon("resources/clock2.gif", "resources/clock2.gif");
 
     int hourX[] = {
         -12, -11, -25, -10, -10, 0, 10, 10, 25, 11, 12};
@@ -68,33 +64,19 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
     int rotatedMinuteX[] = new int[minuteX.length];
     int rotatedMinuteY[] = new int[minuteY.length];
 
-    Polygon hourHand;
     Polygon scaledHourHand;
-    Polygon minuteHand;
     Polygon scaledMinuteHand;
-    int minuteHeight;
-    int hourHeight;
-    double scaleRatio;
-    int faceSize;
-    int panelWidth;
-    int panelHeight;
-    int size;
-    int logoWidth;
-    int logoHeight;
-
-    // centreX, centreY are the coordinates of the centre of the clock
-    int centreX;
-    int centreY;
 
     String _url;
 
     public AnalogClock2Display(Editor editor) {
         super(editor);
-        clock = InstanceManager.getDefault(jmri.Timebase.class);
+        clock = InstanceManager.timebaseInstance();
 
         rate = (int) clock.userGetRate();
 
         init();
+        updateSize();
     }
 
     public AnalogClock2Display(Editor editor, String url) {
@@ -114,26 +96,25 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
     }
 
     protected Positionable finishClone(AnalogClock2Display pos) {
-        pos.setScale(getScale());
         return super.finishClone(pos);
     }
 
-    final void init() {
-        // Load the JMRI logo and clock face
-        // Icons are the original size version kept for to allow for mulitple resizing
-        // and scaled Icons are the version scaled for the panel size
-        jmriIcon = new NamedIcon("resources/logo.gif", "resources/logo.gif");
-        scaledIcon = new NamedIcon("resources/logo.gif", "resources/logo.gif");
-        clockIcon = new NamedIcon("resources/clock2.gif", "resources/clock2.gif");
-        logo = jmriIcon.getImage();
-        clockFace = clockIcon.getImage();
+    @Override
+    public int getWidth() {
+        return clockIcon.getIconWidth();
+    }
 
+    @Override
+    public int getHeight() {
+        return clockIcon.getIconHeight();
+    }
+
+    final void init() {
         // Create an unscaled set of hands to get the original size (height)to use
         // in the scaling calculations
-        hourHand = new Polygon(hourX, hourY, 11);
-        hourHeight = hourHand.getBounds().getSize().height;
-        minuteHand = new Polygon(minuteX, minuteY, 11);
-        minuteHeight = minuteHand.getBounds().getSize().height;
+        Polygon hourHand = new Polygon(hourX, hourY, 11);
+        Polygon minuteHand = new Polygon(minuteX, minuteY, 11);
+        int minuteHeight = minuteHand.getBounds().getSize().height;
 
         amPm = "AM";
 
@@ -151,20 +132,23 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
                 update();
             }
         });
-        setSize(clockIcon.getIconHeight()); // set to default size
+
+        double scaleRatio = getWidth() / 2.7 / minuteHeight;
+        for (int i = 0; i < minuteX.length; i++) {
+            scaledMinuteX[i] = (int) (minuteX[i] * scaleRatio);
+            scaledMinuteY[i] = (int) (minuteY[i] * scaleRatio);
+            scaledHourX[i] = (int) (hourX[i] * scaleRatio);
+            scaledHourY[i] = (int) (hourY[i] * scaleRatio);
+        }
+        scaledHourHand = new Polygon(scaledHourX, scaledHourY,
+                scaledHourX.length);
+        scaledMinuteHand = new Polygon(scaledMinuteX, scaledMinuteY,
+                scaledMinuteX.length);
     }
 
     ButtonGroup colorButtonGroup = null;
     ButtonGroup rateButtonGroup = null;
     JMenuItem runMenu = null;
-
-    public int getFaceWidth() {
-        return faceSize;
-    }
-
-    public int getFaceHeight() {
-        return faceSize;
-    }
 
     @Override
     public boolean setScaleMenu(JPopupMenu popup) {
@@ -207,28 +191,6 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
         return "Clock";
     }
 
-    @Override
-    public void setScale(double scale) {
-        if (scale == 1.0) {
-            init();
-            return;
-        }
-        AffineTransform t = AffineTransform.getScaleInstance(scale, scale);
-        int w = (int) Math.ceil(scale * clockIcon.getIconWidth());
-        int h = (int) Math.ceil(scale * clockIcon.getIconHeight());
-        clockIcon.transformImage(w, h, t, null);
-        w = (int) Math.ceil(scale * scaledIcon.getIconWidth());
-        h = (int) Math.ceil(scale * scaledIcon.getIconHeight());
-        scaledIcon.transformImage(w, h, t, null);
-        w = (int) Math.ceil(scale * jmriIcon.getIconWidth());
-        h = (int) Math.ceil(scale * jmriIcon.getIconHeight());
-        jmriIcon.transformImage(w, h, t, null);
-        setSize(clockIcon.getIconHeight());
-        scale *= getScale();
-        super.setScale(scale);
-    }
-
-    @SuppressFBWarnings(value="FE_FLOATING_POINT_EQUALITY", justification="fixed number of possible values")
     void addRateMenuEntry(JMenu menu, final int newrate) {
         JRadioButtonMenuItem button = new JRadioButtonMenuItem("" + newrate + ":1");
         button.addActionListener(new ActionListener() {
@@ -245,8 +207,6 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
             }
         });
         rateButtonGroup.add(button);
-
-        // next line is the FE_FLOATING_POINT_EQUALITY annotated above
         if (rate == newrate) {
             button.setSelected(true);
         } else {
@@ -264,128 +224,13 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
         update();
     }
 
-    @Override
-    public void paint(Graphics g) {
-        // overridden Paint method to draw the clock
-        g.setColor(color);
-        g.translate(centreX, centreY);
-
-        // Draw the clock face
-        g.drawImage(clockFace, -faceSize / 2, -faceSize / 2, faceSize, faceSize, this);
-
-        // Draw the JMRI logo
-        g.drawImage(scaledLogo, -logoWidth / 2, -faceSize / 4, logoWidth,
-                logoHeight, this);
-
-        // Draw hour hand rotated to appropriate angle
-        // Calculation mimics the AffineTransform class calculations in Graphics2D
-        // Grpahics2D and AffineTransform not used to maintain compatabilty with Java 1.1.8
-        double minuteAngleRadians = Math.toRadians(minuteAngle);
-        for (int i = 0; i < scaledMinuteX.length; i++) {
-            rotatedMinuteX[i] = (int) (scaledMinuteX[i] * Math.cos(minuteAngleRadians)
-                    - scaledMinuteY[i] * Math.sin(minuteAngleRadians));
-            rotatedMinuteY[i] = (int) (scaledMinuteX[i] * Math.sin(minuteAngleRadians)
-                    + scaledMinuteY[i] * Math.cos(minuteAngleRadians));
-        }
-        scaledMinuteHand = new Polygon(rotatedMinuteX, rotatedMinuteY, rotatedMinuteX.length);
-        double hourAngleRadians = Math.toRadians(hourAngle);
-        for (int i = 0; i < scaledHourX.length; i++) {
-            rotatedHourX[i] = (int) (scaledHourX[i] * Math.cos(hourAngleRadians)
-                    - scaledHourY[i] * Math.sin(hourAngleRadians));
-            rotatedHourY[i] = (int) (scaledHourX[i] * Math.sin(hourAngleRadians)
-                    + scaledHourY[i] * Math.cos(hourAngleRadians));
-        }
-        scaledHourHand = new Polygon(rotatedHourX, rotatedHourY,
-                rotatedHourX.length);
-
-        g.fillPolygon(scaledHourHand);
-        g.fillPolygon(scaledMinuteHand);
-
-        // Draw AM/PM indicator in slightly smaller font than hour digits
-        int amPmFontSize = (int) (faceSize * .075);
-        if (amPmFontSize < 1) {
-            amPmFontSize = 1;
-        }
-        Font amPmSizedFont = new Font("Serif", Font.BOLD, amPmFontSize);
-        g.setFont(amPmSizedFont);
-        FontMetrics amPmFontM = g.getFontMetrics(amPmSizedFont);
-
-        g.drawString(amPm, -amPmFontM.stringWidth(amPm) / 2, faceSize / 5);
+    // Method to convert degrees to radians
+    // Math.toRadians was not available until Java 1.2
+    double toRadians(double degrees) {
+        return degrees / 180.0 * Math.PI;
     }
 
-    // Method to provide the cartesian x coordinate given a radius and angle (in degrees)
-    int dotX(double radius, double angle) {
-        int xDist;
-        xDist = (int) Math.round(radius * Math.cos(Math.toRadians(angle)));
-        return xDist;
-    }
 
-    // Method to provide the cartesian y coordinate given a radius and angle (in degrees)
-    int dotY(double radius, double angle) {
-        int yDist;
-        yDist = (int) Math.round(radius * Math.sin(Math.toRadians(angle)));
-        return yDist;
-    }
-
-    // Method called on resizing event - sets various sizing variables
-    // based on the size of the resized panel and scales the logo/hands
-    private void scaleFace() {
-        panelHeight = this.getSize().height;
-        panelWidth = this.getSize().width;
-        if (panelHeight > 0 && panelWidth > 0) {
-            size = Math.min(panelHeight, panelWidth);
-        }
-        faceSize = size;
-        if (faceSize == 0) {
-            faceSize = 1;
-        }
-
-        // Had trouble getting the proper sizes when using Images by themselves so
-        // use the NamedIcon as a source for the sizes
-        int logoScaleWidth = faceSize / 6;
-        int logoScaleHeight = (int) ((float) logoScaleWidth
-                * (float) jmriIcon.getIconHeight()
-                / jmriIcon.getIconWidth());
-        scaledLogo = logo.getScaledInstance(logoScaleWidth, logoScaleHeight,
-                Image.SCALE_SMOOTH);
-        scaledIcon.setImage(scaledLogo);
-        logoWidth = scaledIcon.getIconWidth();
-        logoHeight = scaledIcon.getIconHeight();
-
-        scaleRatio = faceSize / 2.7 / minuteHeight;
-        for (int i = 0; i < minuteX.length; i++) {
-            scaledMinuteX[i] = (int) (minuteX[i] * scaleRatio);
-            scaledMinuteY[i] = (int) (minuteY[i] * scaleRatio);
-            scaledHourX[i] = (int) (hourX[i] * scaleRatio);
-            scaledHourY[i] = (int) (hourY[i] * scaleRatio);
-        }
-        scaledHourHand = new Polygon(scaledHourX, scaledHourY,
-                scaledHourX.length);
-        scaledMinuteHand = new Polygon(scaledMinuteX, scaledMinuteY,
-                scaledMinuteX.length);
-
-        if (panelHeight > 0 && panelWidth > 0) {
-            centreX = panelWidth / 2;
-            centreY = panelHeight / 2;
-        } else {
-            centreX = centreY = size / 2;
-        }
-    }
-
-    public void setSize(int x) {
-        size = x;
-        setSize(x, x);
-        scaleFace();
-    }
-
-    /* This needs to be updated if resizing becomes an option
-     public void resize() {
-     int panelHeight = this.getSize().height;
-     int panelWidth = this.getSize().width;
-     size = Math.min(panelHeight, panelWidth);
-     scaleFace();
-     }
-     */
     @SuppressWarnings("deprecation")
     public void update() {
         Date now = clock.getTime();
@@ -422,6 +267,7 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
     void cleanup() {
     }
 
+    @Override
     public void dispose() {
         rateButtonGroup = null;
         runMenu = null;
@@ -474,6 +320,68 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
         }
         super.doMouseClicked(event);
     }
+    @Override
+    public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D)g.create();
+        g2d.transform(getTransform());
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                RenderingHints.VALUE_RENDER_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2d.setClip(null);
+        super.paint(g2d);
+        
+        int iconWidth = clockIcon.getIconWidth();
+        
+        clockIcon.paintIcon(this, g2d, 0, 0);
 
+        float logoScale = .17f;
+        AffineTransform logo = AffineTransform.getScaleInstance(logoScale, logoScale);
+        logo.concatenate(getTransform());
+        Graphics2D gg = (Graphics2D)g.create();
+        gg.transform(logo);
+        gg.setClip(null);
+        int logoWidth = jmriIcon.getIconWidth();
+        jmriIcon.paintIcon(this, gg, Math.round((iconWidth/logoScale-logoWidth)/2), 
+                     Math.round(iconWidth/logoScale/4));            
+        
+        // Draw hour hand rotated to appropriate angle
+        // Calculation mimics the AffineTransform class calculations in Graphics2D
+        // Grpahics2D and AffineTransform not used to maintain compatabilty with Java 1.1.8
+        for (int i = 0; i < scaledMinuteX.length; i++) {
+            rotatedMinuteX[i] = (int) (scaledMinuteX[i] * Math.cos(toRadians(minuteAngle))
+                    - scaledMinuteY[i] * Math.sin(toRadians(minuteAngle)) + iconWidth/2);
+            rotatedMinuteY[i] = (int) (scaledMinuteX[i] * Math.sin(toRadians(minuteAngle))
+                    + scaledMinuteY[i] * Math.cos(toRadians(minuteAngle)) + iconWidth/2);
+        }
+        scaledMinuteHand = new Polygon(rotatedMinuteX, rotatedMinuteY, rotatedMinuteX.length);
+        for (int i = 0; i < scaledHourX.length; i++) {
+            rotatedHourX[i] = (int) (scaledHourX[i] * Math.cos(toRadians(hourAngle))
+                    - scaledHourY[i] * Math.sin(toRadians(hourAngle)) + iconWidth/2);
+            rotatedHourY[i] = (int) (scaledHourX[i] * Math.sin(toRadians(hourAngle))
+                    + scaledHourY[i] * Math.cos(toRadians(hourAngle)) + iconWidth/2);
+        }
+        scaledHourHand = new Polygon(rotatedHourX, rotatedHourY, rotatedHourX.length);
+
+        g2d.fillPolygon(scaledHourHand);
+        g2d.fillPolygon(scaledMinuteHand);
+
+        // Draw AM/PM indicator in slightly smaller font than hour digits
+        int amPmFontSize = (int) (iconWidth * .075);
+        if (amPmFontSize < 1) {
+            amPmFontSize = 1;
+        }
+        Font amPmSizedFont = new Font("Serif", Font.BOLD, amPmFontSize);
+        g2d.setFont(amPmSizedFont);
+        FontMetrics amPmFontM = g2d.getFontMetrics(amPmSizedFont);
+
+        g2d.drawString(amPm, (iconWidth-amPmFontM.stringWidth(amPm))/2, (iconWidth*7)/10);
+        
+       g2d.dispose();
+    }
     private static final Logger log = LoggerFactory.getLogger(AnalogClock2Display.class);
 }

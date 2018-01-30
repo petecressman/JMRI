@@ -22,10 +22,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import jmri.jmrit.catalog.CatalogPanel;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.util.swing.ImagePanel;
+import jmri.jmrit.display.PositionableLabel;
+import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -510,7 +513,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
                 Bundle.getMessage("AllFamiliesDeleted", _itemType), Bundle.getMessage("QuestionTitle"),
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (result == JOptionPane.YES_OPTION) {
-            ItemPalette.loadMissingItemType(_itemType, _editor);
+            ItemPalette.loadMissingItemType(_itemType, null);
             initIconFamiliesPanel();
             _bottom1Panel.setVisible(true);
             _bottom2Panel.setVisible(false);
@@ -548,19 +551,20 @@ public abstract class FamilyItemPanel extends ItemPanel {
         Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
         while (it.hasNext()) {
             Entry<String, NamedIcon> entry = it.next();
-            NamedIcon icon = new NamedIcon(entry.getValue()); // make copy for possible reduction
-            icon.reduceTo(100, 100, 0.2);
+            NamedIcon icon = new NamedIcon(entry.getValue());    // make copy for possible reduction
             JPanel panel = new JPanel(new FlowLayout());
             panel.setOpaque(false);
             // I18N use existing NamedBeanBundle keys
             String borderName = getIconBorderName(entry.getKey());
             panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                     borderName));
-            JLabel image = new JLabel(icon);
+            PositionableLabel image = new PositionableLabel(icon, null);
             if (icon.getIconWidth() < 1 || icon.getIconHeight() < 1) {
                 image.setText(Bundle.getMessage("invisibleIcon"));
-                image.setOpaque(false);
+                image.setIsText(true);
+                image.setForeground(Color.lightGray);
             }
+            image.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
             image.setToolTipText(icon.getName());
             panel.add(image);
             int width = getFontMetrics(getFont()).stringWidth(borderName);
@@ -591,7 +595,8 @@ public abstract class FamilyItemPanel extends ItemPanel {
         return ItemPalette.convertText(key);
     }
 
-    protected JLabel getDragger(DataFlavor flavor, HashMap<String, NamedIcon> map, NamedIcon icon) {
+    protected PositionableLabel getDragger(DataFlavor flavor, HashMap<String, 
+            NamedIcon> map, NamedIcon icon) {
         return null;
     }
 
@@ -601,7 +606,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
         }
         if (!jmri.util.ThreadingUtil.isGUIThread()) log.error("Not on GUI thread", new Exception("traceback"));
         if (iconMap != null) {
-            if (iconMap.get(displayKey) == null) {
+           if (iconMap.get(displayKey) == null) {
                 displayKey = (String) iconMap.keySet().toArray()[0];
             }
             NamedIcon ic = iconMap.get(displayKey);
@@ -612,13 +617,12 @@ public abstract class FamilyItemPanel extends ItemPanel {
                 panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                         borderName));
                 panel.setToolTipText(Bundle.getMessage("ToolTipDragIcon"));
-                panel.setOpaque(false);
-                JLabel label;
+                panel.setBackground(_editor.getTargetPanel().getBackground());
+                PositionableLabel label;
                 try {
                     label = getDragger(new DataFlavor(Editor.POSITIONABLE_FLAVOR), iconMap, icon);
                     if (label != null) {
                         label.setToolTipText(Bundle.getMessage("ToolTipDragIcon"));
-                        // label.setIcon(icon);
                         label.setName(borderName);
                         label.setOpaque(false);
                         panel.add(label);

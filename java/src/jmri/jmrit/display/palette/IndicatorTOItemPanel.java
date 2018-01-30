@@ -25,6 +25,7 @@ import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.IndicatorTurnoutIcon;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.picker.PickListModel;
 import jmri.util.swing.ImagePanel;
 import org.slf4j.Logger;
@@ -152,8 +153,8 @@ public class IndicatorTOItemPanel extends TableItemPanel {
      * Get a handle in order to change visibility.
      */
     @Override
-    protected JPanel initTablePanel(PickListModel model, Editor editor) {
-        _tablePanel = super.initTablePanel(model, editor);
+    protected JPanel initTablePanel(PickListModel model) {
+        _tablePanel = super.initTablePanel(model);
         return _tablePanel;
     }
 
@@ -250,7 +251,6 @@ public class IndicatorTOItemPanel extends TableItemPanel {
                 Entry<String, NamedIcon> ent = iter.next();
                 String borderName = ItemPalette.convertText(ent.getKey());
                 NamedIcon icon = new NamedIcon(ent.getValue());    // make copy for possible reduction
-                icon.reduceTo(100, 100, 0.2);
                 panel = new JPanel();
                 panel.setOpaque(false);
                 panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
@@ -258,11 +258,12 @@ public class IndicatorTOItemPanel extends TableItemPanel {
                 //if (log.isDebugEnabled()) log.debug("addIcons2Panel: "+borderName+" icon at ("
                 //                                    +c.gridx+","+c.gridy+") width= "+icon.getIconWidth()+
                 //                                    " height= "+icon.getIconHeight());
-                JLabel image = new JLabel(icon);
+                PositionableLabel image = new PositionableLabel(icon, null);
                 if (icon.getIconWidth() < 1 || icon.getIconHeight() < 1) {
                     image.setText(Bundle.getMessage("invisibleIcon"));
                     image.setForeground(Color.lightGray);
                 }
+                image.reduceTo(100, 100, 0.2);
                 image.setToolTipText(icon.getName());
                 panel.add(image);
                 int width = Math.max(85, panel.getPreferredSize().width);
@@ -398,7 +399,7 @@ public class IndicatorTOItemPanel extends TableItemPanel {
         for (int i = 0; i < STATUS_KEYS.length; i++) {
             _iconGroupsMap.put(STATUS_KEYS[i], makeNewIconMap("Turnout")); // NOI18N
         }
-        ItemPalette.addLevel4Family(_editor, _itemType, _family, _iconGroupsMap);
+        ItemPalette.addLevel4Family(null, _itemType, _family, _iconGroupsMap);
         resetFamiliesPanel();
         setFamily(_family);
     }
@@ -499,7 +500,7 @@ public class IndicatorTOItemPanel extends TableItemPanel {
     }
 
     @Override
-    protected JLabel getDragger(DataFlavor flavor, 
+    protected PositionableLabel getDragger(DataFlavor flavor, 
             HashMap<String, NamedIcon> map, NamedIcon icon) {
         return new IconDragJLabel(flavor, icon);
     }

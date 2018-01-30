@@ -27,6 +27,7 @@ import jmri.jmrit.catalog.DragJLabel;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.SignalMastIcon;
 import jmri.jmrit.picker.PickListModel;
 import jmri.util.swing.ImagePanel;
@@ -129,14 +130,14 @@ public class SignalMastItemPanel extends TableItemPanel implements ListSelection
         String borderName = ItemPalette.convertText("dragToPanel");
         panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                 borderName));
-        JLabel label;
+        PositionableLabel label;
         try {
             label = getDragger(new DataFlavor(Editor.POSITIONABLE_FLAVOR), icon);
             label.setOpaque(false);
             label.setToolTipText(Bundle.getMessage("ToolTipDragIcon"));
         } catch (java.lang.ClassNotFoundException cnfe) {
             cnfe.printStackTrace();
-            label = new JLabel();
+            label = new PositionableLabel(icon, null);
         }
         label.setName(borderName);
         panel.add(label);
@@ -271,7 +272,7 @@ public class SignalMastItemPanel extends TableItemPanel implements ListSelection
         validate();
     }
 
-    protected JLabel getDragger(DataFlavor flavor, NamedIcon icon) {
+    protected PositionableLabel getDragger(DataFlavor flavor, NamedIcon icon) {
         return new IconDragJLabel(flavor, icon);
     }
 

@@ -81,7 +81,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             while (iter.hasNext()) {
                 Entry<Integer, NamedIcon> ent = iter.next();
 //                if (log.isDebugEnabled()) log.debug("key= "+ent.getKey());
-                clone.put(ent.getKey(), cloneIcon(ent.getValue(), pos));
+                clone.put(ent.getKey(), new NamedIcon(ent.getValue(), pos));
             }
         }
         return iconMaps;
@@ -285,7 +285,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     public String getStatus() {
         return _status;
     }
-
+/*
     @Override
     public int maxHeight() {
         int max = 0;
@@ -314,12 +314,12 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             }
         }
         return max;
-    }
+    }*/
 
     /**
      * ****** popup AbstractAction.actionPerformed method overrides ********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         if (_iconMaps != null) {
             Iterator<HashMap<Integer, NamedIcon>> it = _iconMaps.values().iterator();
@@ -362,7 +362,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         }
         setDegrees(deg %360);
         displayState(turnoutState());
-    }
+    }*/
 
     /**
      * Drive the current state of the display from the state of the turnout and
@@ -468,10 +468,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             while (iter.hasNext()) {
                 Entry<Integer, NamedIcon> ent = iter.next();
                 NamedIcon oldIcon = ent.getValue();
-                NamedIcon newIcon = cloneIcon(oldIcon, this);
-                newIcon.rotate(0, this);
-                newIcon.scale(1.0, this);
-                newIcon.setRotation(4, this);
+                NamedIcon newIcon = new NamedIcon(oldIcon);
                 clone.put(_state2nameMap.get(ent.getKey()), newIcon);
             }
         }
@@ -514,10 +511,8 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
                     if (log.isDebugEnabled()) {
                         log.debug("key= " + ent.getKey());
                     }
-                    NamedIcon newIcon = cloneIcon(ent.getValue(), this);
+                    NamedIcon newIcon = new NamedIcon(ent.getValue());
                     NamedIcon oldIcon = oldMap.get(_name2stateMap.get(ent.getKey()));
-                    newIcon.setLoad(oldIcon.getDegrees(), oldIcon.getScale(), this);
-                    newIcon.setRotation(oldIcon.getRotation(), this);
                     setIcon(status, ent.getKey(), newIcon);
                 }
             }

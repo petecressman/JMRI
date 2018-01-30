@@ -157,7 +157,7 @@ public abstract class PositionableShapeXml extends AbstractXmlAdapter {
         ps.setLineColor(getColor(element, "lineColor", alpha));
         ps.setFillColor(getColor(element, "fillColor", alpha));
 
-        ps.rotate(getInt(element, "degrees"));
+        ps.setDegrees(getInt(element, "degrees"));
 
         boolean hide = false;
         try {

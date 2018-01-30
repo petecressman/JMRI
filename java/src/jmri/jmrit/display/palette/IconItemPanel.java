@@ -164,7 +164,7 @@ public class IconItemPanel extends ItemPanel implements MouseListener {
             panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                     borderName));
             try {
-                JLabel label = new IconDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR), _level);
+                PositionableLabel label = new IconDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR), icon, _level);
                 label.setOpaque(false);
                 label.setName(borderName);
                 label.setToolTipText(icon.getName());
@@ -173,9 +173,8 @@ public class IconItemPanel extends ItemPanel implements MouseListener {
                     label.setText(Bundle.getMessage("invisibleIcon"));
                     label.setForeground(Color.lightGray);
                 } else {
-                    icon.reduceTo(50, 80, 0.2);
+                    label.reduceTo(50, 80, 0.2);
                 }
-                label.setIcon(icon);
                 int width = Math.max(100, panel.getPreferredSize().width);
                 panel.setPreferredSize(new java.awt.Dimension(width, panel.getPreferredSize().height));
             } catch (java.lang.ClassNotFoundException cnfe) {
@@ -403,8 +402,8 @@ public class IconItemPanel extends ItemPanel implements MouseListener {
 
         int level;
 
-        public IconDragJLabel(DataFlavor flavor, int zLevel) {
-            super(flavor);
+        public IconDragJLabel(DataFlavor flavor, NamedIcon icon, int zLevel) {
+            super(flavor, icon);
             level = zLevel;
 
             new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
@@ -499,7 +498,7 @@ public class IconItemPanel extends ItemPanel implements MouseListener {
                 label.setText(Bundle.getMessage("invisibleIcon"));
                 label.setForeground(Color.lightGray);
             } else {
-                newIcon.reduceTo(100, 100, 0.2);
+                label.reduceTo(100, 100, 0.2);
                 label.setText(null);
             }
             _iconMap.put(label.getName(), newIcon);

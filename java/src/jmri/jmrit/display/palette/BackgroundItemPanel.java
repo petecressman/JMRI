@@ -63,7 +63,7 @@ public class BackgroundItemPanel extends IconItemPanel {
             @Override
             public void actionPerformed(ActionEvent a) {
                 hideCatalog();
-                new ColorDialog(_editor);
+                new ColorDialog();
             }
         });
         backgroundButton.setToolTipText(Bundle.getMessage("ToolTipEditColor"));
@@ -82,14 +82,14 @@ public class BackgroundItemPanel extends IconItemPanel {
         Editor _editor;
         JPanel _preview;
 
-        ColorDialog(Editor editor) {
+        ColorDialog() {
             super(_paletteFrame, Bundle.getMessage("ColorChooser"), true);
-            _editor = editor;
+//            _editor = editor;
 
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout(5, 5));
 
-            _chooser = new JColorChooser(editor.getTargetPanel().getBackground());
+            _chooser = new JColorChooser();
             _chooser.getSelectionModel().addChangeListener(this);
             _preview = new JPanel();
             _preview.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black, 4),

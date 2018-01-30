@@ -14,6 +14,7 @@ public class PositionableEllipse extends PositionableRectangle {
 
     public PositionableEllipse(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Ellipse"));
     }
 
     public PositionableEllipse(Editor editor, Shape shape) {
@@ -21,7 +22,7 @@ public class PositionableEllipse extends PositionableRectangle {
     }
 
     @Override
-    protected Shape makeShape() {
+    public Shape makeShape() {
         return new Ellipse2D.Double(0, 0, _width, _height);
     }
 

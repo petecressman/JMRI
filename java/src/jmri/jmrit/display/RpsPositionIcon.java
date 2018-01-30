@@ -123,32 +123,6 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
         return false;
     }
 
-    /**
-     * ****** popup AbstractAction.actionPerformed method overrides ********
-     */
-    @Override
-    protected void rotateOrthogonal() {
-        active.setRotation(active.getRotation() + 1, this);
-        error.setRotation(error.getRotation() + 1, this);
-        displayState();
-        //bug fix, must repaint icons that have same width and height
-        repaint();
-    }
-
-    @Override
-    public void setScale(double s) {
-        active.scale(s, this);
-        error.scale(s, this);
-        displayState();
-    }
-
-    @Override
-    public void rotate(int deg) {
-        active.rotate(deg, this);
-        error.rotate(deg, this);
-        displayState();
-    }
-
     JCheckBoxMenuItem showIdItem = null;
 
     /**
@@ -200,7 +174,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
      * Drive the current state of the display from whether a valid measurement
      * has been received
      */
-    void displayState() {
+    public void displayState() {
 
         if (state) {
             if (isIcon()) {
@@ -217,16 +191,6 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
         return;
     }
 
-    @Override
-    public int maxHeight() {
-        return getPreferredSize().height;
-    }
-
-    @Override
-    public int maxWidth() {
-        return getPreferredSize().width;
-    }
-
     boolean momentary = false;
 
     public boolean getMomentary() {
@@ -239,21 +203,21 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
 
     void toggleID(boolean value) {
         if (value) {
-            _text = true;
+            setIsText(true);;
         } else {
 
-            _text = false;
+            setIsText(false);
             setText(null);
         }
         displayState();
     }
 
     public boolean isShowID() {
-        return _text;
+        return isText();
     }
 
     public void setShowID(boolean mode) {
-        _text = mode;
+        setIsText(mode);
         displayState();
     }
 
@@ -279,7 +243,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
             state = true;
         }
 
-        if (_text) {
+        if (isText()) {
             super.setText("" + m.getReading().getId());
         }
         displayState();

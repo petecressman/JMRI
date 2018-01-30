@@ -49,10 +49,10 @@ public class ReporterIconXml extends PositionableLabelXml {
         Editor ed = (Editor) o;
         ReporterIcon l = new ReporterIcon(ed);
 
-        loadTextInfo(l, element);
-
         l.setReporter(jmri.InstanceManager.getDefault(jmri.ReporterManager.class).getReporter(
                 element.getAttribute("reporter").getValue()));
+
+        loadTextInfo(l, element);
 
         l.setSize(l.getPreferredSize().width, l.getPreferredSize().height);
         ed.putItem(l);

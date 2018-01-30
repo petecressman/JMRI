@@ -6,46 +6,35 @@ import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 import jmri.util.MenuScroller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * <p>
- * This class handles text attributes for Positionables. Font, size, style and
+ * This class handles text attributes for Positionables. Font size, style and
  * color. Margin size and color, Border size and color, Fixed sizes.
  * Justification.
  * </p>
  *
  * moved from PositionableLabel
- *
  * @author Pete Cressman copyright (C) 2010
  */
 public class PositionablePopupUtil {
 
     protected JComponent _textComponent;    // closest ancestor for JLabel and JTextField
-    protected int _textType;                // JComponent does not have text, used for casting
     protected Positionable _parent;
     protected PositionablePopupUtil _self;
     protected PositionablePropertiesUtil _propertiesUtil;
-
-    private Color defaultForeground;
-    private Color defaultBackground;
-    private Color defaultBorderColor;
 
     protected final int LABEL = 1;
     protected final int TEXTFIELD = 2;
@@ -53,43 +42,36 @@ public class PositionablePopupUtil {
 
     public PositionablePopupUtil(Positionable parent, JComponent textComp) {
         _parent = parent;
-        if (textComp instanceof JLabel) {
-            _textType = LABEL;
-        } else if (textComp instanceof JTextField) {
-            _textType = TEXTFIELD;
-        } else {
-            _textType = JCOMPONENT;
-        }
         _textComponent = textComp;
         _self = this;
-        defaultForeground = _textComponent.getForeground();
-//        defaultBackground = _textComponent.getBackground();
-        defaultBorderColor = _parent.getBackground();
         _propertiesUtil = new PositionablePropertiesUtil(_parent);
     }
+    
+    @Override
+    public PositionablePopupUtil clone() {
+        PositionablePopupUtil util = new PositionablePopupUtil(_parent, _textComponent);
+        return finishClone(util);
+    }
 
-    public PositionablePopupUtil clone(Positionable parent, JComponent textComp) {
-        PositionablePopupUtil util = new PositionablePopupUtil(parent, textComp);
+    public PositionablePopupUtil finishClone(PositionablePopupUtil util) {
         util.setJustification(getJustification());
         util.setHorizontalAlignment(getJustification());
         util.setFixedWidth(getFixedWidth());
         util.setFixedHeight(getFixedHeight());
-        util.setMargin(getMargin());
-        util.setBorderSize(getBorderSize());
-        util.setBorderColor(getBorderColor());
         util.setFont(util.getFont().deriveFont(getFontStyle()));
         util.setFontSize(getFontSize());
-        util.setOrientation(getOrientation());
-        util.setBackgroundColor(getBackground());
+        util.setBorderSize(_borderSize);
+        util.setMarginSize(_marginSize);
+        util.setBorderColor(_borderColor);
+        util.setBackgroundColor(_backgroundColor);
         util.setForeground(getForeground());
-        util.setHasBackground(hasBackground());     // must do this AFTER setBackgroundColor
         return util;
     }
 
     @Override
     public String toString() {
         return _parent.getNameString() + ": fixedWidth= " + fixedWidth + ", fixedHeight= " + fixedHeight
-                + ", margin= " + margin + ", borderSize= " + borderSize;
+                + ", margin= " + +_marginSize + ", borderSize= " + _borderSize;
     }
 
     /**
@@ -102,54 +84,52 @@ public class PositionablePopupUtil {
 
     private int fixedWidth = 0;
     private int fixedHeight = 0;
-    private int margin = 0;
-    private int borderSize = 0;
-    private Color borderColor = null;
-    private Border borderMargin = BorderFactory.createEmptyBorder(0, 0, 0, 0);
-    private Border outlineBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
-    private boolean _hasBackground;      // Should background be painted or clear
+    private int _marginSize = 0;
+    private int _borderSize = 0;
+    private Color _borderColor = null;
+    private Color _backgroundColor = null;
 
     JMenuItem italic = null;
     JMenuItem bold = null;
 
-    public void propertyUtil(JPopupMenu popup) {
-        JMenuItem edit = new JMenuItem(Bundle.getMessage("MenuItemProperties") + "...");
-        edit.addActionListener((ActionEvent e) -> {
-            _propertiesUtil.display();
-        });
-        popup.add(edit);
+    public final void setBorderSize(int border) {
+        _borderSize = border;
+//        _parent.setBorder();
     }
 
-    public void setFixedTextMenu(JPopupMenu popup) {
-        JMenu edit = new JMenu(Bundle.getMessage("EditFixed"));
-        JMenuItem jmi;
-        if (getFixedWidth() == 0) {
-            jmi = edit.add("Width = Auto");
-        } else {
-            jmi = edit.add("Width = " + _parent.maxWidth());
-        }
-        jmi.setEnabled(false);
-
-        if (getFixedHeight() == 0) {
-            jmi = edit.add("Height = Auto");
-        } else {
-            jmi = edit.add("Height = " + _parent.maxHeight());
-        }
-        jmi.setEnabled(false);
-
-        edit.add(CoordinateEdit.getFixedSizeEditAction(_parent));
-
-        popup.add(edit);
+    public int getBorderSize() {
+        return _borderSize;
     }
 
-    public void setTextMarginMenu(JPopupMenu popup) {
-        JMenu edit = new JMenu(Bundle.getMessage("EditMargin"));
-        if ((fixedHeight == 0) || (fixedWidth == 0)) {
-            JMenuItem jmi = edit.add("Margin = " + getMargin());
-            jmi.setEnabled(false);
-            edit.add(CoordinateEdit.getMarginEditAction(_parent));
+    public final void setBorderColor(Color color) {
+        _borderColor = color;
+//        _parent.setBorder();
+    }
+
+    public Color getBorderColor() {
+        return _borderColor;
+    }
+
+    public final void setMarginSize(int margin) {
+        _marginSize = margin;
+//        _parent.setBorder();
+    }
+
+    public int getMarginSize() {
+        return _marginSize;
+    }
+
+    public final void setBackgroundColor(Color color) {
+        _backgroundColor = color;
+        if (!(_textComponent instanceof PositionableJComponent)) {
+            _textComponent.setBackground(color);
         }
-        popup.add(edit);
+        _parent.setBackground(color);
+//        _parent.setBorder();
+    }
+
+    public Color getBackgroundColor() {
+        return _backgroundColor;
     }
 
     public void setBackgroundMenu(JPopupMenu popup) {
@@ -157,7 +137,7 @@ public class PositionablePopupUtil {
         edit.addActionListener((ActionEvent event) -> {
             Color desiredColor = JColorChooser.showDialog(_textComponent,
                                  Bundle.getMessage("FontBackgroundColor"),
-                                 getBackground());
+                                 getBackgroundColor());
             if (desiredColor!=null ) {
                setBackgroundColor(desiredColor);
            }
@@ -169,14 +149,14 @@ public class PositionablePopupUtil {
 
     public void setTextBorderMenu(JPopupMenu popup) {
         JMenu edit = new JMenu(Bundle.getMessage("EditBorder"));
-        JMenuItem jmi = edit.add("Border Size = " + borderSize);
+        JMenuItem jmi = edit.add("Border Size = " + _borderSize);
         jmi.setEnabled(false);
         edit.add(CoordinateEdit.getBorderEditAction(_parent));
         JMenuItem colorMenu = new JMenuItem(Bundle.getMessage("BorderColorMenu"));
         colorMenu.addActionListener((ActionEvent event) -> {
             Color desiredColor = JColorChooser.showDialog(_textComponent,
                                  Bundle.getMessage("BorderColorMenu"),
-                                 defaultBorderColor);
+                                 getBorderColor());
             if (desiredColor!=null ) {
                setBorderColor(desiredColor);
            }
@@ -201,23 +181,6 @@ public class PositionablePopupUtil {
         });
         edit.add(colorMenu);
         popup.add(edit);
-    }
-
-    public int getMargin() {
-        return margin;
-    }
-
-    public void setMargin(int m) {
-        margin = m;
-        if (_parent.isOpaque()) {
-            borderMargin = new LineBorder(getBackground(), m);
-        } else {
-            borderMargin = BorderFactory.createEmptyBorder(m, m, m, m);
-        }
-        if (_showBorder) {
-            _parent.setBorder(new CompoundBorder(outlineBorder, borderMargin));
-        }
-        _parent.updateSize();
     }
 
     public int getFixedWidth() {
@@ -252,51 +215,6 @@ public class PositionablePopupUtil {
         }
         _parent.updateSize();
     }
-
-    public void setBorderSize(int border) {
-        borderSize = border;
-
-        if (borderColor != null) {
-            outlineBorder = new LineBorder(borderColor, borderSize);
-            _parent.setBorder(new CompoundBorder(outlineBorder, borderMargin));
-            //setHorizontalAlignment(CENTRE);
-        }
-        _parent.updateSize();
-    }
-
-    private boolean _showBorder = true;
-
-    public void setBorder(boolean set) {
-        _showBorder = set;
-        if (set) {
-            if (borderColor != null ) {
-                outlineBorder = new LineBorder(borderColor, borderSize);
-                _parent.setBorder(new CompoundBorder(outlineBorder, borderMargin));
-            }
-        } else {
-            _parent.setBorder(null);
-        }
-    }
-
-    public int getBorderSize() {
-        return borderSize;
-    }
-
-    public void setBorderColor(Color border) {
-        borderColor = border;
-        if (borderColor != null && _showBorder) {
-            outlineBorder = new LineBorder(borderColor, borderSize);
-            _parent.setBorder(new CompoundBorder(outlineBorder, borderMargin));
-        }
-    }
-
-    public Color getBorderColor() {
-        if (borderColor == null) {
-            borderColor = _parent.getBackground();
-        }
-        return borderColor;
-    }
-
     public void setForeground(Color c) {
         _textComponent.setForeground(c);
         _parent.updateSize();
@@ -305,45 +223,41 @@ public class PositionablePopupUtil {
     public Color getForeground() {
         return _textComponent.getForeground();
     }
+//////////////////// menu methods /////////////////////////
+    
+    public void propertyUtil(JPopupMenu popup) {
+        JMenuItem edit = new JMenuItem(Bundle.getMessage("MenuItemProperties") + "...");
+        edit.addActionListener((ActionEvent e) -> {
+            _propertiesUtil.display();
+        });
+        popup.add(edit);
+    }
 
-    public void setBackgroundColor(Color color) {
-        if (color == null || color.getAlpha() == 0) {
-            setHasBackground(false);
-            _textComponent.setBackground(color); // retain the passed color
-                                                 // which may not be null
+    public void setFixedTextMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditFixed"));
+        if (getFixedWidth() == 0) {
+            edit.add("Width= Auto");
         } else {
-            setHasBackground(true);
-            _textComponent.setBackground(color);
-            _parent.setBackground(color);
+            edit.add("Width= " + _parent.getWidth());
         }
-        if (hasBackground()) {
-            setMargin(margin);  //This rebuilds margin and sets it colour.
+
+        if (getFixedHeight() == 0) {
+            edit.add("Height= Auto");
+        } else {
+            edit.add("Height= " + _parent.getHeight());
         }
-        _parent.updateSize();
+
+        edit.add(CoordinateEdit.getFixedSizeEditAction(_parent));
+        popup.add(edit);
     }
 
-    public void setHasBackground(boolean set) {
-        _hasBackground = set;
-        if (_textComponent instanceof PositionableJPanel) {
-            _textComponent.setOpaque(_hasBackground);
+    public void setTextMarginMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditMargin"));
+        if ((fixedHeight == 0) || (fixedWidth == 0)) {
+            edit.add("Margin= " + getMarginSize());
+            edit.add(CoordinateEdit.getMarginEditAction(_parent));
         }
-        if (!_hasBackground) {
-            _parent.setOpaque(false);
-            _textComponent.setOpaque(false);
-        }
-    }
-
-    public boolean hasBackground() {
-        return _hasBackground;
-    }
-
-    public Color getBackground() {
-        Color c = _textComponent.getBackground();
-        if (!_hasBackground) {
-            // make sure the alpha value is set to 0
-            c = jmri.util.ColorUtil.setAlpha(c,0);
-        }
-        return c;
+        popup.add(edit);
     }
 
     protected JMenu makeFontMenu() {
@@ -388,7 +302,27 @@ public class PositionablePopupUtil {
 
         return fontMenu;
     }
+/*    
+    public void setTextBorderMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditBorder"));
+        edit.add("Border Size= " + _borderSize);
+        edit.add(CoordinateEdit.getBorderEditAction(_parent));
+        JMenu colorMenu = new JMenu(Bundle.getMessage("BorderColorMenu"));
+        makeColorMenu(colorMenu, BORDER_COLOR);
+        edit.add(colorMenu);
+        popup.add(edit);
+    }
 
+    public void setTextFontMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditFont"));
+        edit.add(makeFontSizeMenu());
+        edit.add(makeFontStyleMenu());
+        JMenu colorMenu = new JMenu(Bundle.getMessage("FontColor"));
+        makeColorMenu(colorMenu, PositionablePopupUtil.FONT_COLOR);
+        edit.add(colorMenu);
+        popup.add(edit);
+    }
+*/
     protected JMenu makeFontSizeMenu() {
         JMenu sizeMenu = new JMenu("Font Size");
         ButtonGroup buttonGrp = new ButtonGroup();
@@ -510,7 +444,6 @@ public class PositionablePopupUtil {
         }
         _textComponent.setFont(_textComponent.getFont().deriveFont(styleValue));
 
-        //setSize(getPreferredSize().width, getPreferredSize().height);
         _parent.updateSize();
     }
 
@@ -532,6 +465,112 @@ public class PositionablePopupUtil {
         return c;
     }
 
+/*
+    protected ButtonGroup makeColorMenu(JMenu colorMenu, int type) {
+        ButtonGroup buttonGrp = new ButtonGroup();
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Black"), Color.black, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("DarkGray"), Color.darkGray, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Gray"), Color.gray, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("LightGray"), Color.lightGray, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("White"), Color.white, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Red"), Color.red, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Orange"), Color.orange, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Yellow"), Color.yellow, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Green"), Color.green, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Blue"), Color.blue, type);
+        addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Magenta"), Color.magenta, type);
+        if (type == BACKGROUND_COLOR) {
+            addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("ColorClear"), null, type);
+        }
+        return buttonGrp;
+    }
+
+    protected void addColorMenuEntry(JMenu menu, ButtonGroup colorButtonGroup,
+            final String name, Color color, final int colorType) {
+        ActionListener a = new ActionListener() {
+            //final String desiredName = name;
+            Color desiredColor;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                switch (colorType) {
+                    case FONT_COLOR:
+                        _textComponent.setForeground(desiredColor);
+                        break;
+                    case BACKGROUND_COLOR:
+                        setBackgroundColor(desiredColor);
+                        break;
+                    case BORDER_COLOR:
+                        setBorderColor(desiredColor);
+                        break;
+                    default:
+                        log.warn("Unhandled color type code: {}", colorType);
+                        break;
+                }
+                _parent.getEditor().setAttributes(_self, _parent);
+            }
+
+            ActionListener init(Color c) {
+                desiredColor = c;
+                return this;
+            }
+        }.init(color);
+        JRadioButtonMenuItem r = new JRadioButtonMenuItem(name);
+        r.addActionListener(a);
+
+        if (log.isDebugEnabled()) {
+            log.debug("setColorButton: colorType=" + colorType);
+        }
+        switch (colorType) {
+            case FONT_COLOR:
+                if (color == null) {
+                    setColorButton(_textComponent.getForeground(), _textComponent.getForeground(), r);
+                } else {
+                    setColorButton(_textComponent.getForeground(), color, r);                    
+                }
+                break;
+            case BACKGROUND_COLOR:
+                if (color == null) {
+                    setColorButton(_textComponent.getBackground(), _textComponent.getBackground(), r);
+                } else {
+                    setColorButton(_textComponent.getBackground(), color, r);                    
+                }
+                break;
+            case BORDER_COLOR:
+                if (color == null) {
+                    setColorButton(getBorderColor(), _parent.getBackground(), r);
+                } else {
+                    setColorButton(_parent.getBackground(), color, r);                    
+                }
+                break;
+            default:
+                log.warn("Unhandled color type code: {}", colorType);
+                break;
+        }
+        colorButtonGroup.add(r);
+        menu.add(r);
+    }
+
+    protected void setColorButton(Color color, Color buttonColor, JRadioButtonMenuItem r) {
+        if (log.isDebugEnabled()) { // Avoid color to string computations unless needed
+            log.debug("setColorButton: color = {} (RGB = {}) buttonColor = {} (RGB = {})",
+                    color, (color == null ? "" : color.getRGB()),
+                    buttonColor, (buttonColor == null ? "" : buttonColor.getRGB()));
+        }
+        if (buttonColor != null) {
+            if (color != null && buttonColor.getRGB() == color.getRGB()) {
+                r.setSelected(true);
+            } else {
+                r.setSelected(false);
+            }
+        } else if (color == null) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+    }
+
+>>>>>>> branch 'pc-PaintByCoodAlias' of https://github.com/petecressman/JMRI.git*/
     public void copyItem(JPopupMenu popup) {
         JMenuItem edit = new JMenuItem("Copy");
         edit.addActionListener((ActionEvent e) -> {
@@ -616,21 +655,7 @@ public class PositionablePopupUtil {
     }
 
     public void setHorizontalAlignment(int alignment) {
-        if (_textType == LABEL) {
-            switch (alignment) {
-                case LEFT:
-                    ((JLabel) _textComponent).setHorizontalAlignment(JLabel.LEFT);
-                    break;
-                case RIGHT:
-                    ((JLabel) _textComponent).setHorizontalAlignment(JLabel.RIGHT);
-                    break;
-                case CENTRE:
-                    ((JLabel) _textComponent).setHorizontalAlignment(JLabel.CENTER);
-                    break;
-                default:
-                    ((JLabel) _textComponent).setHorizontalAlignment(JLabel.CENTER);
-            }
-        } else if (_textType == TEXTFIELD) {
+        if (_textComponent instanceof JTextField) {
             switch (alignment) {
                 case LEFT:
                     ((JTextField) _textComponent).setHorizontalAlignment(JTextField.LEFT);
@@ -638,20 +663,10 @@ public class PositionablePopupUtil {
                 case RIGHT:
                     ((JTextField) _textComponent).setHorizontalAlignment(JTextField.RIGHT);
                     break;
-                case CENTRE:
                 default:
                     ((JTextField) _textComponent).setHorizontalAlignment(JTextField.CENTER);
             }
         }
-    }
-
-    public String getText() {
-        if (_textType == LABEL) {
-            return ((JLabel) _textComponent).getText();
-        } else if (_textType == TEXTFIELD) {
-            return ((JTextField) _textComponent).getText();
-        }
-        return null;
     }
 
     public final static int HORIZONTAL = 0x00;
@@ -670,16 +685,15 @@ public class PositionablePopupUtil {
     }
 
     public void setOrientation(String ori) {
-        switch (ori) {
-            case "vertical_up":
-                setOrientation(VERTICAL_UP);
-                break;
-            case "vertical_down":
-                setOrientation(VERTICAL_DOWN);
-                break;
-            default:
-                setOrientation(HORIZONTAL);
-                break;
+        if (ori.equals("vertical_up")) {
+            _parent.setDegrees(90);
+//            setOrientation(VERTICAL_UP);
+        } else if (ori.equals("vertical_down")) {
+            _parent.setDegrees(-90);
+//            setOrientation(VERTICAL_DOWN);
+        } else {
+            _parent.setDegrees(0);
+//            setOrientation(HORIZONTAL);
         }
     }
 

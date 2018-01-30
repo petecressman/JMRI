@@ -172,6 +172,10 @@ public abstract class ItemPanel extends JPanel {
     protected final boolean isUpdate() {
         return _update;
     }
+    
+/*    protected Editor getEditor() {
+        return _editor;
+    }*/
 
     /*
      * ****** Default family icon names *******

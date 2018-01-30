@@ -47,6 +47,8 @@ import javax.swing.tree.TreePath;
 import jmri.CatalogTree;
 import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
+import jmri.jmrit.display.PositionableLabel;
+import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.util.FileUtil;
 import jmri.util.swing.DrawSquares;
 import jmri.util.swing.ImagePanel;
@@ -445,10 +447,8 @@ public class CatalogPanel extends JPanel implements MouseListener {
             _preview.setImage(_backgrounds[bgColorBox.getSelectedIndex()]);
             log.debug("Catalog setImage called");
             _preview.setOpaque(false);
-            // _preview.repaint(); // force redraw
             _preview.invalidate();
         });
-
         JPanel backgroundPanel = new JPanel();
         backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS));
         JPanel pp = new JPanel();
@@ -490,6 +490,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
             comp1.removeMouseListener(this);
         }
         _preview.removeAll();
+//        PreviewDialog.setBackGround(_preview, _currentBackground);
         _preview.repaint();
     }
 
@@ -546,7 +547,7 @@ public class CatalogPanel extends JPanel implements MouseListener {
             }
             CatalogTreeLeaf leaf = leaves.get(i);
             NamedIcon icon = new NamedIcon(leaf.getPath(), leaf.getName());
-            double scale = icon.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
+//            double scale = icon.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
             if (_noMemory) {
                 continue;
             }
@@ -570,25 +571,32 @@ public class CatalogPanel extends JPanel implements MouseListener {
             }
             c.insets = new Insets(5, 5, 0, 0);
 
-            JLabel nameLabel;
+            PositionableLabel image = null;
             if (_noDrag) {
-                nameLabel = new JLabel();
+                image = new PositionableLabel(icon, null);
             } else {
                 try {
-                    nameLabel = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime));
+                    image = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime), icon);
+                    image.setIsIcon(true);
                 } catch (java.lang.ClassNotFoundException cnfe) {
-                    log.warn("Unable to create drag label", cnfe);
+                    cnfe.printStackTrace();
                     continue;
                 }
             }
-            nameLabel.setName(leaf.getName());
-            nameLabel.setOpaque(false);
-            nameLabel.setIcon(icon);
-
+            image.setToolTipText(leaf.getName());
+            Double scale = image.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
+            if (scale<1.0) {
+                image.setSize(CatalogPanel.ICON_WIDTH,CatalogPanel.ICON_HEIGHT);
+            }
+            image.setName(leaf.getName());
+            PositionablePopupUtil util = image.getPopupUtility();
+            if (util!=null) {
+                util.setBackgroundColor(_currentBackground);                
+            }
             JPanel p = new JPanel();
             p.setOpaque(false);
             p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-            p.add(nameLabel);
+            p.add(image);
             JLabel label = new JLabel(Bundle.getMessage("scale", CatalogPanel.printDbl(scale, 2)));
             p.add(label);
             label = new JLabel(leaf.getName());

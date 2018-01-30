@@ -459,15 +459,15 @@ public class PositionablePropertiesUtil {
         }
 
         int deg = _parent.getDegrees();
-        if (deg != 0) {
+/*        if (deg != 0) {
             _parent.rotate(0);
-        }
+        }*/
         desiredColor = borderColorChooser.getColor();
         pop.setBorderColor(desiredColor);
 
         pop.setBorderSize(((Number) borderSizeTextSpin.getValue()).intValue());
 
-        pop.setMargin(((Number) marginSizeTextSpin.getValue()).intValue());
+        pop.setMarginSize(((Number) marginSizeTextSpin.getValue()).intValue());
         _parent.setLocation(((Number) xPositionTextSpin.getValue()).intValue(), ((Number) yPositionTextSpin.getValue()).intValue());
         pop.setFixedWidth(((Number) widthSizeTextSpin.getValue()).intValue());
         pop.setFixedHeight(((Number) heightSizeTextSpin.getValue()).intValue());
@@ -485,7 +485,7 @@ public class PositionablePropertiesUtil {
                 log.warn("Unhandled combo index: {}", _justificationCombo.getSelectedIndex());
                 break;
         }
-        _parent.rotate(deg);
+//        _parent.rotate(deg);
     }
 
     void cancelButton() {
@@ -614,20 +614,16 @@ public class PositionablePropertiesUtil {
             pop.setForeground(txtList.get(0).getOrigForeground());
             pop.setBackgroundColor(txtList.get(0).getOrigBackground());
         }
-        int deg = _parent.getDegrees();
-        if (deg != 0) {
-            _parent.rotate(0);
-        }
         pop.setJustification(justification);
         pop.setFixedWidth(fixedWidth);
         pop.setFixedHeight(fixedHeight);
-        pop.setMargin(marginSize);
+        pop.setMarginSize(marginSize);
         pop.setBorderSize(borderSize);
         pop.setFontStyle(0, fontStyle);
         pop.setFontSize(fontSize);
         pop.setBorderColor(defaultBorderColor);
         _parent.setLocation(xPos, yPos);
-        _parent.rotate(deg);
+//        _parent.rotate(deg);
     }
 
     private void getCurrentValues() {
@@ -638,7 +634,7 @@ public class PositionablePropertiesUtil {
             SensorIcon si = (SensorIcon) _parent;
             if (si.isIcon()) {
                 // just 1 label Example
-                txtList.add(new TextDetails(Bundle.getMessage("TextExampleLabel"), pop.getText(), pop.getForeground(), pop.getBackground()));
+                txtList.add(new TextDetails(Bundle.getMessage("TextExampleLabel"), si.getOverlayText(), pop.getForeground(), pop.getBackgroundColor()));
             } else {
                 // 4 different labels (and bordered boxes to set decoration of) labels
                 txtList.add(new TextDetails(Bundle.getMessage("SensorStateActive"), si.getActiveText(), si.getTextActive(), si.getBackgroundActive()));
@@ -648,12 +644,12 @@ public class PositionablePropertiesUtil {
             }
         } else {
             // just 1 label Example
-            txtList.add(new TextDetails(Bundle.getMessage("TextExampleLabel"), pop.getText(), pop.getForeground(), pop.getBackground()));
+            txtList.add(new TextDetails(Bundle.getMessage("TextExampleLabel"), ((jmri.jmrit.display.PositionableLabel)_parent).getText(), pop.getForeground(), _parent.getBackground()));
         }
 
         fixedWidth = pop.getFixedWidth();
         fixedHeight = pop.getFixedHeight();
-        marginSize = pop.getMargin();
+        marginSize = pop.getMarginSize();
         borderSize = pop.getBorderSize();
         justification = pop.getJustification();
         fontStyle = pop.getFontStyle();

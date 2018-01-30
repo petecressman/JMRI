@@ -80,22 +80,22 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
                         setText((String) val);
                     }
                     setIcon(null);
-                    _text = true;
-                    _icon = false;
+                    setIsText(true);
+                    setIsIcon(false);
                     updateSize();
                     return;
                 } else if (val instanceof javax.swing.ImageIcon) {
-                    setIcon((javax.swing.ImageIcon) val);
+                    setIcon(new NamedIcon(((javax.swing.ImageIcon)val).getImage()));
                     setText(null);
-                    _text = false;
-                    _icon = true;
+                    setIsText(false);
+                    setIsIcon(true);
                     updateSize();
                     return;
                 } else if (val instanceof Number) {
                     setText(val.toString());
                     setIcon(null);
-                    _text = true;
-                    _icon = false;
+                    setIsText(true);
+                    setIsIcon(false);
                     updateSize();
                     return;
                 } else {
@@ -109,8 +109,8 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
 
                     setText(null);
                     super.setIcon(newicon);
-                    _text = false;
-                    _icon = true;
+                    setIsText(false);
+                    setIsIcon(true);
                     updateSize();
                     return;
                 } else {
@@ -118,16 +118,16 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
                     setIcon(getDefaultIcon());
 
                     setText(null);
-                    _text = false;
-                    _icon = true;
+                    setIsText(false);
+                    setIsIcon(true);
                     updateSize();
                 }
             }
         } else {
             setIcon(null);
             setText(defaultText);
-            _text = true;
-            _icon = false;
+            setIsText(true);
+            setIsIcon(false);
             updateSize();
         }
     }

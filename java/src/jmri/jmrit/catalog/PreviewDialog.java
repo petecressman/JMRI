@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -29,6 +30,8 @@ import javax.swing.JTextField;
 import jmri.InstanceManager;
 import jmri.util.swing.DrawSquares;
 import jmri.util.swing.ImagePanel;
+import jmri.jmrit.display.PositionableLabel;
+import jmri.jmrit.display.PositionablePopupUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,21 +68,16 @@ public class PreviewDialog extends JDialog {
     File _currentDir;   // current FS directory
     String[] _filter;   // file extensions of types to display
     ActionListener _lookAction;
+    boolean _mode;
 
-    /**
-     *
-     * @param frame     JFrame on screen to center this dialog over
-     * @param title     title for the frame
-     * @param dir       starting icon file directory
-     * @param filter    file patterns to display in icon tree
-     */
-    protected PreviewDialog(Frame frame, String title, File dir, String[] filter) {
-        super(frame, Bundle.getMessage(title), false);
+    protected PreviewDialog(Frame frame, String title, File dir, String[] filter, boolean modality) {
+        super(frame, Bundle.getMessage(title), modality);
         _currentDir = dir;
         _filter = new String[filter.length];
         for (int i = 0; i < filter.length; i++) {
             _filter[i] = filter[i];
         }
+        _mode = modality;
     }
 
     protected void init(ActionListener moreAction, ActionListener lookAction, ActionListener cancelAction, int startNum) {
@@ -191,14 +189,13 @@ public class PreviewDialog extends JDialog {
         _preview.setOpaque(false);
         js = new JScrollPane(_preview);
         previewPanel.add(js);
-
         // create array of backgrounds
         if (_backgrounds == null) {
             _backgrounds = new BufferedImage[4];
             for (int i = 0; i <= 2; i++) {
                 _backgrounds[i] = DrawSquares.getImage(300, 400, 10, colorChoice[i], colorChoice[i]);
-            }
             _backgrounds[3] = DrawSquares.getImage(300, 400, 10, Color.white, _grayColor);
+            }
         }
         // create background selection combo box
         JComboBox<String> bgColorBox = new JComboBox<>();
@@ -261,119 +258,131 @@ public class PreviewDialog extends JDialog {
      *
      * @return true if memory limits displaying all the images
      */
-    private boolean setIcons(int startNum) {
-        Thread.UncaughtExceptionHandler exceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
+    private boolean setIcons(int startNum) throws OutOfMemoryError {
         // VM launches another thread to run ImageFetcher.
         // This handler will catch memory exceptions from that thread
         _noMemory = false;
         Thread.setDefaultUncaughtExceptionHandler(new MemoryExceptionHandler());
+        int numCol = 6;
+        int numRow = 5;
+        long memoryNeeded = 0;
         // allow room for ImageFetcher threads
-        log.debug("setIcons: startNum= {}", startNum);
+        long memoryAvailable = availableMemory() - 10000000;
+        if (log.isDebugEnabled()) {
+            log.debug("setIcons: startNum= " + startNum + " memoryAvailable = " + availableMemory());
+        }
+        boolean newCol = false;
         GridBagLayout gridbag = new GridBagLayout();
         _preview.setLayout(gridbag);
         GridBagConstraints c = new GridBagConstraints();
         c.fill = GridBagConstraints.NONE;
-        c.anchor = GridBagConstraints.CENTER;
+        c.anchor = GridBagConstraints.SOUTH;
         c.weightx = 1.0;
         c.weighty = 1.0;
         c.gridy = -1;
         c.gridx = 0;
         _cnt = 0;       // number of images displayed in this panel
         int cnt = 0;    // total number of images in directory
-        if (_currentDir.listFiles() != null) { // prevent findbugs NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE
-            File[] files = _currentDir.listFiles(); // all files, filtered below
-            int nCols = 1;
-            int nRows = 1;
-            int nAvail = 1;
-
-            long memoryAvailable = availableMemory();
-            long memoryUsed = 0;        // estimate
-            for (int i = 0; i < files.length; i++) {
-                String ext = jmri.util.FileChooserFilter.getFileExtension(files[i]);
-                for (int k = 0; k < _filter.length; k++) {
-                    if (ext != null && ext.equalsIgnoreCase(_filter[k])) {
-                        // files[i] filtered to be an image file
-                        if (cnt < startNum) {
-                            cnt++;
-                            continue;
-                        }
-                        String name = files[i].getName();
-                        int index = name.indexOf('.');
-                        if (index > 0) {
-                            name = name.substring(0, index);
-                        }
+        File[] files = _currentDir.listFiles(); // all files, filtered below
+        int nCols = 1;
+        int nRows = 1;
+        int nAvail = 1;
+        long memoryUsed = 0;        // estmate
+        for (int i = 0; i < files.length; i++) {
+            String ext = jmri.util.FileChooserFilter.getFileExtension(files[i]);
+            for (int k = 0; k < _filter.length; k++) {
+                if (ext != null && ext.equalsIgnoreCase(_filter[k])) {
+                    if (cnt < startNum || _noMemory) {
+                        cnt++;
+                        continue;
+                    }
+                    String name = files[i].getName();
+                    int index = name.indexOf('.');
+                    if (index > 0) {
+                        name = name.substring(0, index);
+                    }
+                    try {
                         String path = files[i].getAbsolutePath();
                         NamedIcon icon = new NamedIcon(path, name);
-                        long size = icon.getIconWidth() * icon.getIconHeight();
-                        log.debug("Memory calculation icon size= {} memoryAvailable= {} memoryUsed= {}", size, memoryAvailable, memoryUsed);
-
-                        if (memoryAvailable < 4 * size) {
+                        memoryNeeded += 3 * icon.getIconWidth() * icon.getIconHeight();
+                        if (memoryAvailable < memoryNeeded) {
                             _noMemory = true;
-                            log.debug("Memory calculation caught icon size= {} testSize= {} memoryAvailable= {}", size, 4 * size, memoryAvailable);
-                            break;
+                            continue;
                         }
-                        double scale = icon.reduceTo(CatalogPanel.ICON_WIDTH,
-                                CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
                         if (_noMemory) {
-                            log.debug("MemoryExceptionHandler caught icon size={} ", size);
-                            break;
+                            continue;
                         }
-                        if (scale < 1.0) {
-                            size *= 4;
-                        } else {
-                            size += 1000;
-                        }
-                        memoryUsed += size;
-                        memoryAvailable -= size;
-                        _cnt++;
-                        cnt++;
-                        if (_cnt > nAvail) {
-                            nCols++;
-                            nRows++;
-                            nAvail = nCols * nRows;
-                            c.gridx = nCols - 1;
-                            c.gridy = 0;
-                        } else if (_cnt > nAvail - nRows) {
-                            if (c.gridx < nCols - 1) {
-                                c.gridx++;
-                            } else {
-                                c.gridx = 0;
-                                c.gridy++;
-                            }
-                        } else {
+                        if (c.gridx < numCol) {
+                            c.gridx++;
+                        } else if (c.gridy < numRow) { //start next row
                             c.gridy++;
+                            if (!newCol) {
+                                c.gridx = 0;
+                            }
+                        } else if (!newCol) { // start new column
+                            c.gridx++;
+                            numCol++;
+                            c.gridy = 0;
+                            newCol = true;
+                        } else {  // start new row
+                            c.gridy++;
+                            numRow++;
+                            c.gridx = 0;
+                            newCol = false;
                         }
-
                         c.insets = new Insets(5, 5, 0, 0);
-                        JLabel image;
-                        try {
-                            image = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime));
-                        } catch (java.lang.ClassNotFoundException cnfe) {
-                            cnfe.printStackTrace();
-                            image = new JLabel(cnfe.getMessage());
+                        PositionableLabel image;
+                        if (_mode) {
+                            image = new PositionableLabel(icon, null);
+                        } else {
+                            //modeless is for ImageEditor dragging
+                            try {
+                                image = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime), icon);
+                                image.setIsIcon(true);
+                            } catch (java.lang.ClassNotFoundException cnfe) {
+                                cnfe.printStackTrace();
+                                image = new PositionableLabel(icon, null);
+                            }
                         }
                         image.setOpaque(false);
+                        image.setToolTipText(name);
                         image.setName(name);
-                        image.setIcon(icon);
+                        double scale = image.reduceTo(CatalogPanel.ICON_WIDTH,
+                                CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
+                        PositionablePopupUtil util = image.getPopupUtility();
                         JPanel p = new JPanel();
-                        p.setOpaque(false);
                         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
                         p.add(image);
                         if (name.length() > 18) {
                             name = name.substring(0, 18);
                         }
                         JLabel nameLabel = new JLabel(name);
-                        nameLabel.setOpaque(false);
-                        JLabel label = new JLabel(Bundle.getMessage("scale", CatalogPanel.printDbl(scale, 2)));
-                        label.setOpaque(false);
-                        p.add(label);
+                        JLabel slabel = new JLabel(java.text.MessageFormat.format(Bundle.getMessage("scale"),
+                                new Object[]{CatalogPanel.printDbl(scale, 2)}));
+                        p.add(slabel);
+                        JLabel label = new JLabel(java.text.MessageFormat.format(Bundle.getMessage("dimension"),
+                                icon.getIconWidth(), icon.getIconHeight()));
                         p.add(nameLabel);
+                        p.add(label);
                         gridbag.setConstraints(p, c);
-                        log.debug("{} inserted at ({}, {})", name, c.gridx, c.gridy);
+                        if (_noMemory) {
+                            continue;
+                        }
+                        if (log.isDebugEnabled()) {
+                            log.debug(name + " inserted at (" + c.gridx + ", " + c.gridy + ")");
+                        }
                         _preview.add(p);
-                    }
-                    if (_noMemory) {
-                        break;
+                        _cnt++;
+                        cnt++;
+                        if (_cnt > 300) { // somewhere above this number, VM can't build display of panel
+                            _noMemory = true;
+                        }
+                    } catch (OutOfMemoryError oome) {
+                        JOptionPane.showMessageDialog(this,
+                                java.text.MessageFormat.format(Bundle.getMessage("OutOfMemory"),
+                                        new Object[]{Integer.valueOf(_cnt)}),
+                                Bundle.getMessage("error"), JOptionPane.INFORMATION_MESSAGE);
+                        _noMemory = true;
                     }
                 }
             }
@@ -383,14 +392,23 @@ public class PreviewDialog extends JDialog {
         JLabel bottom = new JLabel();
         gridbag.setConstraints(bottom, c);
         _preview.add(bottom);
-        String msg = Bundle.getMessage("numImagesInDir", _currentDir.getName(), DirectorySearcher.numImageFiles(_currentDir));
+        String msg = java.text.MessageFormat.format(Bundle.getMessage("numImagesInDir"),
+                new Object[]{_currentDir.getName(), Integer.valueOf(cnt)});
         if (startNum > 0) {
-            msg = Bundle.getMessage("numImagesShown", msg, _cnt, startNum);
+            msg = msg + " " + java.text.MessageFormat.format(Bundle.getMessage("numImagesShown"),
+                    new Object[]{Integer.valueOf(startNum)});
         }
         _previewLabel.setText(msg);
+//        _preview.setMinimumSize(new Dimension(CatalogPanel.ICON_WIDTH, 2 * CatalogPanel.ICON_HEIGHT));
         CatalogPanel.packParentFrame(this);
 
-        Thread.setDefaultUncaughtExceptionHandler(exceptionHandler);
+        if (_noMemory) {
+            JOptionPane.showMessageDialog(this,
+                    java.text.MessageFormat.format(Bundle.getMessage("OutOfMemory"),
+                            new Object[]{Integer.valueOf(_cnt)}),
+                    Bundle.getMessage("error"), JOptionPane.INFORMATION_MESSAGE);
+        }
+        Thread.setDefaultUncaughtExceptionHandler(new jmri.util.exceptionhandler.UncaughtExceptionHandler());
         return _noMemory;
     }
 
@@ -413,7 +431,10 @@ public class PreviewDialog extends JDialog {
         return total;
     }
 
-    @Override
+    public void paintComponents(Graphics g) {
+        super.paintComponents(g);
+    }
+    
     public void dispose() {
         if (_preview != null) {
             resetPanel();

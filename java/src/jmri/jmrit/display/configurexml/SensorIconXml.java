@@ -54,7 +54,7 @@ public class SensorIconXml extends PositionableLabelXml {
 
     protected void storeTextInfo(SensorIcon p, Element element) {
         if (p.getText() == null) {
-            String s = p.getOriginalText();
+            String s = p.getOverlayText();
             if (s != null && s.length() > 0) {
                 element.setAttribute("text", s);
             } else if (p.isText()) {
@@ -253,7 +253,7 @@ public class SensorIconXml extends PositionableLabelXml {
                         log.info(msg + " removed for url= " + iconName);
                     }
                 } else {
-                    icon.setRotation(rotation, l);
+                    doRotationConversion(rotation, l);
                 }
             } else {
                 log.warn("did not locate " + state + " icon file for " + name);
@@ -275,8 +275,17 @@ public class SensorIconXml extends PositionableLabelXml {
         loadSensorTextState("Unknown", l, element);
         loadSensorTextState("Inconsistent", l, element);
         if (element.getAttribute("text") != null) {
-            l.setOriginalText(element.getAttribute("text").getValue());
-            l.setText(element.getAttribute("text").getValue());
+            if (element.getAttribute("text").getValue().length()==0) {
+                l.setIsText(true); //text mode
+                if (l.isIcon()) {
+                    log.debug("Sensor "+l.getNameString()+" is both text and icon for text only display.");
+                }
+            } else {
+                l.setOverlayText(element.getAttribute("text").getValue());                
+                if (!l.isIcon()) {
+                    log.debug("Sensor "+l.getNameString()+" is text only for text overlaid icon display.");
+                }
+            }
         }
     }
 

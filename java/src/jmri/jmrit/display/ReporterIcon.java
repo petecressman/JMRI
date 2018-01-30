@@ -116,8 +116,10 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
     /**
      * Drive the current state of the display from the state of the Reporter.
      */
-    void displayState() {
-        if (reporter.getCurrentReport() != null) {
+    public void displayState() {
+        if (reporter == null) {
+            setText(Bundle.getMessage("NotConnected"));
+        } else if (reporter.getCurrentReport() != null) {
             if (reporter.getCurrentReport().equals("")) {
                 setText(Bundle.getMessage("Blank"));
             } else {
@@ -160,16 +162,6 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
         reporter = null;
 
         super.dispose();
-    }
-
-    @Override
-    public int maxHeight() {
-        return ((javax.swing.JLabel) this).getMaximumSize().height;  // defer to superclass
-    }
-
-    @Override
-    public int maxWidth() {
-        return ((javax.swing.JLabel) this).getMaximumSize().width;  // defer to superclass
     }
 
     private final static Logger log = LoggerFactory.getLogger(ReporterIcon.class);

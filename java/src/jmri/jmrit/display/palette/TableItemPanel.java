@@ -26,6 +26,7 @@ import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.LightIcon;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.SensorIcon;
 import jmri.jmrit.display.TurnoutIcon;
 import jmri.jmrit.picker.PickListModel;
@@ -73,7 +74,7 @@ public class TableItemPanel extends FamilyItemPanel implements ListSelectionList
     public void init() {
         if (!_initialized) {
             super.init();
-            add(initTablePanel(_model, _editor), 0); // top of Panel
+            add(initTablePanel(_model), 0); // top of Panel
             _buttonPosition = 1;
         }
     }
@@ -85,14 +86,14 @@ public class TableItemPanel extends FamilyItemPanel implements ListSelectionList
     @Override
     public void init(ActionListener doneAction, HashMap<String, NamedIcon> iconMap) {
         super.init(doneAction, iconMap);
-        add(initTablePanel(_model, _editor), 0);
+        add(initTablePanel(_model), 0);
         _buttonPosition = 1;
     }
 
     /**
      * Top Panel.
      */
-    protected JPanel initTablePanel(PickListModel model, Editor editor) {
+    protected JPanel initTablePanel(PickListModel model) {
         _table = model.makePickTable();
         _table.getSelectionModel().addListSelectionListener(this);
         ROW_HEIGHT = _table.getRowHeight();
@@ -260,7 +261,7 @@ public class TableItemPanel extends FamilyItemPanel implements ListSelectionList
     }
 
     @Override
-    protected JLabel getDragger(DataFlavor flavor, HashMap<String, NamedIcon> map, NamedIcon icon) {
+    protected PositionableLabel getDragger(DataFlavor flavor, HashMap<String, NamedIcon> map, NamedIcon icon) {
         return new IconDragJLabel(flavor, map, icon);
     }
 

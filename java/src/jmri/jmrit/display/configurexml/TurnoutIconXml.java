@@ -186,7 +186,7 @@ public class TurnoutIconXml extends PositionableLabelXml {
                     log.info("Turnout \"" + name + "\" icon \"" + state + "\" removed for url= " + iconName);
                 }
             } else {
-                icon.setRotation(rotation, l);
+                doRotationConversion(rotation, l);
             }
         } else {
             log.warn("did not locate " + state + " icon file for Turnout " + name);

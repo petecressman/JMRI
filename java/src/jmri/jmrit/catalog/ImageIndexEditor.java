@@ -1,5 +1,6 @@
 package jmri.jmrit.catalog;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,25 +49,18 @@ public final class ImageIndexEditor extends JmriJFrame {
      */
     private ImageIndexEditor() {
         super();
+        setTitle(Bundle.getMessage("ImageIndex"));
+        init();
     }
 
-    /**
-     * Ctor for a named ImageIndexEditor.
-     *
-     * @param name title to display on the editor frame
-     */
-    private ImageIndexEditor(String name) {
-        super(name);
-    }
-
-    /**
-     * @return the managed ImageIndexEditor instance
-     * @deprecated since 4.9.2; use
-     * {@link jmri.InstanceManager#getDefault(java.lang.Class)} instead
-     */
-    @Deprecated
-    public static ImageIndexEditor instance() {
-        return InstanceManager.getDefault(ImageIndexEditor.class);
+    public static ImageIndexEditor getDefault() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return null;
+        }
+        ImageIndexEditor instance = InstanceManager.getOptionalDefault(ImageIndexEditor.class).orElseGet(() -> {
+            return InstanceManager.setDefault(ImageIndexEditor.class, new ImageIndexEditor());
+        });
+        return instance;
     }
 
     private void init() {
@@ -186,6 +180,24 @@ public final class ImageIndexEditor extends JmriJFrame {
 
     public boolean isIndexChanged() {
         return _indexChanged;
+    }
+
+    /**
+     * Called from window close of Icon Editors
+     */
+    public boolean checkImageIndex() {
+        if (_indexChanged) {
+            int result = JOptionPane.showConfirmDialog(null, Bundle.getMessage("SaveImageIndex"),
+                    Bundle.getMessage("question"), JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (result == JOptionPane.YES_OPTION) {
+                storeImageIndex();
+                return true;
+            } else if (result == JOptionPane.NO_OPTION) {
+                indexChanged(false);
+            }
+        }
+        return false;
     }
 
     public void storeImageIndex() {
@@ -338,7 +350,7 @@ public final class ImageIndexEditor extends JmriJFrame {
         @Override
         public <T> Object getDefault(Class<T> type) throws IllegalArgumentException {
             if (type.equals(ImageIndexEditor.class)) {
-                ImageIndexEditor instance = new ImageIndexEditor(Bundle.getMessage("editIndexFrame"));
+                ImageIndexEditor instance = new ImageIndexEditor();
                 instance.init();
                 return instance;
             }

@@ -60,7 +60,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
             _iconMap.put(TO_ARROW, b);
         }
         setScale(getScale());
-        rotate(deg);
+        setDegrees(deg);
         setIcon(_iconMap.get(HIDDEN));
     }
 
@@ -78,16 +78,16 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
         return super.finishClone(pos);
     }
 
+    // Called from EditPortalDirection frame in CircuitBuilder
     protected void setIcon(String name, NamedIcon ic) {
         if (log.isDebugEnabled()) {
             log.debug("Icon " + getPortal().getName() + " put icon key= \"" + name + "\" icon= " + ic);
         }
-        NamedIcon icon = cloneIcon(ic, this);
-        icon.scale(getScale(), this);
-        icon.rotate(getDegrees(), this);
+        NamedIcon icon = new NamedIcon(ic, this);
         _iconMap.put(name, icon);
     }
 
+    // Called from EditPortalDirection frame in CircuitBuilder
     public void setArrowOrientatuon(boolean set) {
         if (log.isDebugEnabled()) {
             log.debug("Icon " + getPortal().getName() + " setArrowOrientatuon regular=" + set + " from " + _regular);
@@ -95,6 +95,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
         _regular = set;
     }
 
+    // Called from EditPortalDirection frame in CircuitBuilder
     public void setHideArrows(boolean set) {
         if (log.isDebugEnabled()) {
             log.debug("Icon " + getPortal().getName() + " setHideArrows hide=" + set + " from " + _hide);

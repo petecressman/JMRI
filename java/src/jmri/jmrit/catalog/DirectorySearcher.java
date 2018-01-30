@@ -314,7 +314,7 @@ public class DirectorySearcher implements InstanceManagerAutoDefault {
             log.debug("doPreviewDialog dir= {}", dir.getAbsolutePath());
         }
 
-        _previewDialog = new PreviewDialog(null, "previewDir", dir, CatalogTreeManager.IMAGE_FILTER);
+        _previewDialog = new PreviewDialog(null, "previewDir", dir, CatalogTreeManager.IMAGE_FILTER, false);
         _previewDialog.init(moreAction, lookAction, cancelAction, startNum);
         _waitDialog.setVisible(false);
     }

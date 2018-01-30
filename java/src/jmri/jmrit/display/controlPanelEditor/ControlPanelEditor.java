@@ -25,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1122,15 +1121,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         if (_selectionGroup == null) {
             return null;
         }
-        double x = event.getX();
-        double y = event.getY();
-
         for (Positionable p : _selectionGroup) {
-            Rectangle2D.Double rect2D = new Rectangle2D.Double(p.getX() * _paintScale,
-                    p.getY() * _paintScale,
-                    p.maxWidth() * _paintScale,
-                    p.maxHeight() * _paintScale);
-            if (rect2D.contains(x, y)) {
+            if (pointOnItem(p, event)) {
                 return p;
             }
         }
@@ -1147,27 +1139,30 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         int x = 0;
         int y = 0;
         switch (e.getKeyCode()) {
+            case KeyEvent.VK_U:
             case KeyEvent.VK_UP:
             case KeyEvent.VK_KP_UP:
             case KeyEvent.VK_NUMPAD8:
                 y = -1;
                 break;
+            case KeyEvent.VK_D:
             case KeyEvent.VK_DOWN:
             case KeyEvent.VK_KP_DOWN:
             case KeyEvent.VK_NUMPAD2:
                 y = 1;
                 break;
+            case KeyEvent.VK_L:
             case KeyEvent.VK_LEFT:
             case KeyEvent.VK_KP_LEFT:
             case KeyEvent.VK_NUMPAD4:
                 x = -1;
                 break;
+            case KeyEvent.VK_R:
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_KP_RIGHT:
             case KeyEvent.VK_NUMPAD6:
                 x = 1;
                 break;
-            case KeyEvent.VK_D:
             case KeyEvent.VK_DELETE:
             case KeyEvent.VK_MINUS:
                 _shapeDrawer.delete();
@@ -1467,7 +1462,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             g.setColor(new Color(150, 150, 255));
             for (Positionable p : _secondSelectionGroup) {
                 if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                    g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
+                    g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
                 }
             }
         }
@@ -1596,7 +1591,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
     @Override
     protected void setSelectionsRotation(int k, Positionable p) {
         if (_circuitBuilder.saveSelectionGroup(_selectionGroup)) {
-            p.rotate(k);
+            p.setDegrees(k);
         } else {
             super.setSelectionsRotation(k, p);
         }
@@ -1698,9 +1693,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         _currentSelection = null;
     }
 
-    private HashMap<String, NamedIcon> _portalIconMap;
+    private static HashMap<String, NamedIcon> _portalIconMap;
 
-    private void makePortalIconMap() {
+    private void makeDefaultPortalIconMap() {
         _portalIconMap = new HashMap<>();
         _portalIconMap.put(PortalIcon.VISIBLE,
                 new NamedIcon("resources/icons/throttles/RoundRedCircle20.png", "resources/icons/throttles/RoundRedCircle20.png"));
@@ -1716,14 +1711,14 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
     protected NamedIcon getPortalIcon(String name) {
         if (_portalIconMap == null) {  // set defaults
-            makePortalIconMap();
+            makeDefaultPortalIconMap();
         }
         return _portalIconMap.get(name);
     }
 
     public HashMap<String, NamedIcon> getPortalIconMap() {
         if (_portalIconMap == null) {  // set defaults
-            makePortalIconMap();
+            makeDefaultPortalIconMap();
         }
         return _portalIconMap;
     }
@@ -1781,7 +1776,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             _highlightcomponent = null;
         } else {
             _highlightcomponent = new Rectangle(pos.getX(), pos.getY(),
-                    pos.maxWidth(), pos.maxHeight());
+                    pos.getWidth(), pos.getHeight());
         }
         repaint();
     }
@@ -1854,6 +1849,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 Positionable item = (Positionable) tr.getTransferData(_positionableDataFlavor);
                 if (item == null) {
                     return;
+                }
+                if (pt == null) {
+                    pt = new Point(0, 0);
                 }
                 item.setLocation(pt.x, pt.y);
                 // now set display level in the pane.

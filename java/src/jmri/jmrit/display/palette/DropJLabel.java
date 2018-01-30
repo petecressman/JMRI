@@ -12,25 +12,26 @@ import java.awt.dnd.DropTargetEvent;
 import java.awt.dnd.DropTargetListener;
 import java.io.IOException;
 import java.util.HashMap;
-import javax.swing.Icon;
-import javax.swing.JLabel;
 import jmri.InstanceManager;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
+import jmri.jmrit.display.PositionableLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Pete Cressman Copyright (c) 2011
  */
-public class DropJLabel extends JLabel implements DropTargetListener {
+public class DropJLabel extends PositionableLabel implements DropTargetListener {
 
     private DataFlavor _dataFlavor;
     private HashMap<String, NamedIcon> _iconMap;
     private boolean _update;
 
-    DropJLabel(Icon icon) {
-        super(icon);
+    public DropJLabel(NamedIcon icon, HashMap<String, NamedIcon> iconMap, boolean update) {
+        super(icon, null);
+        _iconMap = iconMap;
+        _update = update;
         try {
             _dataFlavor = new DataFlavor(ImageIndexEditor.IconDataFlavorMime);
         } catch (ClassNotFoundException cnfe) {
@@ -40,13 +41,6 @@ public class DropJLabel extends JLabel implements DropTargetListener {
         //if (log.isDebugEnabled()) log.debug("DropJLabel ctor");
     }
 
-    DropJLabel(Icon icon, HashMap<String, NamedIcon> iconMap, boolean update) {
-        this(icon);
-        _iconMap = iconMap;
-        _update = update;
-    }
-
-    @Override
     public void dragExit(DropTargetEvent dte) {
         //if (log.isDebugEnabled()) log.debug("DropJLabel.dragExit ");
     }
@@ -110,14 +104,11 @@ public class DropJLabel extends JLabel implements DropTargetListener {
             label.setText(Bundle.getMessage("invisibleIcon"));
             label.setForeground(Color.lightGray);
         } else {
-            newIcon.reduceTo(100, 100, 0.2);
-            label.setText(null);
+            label.setText(newIcon.getName());
         }
         label.setIcon(newIcon);
-        if (newIcon != null) {
-            label.setToolTipText(newIcon.getName());
-        }
-//        _catalog.setBackground(label);
+        label.reduceTo(100, 100, 0.2);
+        label.setToolTipText(label.getText());
         _iconMap.put(label.getName(), newIcon);
         if (!_update) {  // only prompt for save from palette
             InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);

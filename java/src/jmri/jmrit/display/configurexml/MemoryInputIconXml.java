@@ -89,12 +89,7 @@ public class MemoryInputIconXml extends PositionableLabelXml {
         
         javax.swing.JComponent textField = l.getTextComponent();
         jmri.jmrit.display.PositionablePopupUtil util = l.getPopupUtility();
-        if (util.hasBackground()) {
-            textField.setBackground(util.getBackground());            
-        } else {
-            textField.setBackground(null);
-            textField.setOpaque(false);
-        }
+        textField.setBackground(l.getPopupUtility().getBackgroundColor());            
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemoryInputIconXml.class);

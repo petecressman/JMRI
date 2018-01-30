@@ -147,7 +147,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     public NamedIcon getIcon(int state) {
         return _iconStateMap.get(Integer.valueOf(state));
     }
-
+/*
     @Override
     public int maxHeight() {
         int max = 0;
@@ -166,7 +166,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             max = Math.max(iter.next().getIconWidth(), max);
         }
         return max;
-    }
+    }*/
 
     /**
      * Get current state of attached turnout
@@ -312,7 +312,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     /**
      * ****** popup AbstractAction method overrides ********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         Iterator<Entry<Integer, NamedIcon>> it = _iconStateMap.entrySet().iterator();
         while (it.hasNext()) {
@@ -344,7 +344,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         }
         setDegrees(deg);
         displayState(turnoutState());
-    }
+    }*/
 
     /**
      * Drive the current state of the display from the state of the turnout.
@@ -398,10 +398,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         while (it.hasNext()) {
             Entry<Integer, NamedIcon> entry = it.next();
             NamedIcon oldIcon = entry.getValue();
-            NamedIcon newIcon = cloneIcon(oldIcon, this);
-            newIcon.rotate(0, this);
-            newIcon.scale(1.0, this);
-            newIcon.setRotation(4, this);
+            NamedIcon newIcon = new NamedIcon(oldIcon);
             strMap.put(_state2nameMap.get(entry.getKey()), newIcon);
         }
         _itemPanel.init(updateAction, strMap);
@@ -425,8 +422,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
                 }
                 NamedIcon newIcon = entry.getValue();
                 NamedIcon oldIcon = oldMap.get(_name2stateMap.get(entry.getKey()));
-                newIcon.setLoad(oldIcon.getDegrees(), oldIcon.getScale(), this);
-                newIcon.setRotation(oldIcon.getRotation(), this);
                 setIcon(entry.getKey(), newIcon);
             }
         }   // otherwise retain current map
@@ -486,8 +481,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             }
             NamedIcon newIcon = entry.getValue();
             NamedIcon oldIcon = oldMap.get(_name2stateMap.get(entry.getKey()));
-            newIcon.setLoad(oldIcon.getDegrees(), oldIcon.getScale(), this);
-            newIcon.setRotation(oldIcon.getRotation(), this);
             setIcon(entry.getKey(), newIcon);
         }
         _iconEditorFrame.dispose();
@@ -570,7 +563,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             Iterator<Entry<Integer, NamedIcon>> it = map.entrySet().iterator();
             while (it.hasNext()) {
                 Entry<Integer, NamedIcon> entry = it.next();
-                clone.put(entry.getKey(), cloneIcon(entry.getValue(), pos));
+                 clone.put(entry.getKey(), new NamedIcon(entry.getValue()));
                 if (pos != null) {
                     pos.setIcon(_state2nameMap.get(entry.getKey()), _iconStateMap.get(entry.getKey()));
                 }

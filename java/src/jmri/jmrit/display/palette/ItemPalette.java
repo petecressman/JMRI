@@ -26,7 +26,6 @@ import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
 import jmri.jmrit.catalog.CatalogTreeLeaf;
 import jmri.jmrit.catalog.CatalogTreeNode;
-import jmri.jmrit.catalog.DirectorySearcher;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
@@ -299,19 +298,17 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
                 CatalogTreeLeaf leaf = list.get(i);
                 String path = leaf.getPath();
                 NamedIcon icon = NamedIcon.getIconByName(path);
-                if (icon == null) {
+                if (icon == null && ed != null) {
                     icon = ed.loadFailed(iconName, path);
-                    if (icon == null) {
-                        log.info("{} removed for url = {}", iconName, path);
-                    } else {
-                        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
-                    }
                 }
                 if (icon != null) {
                     iconMap.put(iconName, icon);
+                    InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
                     if (log.isDebugEnabled()) {
                         log.debug("Add {} icon to family \"{}\"", iconName, familyName);
                     }
+                } else {
+                    log.warn("{} not found. removed for url= {}", iconName, path);                    
                 }
                 Thread.yield();
             }
@@ -405,14 +402,13 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
                     log.warn("loadDefaultFamilyMap: iconName = {} in family {} has no image file.", iconName, familyName);
                 }
                 NamedIcon icon = NamedIcon.getIconByName(fileName);
-                if (icon == null) {
-                    icon = ed.loadFailed(iconName, fileName);
-                    if (icon == null) {
-                        log.info("{} removed for url= {}", iconName, fileName);
-                    }
+                if (icon == null && ed != null) {
+                    icon = ed.loadFailed(iconName, fileName);                        
                 }
                 if (icon != null) {
                     iconMap.put(iconName, icon);
+                } else {
+                    log.warn("{} not found. removed for url= {}", iconName, fileName);                    
                 }
             }
             familyMap.put(familyName, iconMap);
@@ -482,7 +478,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
             }
         });
 
-        makeMenus(ed);
+        makeMenus();
         buildTabPane(this, ed);
 
         setLayout(new BorderLayout(5, 5));
@@ -598,7 +594,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
         pack();
     }
 
-    private void makeMenus(Editor editor) {
+    private void makeMenus() {
         if (!jmri.util.ThreadingUtil.isGUIThread()) log.error("Not on GUI thread", new Exception("traceback"));
         JMenuBar menuBar = new JMenuBar();
         JMenu findIcon = new JMenu(Bundle.getMessage("findIconMenu"));
@@ -615,7 +611,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
 
         JMenuItem openItem = new JMenuItem(Bundle.getMessage("openDirMenu"));
         openItem.addActionListener((ActionEvent e) -> {
-            InstanceManager.getDefault(DirectorySearcher.class).openDirectory();
+            jmri.jmrit.catalog.DirectorySearcher.instance().openDirectory();
         });
         findIcon.add(openItem);
 

@@ -884,7 +884,7 @@ public class PanelEditor extends Editor implements ItemListener {
             } else {
                 moveItem(_currentSelection, deltaX, deltaY);
                 _highlightcomponent = new Rectangle(_currentSelection.getX(), _currentSelection.getY(),
-                        _currentSelection.maxWidth(), _currentSelection.maxHeight());
+                        _currentSelection.getWidth(), _currentSelection.getHeight());
             }
         } else {
             if (allPositionable() && _selectionGroup == null) {
@@ -914,7 +914,7 @@ public class PanelEditor extends Editor implements ItemListener {
             }
         }
         if (isEditable() && selection != null && selection.getDisplayLevel() > BKG) {
-            _highlightcomponent = new Rectangle(selection.getX(), selection.getY(), selection.maxWidth(), selection.maxHeight());
+            _highlightcomponent = new Rectangle(selection.getX(), selection.getY(), selection.getWidth(), selection.getHeight());
             _targetPanel.repaint();
         } else {
             _highlightcomponent = null;

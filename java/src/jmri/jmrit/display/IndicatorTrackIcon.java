@@ -227,7 +227,7 @@ public class IndicatorTrackIcon extends PositionableIcon
     public String getStatus() {
         return _status;
     }
-
+/*
     @Override
     public int maxHeight() {
         int max = 0;
@@ -246,7 +246,7 @@ public class IndicatorTrackIcon extends PositionableIcon
             max = Math.max(iter.next().getIconWidth(), max);
         }
         return max;
-    }
+    }*/
 
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -321,13 +321,13 @@ public class IndicatorTrackIcon extends PositionableIcon
         }
         updateSize();
     }
-    
+/*    
     @Override
     public void rotate(int deg) {
         super.rotate(deg);
         displayState(_status);
     }
-
+*/
     @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("IndicatorTrack"));
@@ -356,10 +356,7 @@ public class IndicatorTrackIcon extends PositionableIcon
         while (it.hasNext()) {
             Entry<String, NamedIcon> entry = it.next();
             NamedIcon oldIcon = entry.getValue();
-            NamedIcon newIcon = cloneIcon(oldIcon, this);
-            newIcon.rotate(0, this);
-            newIcon.scale(1.0, this);
-            newIcon.setRotation(4, this);
+            NamedIcon newIcon = new NamedIcon(oldIcon);
             map.put(entry.getKey(), newIcon);
         }
         _trackPanel.init(updateAction, map);
@@ -395,8 +392,6 @@ public class IndicatorTrackIcon extends PositionableIcon
                 }
                 NamedIcon newIcon = entry.getValue();
                 NamedIcon oldIcon = oldMap.get(entry.getKey());
-                newIcon.setLoad(oldIcon.getDegrees(), oldIcon.getScale(), this);
-                newIcon.setRotation(oldIcon.getRotation(), this);
                 setIcon(entry.getKey(), newIcon);
             }
         }   // otherwise retain current map

@@ -12,12 +12,15 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import jmri.jmrit.catalog.CatalogPanel;
 import jmri.jmrit.catalog.DragJLabel;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.AnalogClock2Display;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.util.swing.ImagePanel;
+import jmri.jmrit.display.PositionableLabel;
+import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +60,12 @@ public class ClockItemPanel extends IconItemPanel {
             panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                     borderName));
             try {
-                JLabel label = new ClockDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR));
+                PositionableLabel label = new ClockDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR), icon);
                 if (icon.getIconWidth() < 1 || icon.getIconHeight() < 1) {
                     label.setText(Bundle.getMessage("invisibleIcon"));
                     label.setForeground(Color.lightGray);
                 } else {
-                    icon.reduceTo(100, 100, 0.2);
+                    label.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
                 }
                 label.setIcon(icon);
                 label.setName(borderName);
@@ -82,8 +85,8 @@ public class ClockItemPanel extends IconItemPanel {
 
     public class ClockDragJLabel extends DragJLabel {
 
-        public ClockDragJLabel(DataFlavor flavor) {
-            super(flavor);
+        public ClockDragJLabel(DataFlavor flavor, NamedIcon icon) {
+            super(flavor, icon);
         }
 
         @Override

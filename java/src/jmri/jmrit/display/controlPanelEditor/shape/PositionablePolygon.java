@@ -28,6 +28,7 @@ public class PositionablePolygon extends PositionableShape {
     // there is no default PositionablePolygon
     private PositionablePolygon(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Polygon"));
     }
 
     public PositionablePolygon(Editor editor, Shape shape) {

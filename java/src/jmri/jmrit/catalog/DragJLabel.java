@@ -12,7 +12,7 @@ import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import java.io.IOException;
-import javax.swing.JLabel;
+import jmri.jmrit.display.PositionableLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,22 +21,22 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright 2009, 2016
  */
-public class DragJLabel extends JLabel implements DragGestureListener, DragSourceListener, Transferable {
+public class DragJLabel extends PositionableLabel implements DragGestureListener, DragSourceListener, Transferable {
 
     protected DataFlavor _dataFlavor;
 
-    public DragJLabel(DataFlavor flavor) {
+/*    public DragJLabel(DataFlavor flavor) {
         super();
         init(flavor);
-    }
+    }*/
     
     public DragJLabel(DataFlavor flavor, NamedIcon icon) {
-        super(icon);
+        super(icon, null);
         init(flavor);
     }
     
     public DragJLabel(DataFlavor flavor, String text) {
-        super(text);
+        super(text, null);
         init(flavor);
     }
     

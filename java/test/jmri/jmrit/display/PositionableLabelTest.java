@@ -198,8 +198,8 @@ public class PositionableLabelTest extends PositionableTestBase {
         Assert.assertEquals("icon size", new Dimension(13, 13).toString(), label.getSize().toString());
 
         // do the rotation, which transforms 13x13 to sqrt(2) bigger, 19x19
-        label.rotate(45);
-        Assert.assertEquals("icon size", new Dimension(19, 19).toString(), label.getSize().toString());
+        label.setDegrees(45);
+        Assert.assertEquals("icon size", new Dimension(19,19).toString(),label.getSize().toString());
 
         f.pack();
         new org.netbeans.jemmy.QueueTool().waitEmpty(100);
@@ -335,8 +335,8 @@ public class PositionableLabelTest extends PositionableTestBase {
         Assert.assertEquals("icon size", new Dimension(13, 13).toString(), label.getSize().toString());
 
         // do the rotation, which transforms 13x13 to sqrt(2) bigger, 19x19
-        label.rotate(45);
-        Assert.assertEquals("icon size", new Dimension(19, 19).toString(), label.getSize().toString());
+        label.setDegrees(45);
+        Assert.assertEquals("icon size", new Dimension(19,19).toString(),label.getSize().toString());
 
         f.pack();
         new org.netbeans.jemmy.QueueTool().waitEmpty(100);
@@ -460,7 +460,7 @@ public class PositionableLabelTest extends PositionableTestBase {
         f.pack();
         new org.netbeans.jemmy.QueueTool().waitEmpty(100);
 
-        label.rotate(90);
+        label.setDegrees(90);
 
         f.pack();
         new org.netbeans.jemmy.QueueTool().waitEmpty(100);
@@ -505,7 +505,7 @@ public class PositionableLabelTest extends PositionableTestBase {
         f.pack();
         new org.netbeans.jemmy.QueueTool().waitEmpty(100);
 
-        label.rotate(45);
+        label.setDegrees(45);
 
         f.pack();
         new org.netbeans.jemmy.QueueTool().waitEmpty(100);
