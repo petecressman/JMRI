@@ -1189,8 +1189,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
     }
 
     ///////////////// Handle mouse events ////////////////
-
     private long _mouseDownTime = 0;
+
     @Override
     public void mousePressed(MouseEvent event) {
         _mouseDownTime = System.currentTimeMillis();
@@ -1259,7 +1259,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             }
             if (isEditable()) {
                 _shapeDrawer.doMouseReleased(selection, event, this);
-                
+
                 if (!_circuitBuilder.doMouseReleased(selection, _dragging)) {
                     if (selection != null) {
                         if (!_dragging) {
@@ -1457,7 +1457,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             if (g instanceof Graphics2D) {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setStroke(new java.awt.BasicStroke(2.0f));
-                
+
             }
             g.setColor(new Color(150, 150, 255));
             for (Positionable p : _secondSelectionGroup) {
@@ -1693,7 +1693,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         _currentSelection = null;
     }
 
-    private static HashMap<String, NamedIcon> _portalIconMap;
+    private HashMap<String, NamedIcon> _portalIconMap;
 
     private void makeDefaultPortalIconMap() {
         _portalIconMap = new HashMap<>();
@@ -1802,7 +1802,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             _namedIconDataFlavor = new DataFlavor(ImageIndexEditor.IconDataFlavorMime);
             _positionableListDataFlavor = new DataFlavor(List.class, "JComponentList");
         } catch (ClassNotFoundException cnfe) {
-            cnfe.printStackTrace();
+            log.error("Unable to find class supporting {}", ImageIndexEditor.IconDataFlavorMime, cnfe);
         }
         new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
     }
@@ -1850,10 +1850,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 if (item == null) {
                     return;
                 }
-                if (pt == null) {
-                    pt = new Point(0, 0);
-                }
-                item.setLocation(pt.x, pt.y);
+                item.setLocation((int) Math.round(pt.x/getPaintScale()), (int) Math.round(pt.y/getPaintScale()));
                 // now set display level in the pane.
                 item.setDisplayLevel(item.getDisplayLevel());
                 item.setEditor(this);
@@ -1875,7 +1872,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 } else {
                     ni.setDisplayLevel(ICONS);
                 }
-                ni.setLocation(pt.x, pt.y);
+                ni.setLocation((int) Math.round(pt.x/getPaintScale()), (int) Math.round(pt.y/getPaintScale()));
                 ni.setEditor(this);
                 putItem(ni);
                 ni.updateSize();
@@ -1886,7 +1883,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 PositionableLabel l = new PositionableLabel(text, this);
                 l.setSize(l.getPreferredSize().width, l.getPreferredSize().height);
                 l.setDisplayLevel(LABELS);
-                l.setLocation(pt.x, pt.y);
+                l.setLocation((int) Math.round(pt.x/getPaintScale()), (int) Math.round(pt.y/getPaintScale()));
                 l.setEditor(this);
                 putItem(l);
                 evt.dropComplete(true);
@@ -1895,6 +1892,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                         = (List<Positionable>) tr.getTransferData(_positionableListDataFlavor);
                 for (Positionable pos : dragGroup) {
                     pos.setEditor(this);
+                    pos.setLocation((int) Math.round(pt.x/getPaintScale()), (int) Math.round(pt.y/getPaintScale()));
                     putItem(pos);
                     pos.updateSize();
                     log.debug("DnD Add {}", pos.getNameString());

@@ -68,7 +68,7 @@ public class PrintRosterEntry implements PaneContainer {
         try {
             Element root = pf.rootFromName(filename);
             if (root == null) {
-                log.error("Programmer file name incorrect " + filename);
+                log.error("Programmer file name incorrect {}", filename);
                 return;
             }
             if ((base = root.getChild("programmer")) == null) {
@@ -77,9 +77,7 @@ public class PrintRosterEntry implements PaneContainer {
             }
             log.debug("Success: xml file top element is 'programmer'");
         } catch (JDOMException | java.io.IOException e) {
-            log.error("exception reading programmer file: " + filename, e);
-            // provide traceback too
-            e.printStackTrace();
+            log.error("exception reading programmer file {}", filename, e);
             return;
         }
 
@@ -218,9 +216,7 @@ public class PrintRosterEntry implements PaneContainer {
         }
         log.debug("List size length: {}", _paneList.size());
         for (int i = 0; i < _paneList.size(); i++) {
-            if (log.isDebugEnabled()) {
-                log.debug("start printing page " + i);
-            }
+            log.debug("start printing page {}", i);
             PaneProgPane pane = (PaneProgPane) _paneList.get(i);
             if (pane.includeInPrint()) {
                 pane.printPane(w);
@@ -346,7 +342,7 @@ public class PrintRosterEntry implements PaneContainer {
                 w.write(s, 0, s.length());
             }
         } catch (IOException e) {
-            log.warn("error during printing: " + e);
+            log.warn("error during printing: ", e);
         }
         _rosterEntry.printEntry(w);
         w.setFontStyle(Font.PLAIN);

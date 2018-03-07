@@ -11,16 +11,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Converts Stream-based I/O to/from C/MRI serial messages.
- * <P>
+ * <p>
  * The "SerialInterface" side sends/receives message objects.
- * <P>
+ * <p>
  * The connection to a SerialPortController is via a pair of *Streams, which
  * then carry sequences of characters for transmission. Note that this
  * processing is handled in an independent thread.
- * <P>
+ * <p>
  * This handles the state transitions, based on the necessary state in each
  * message.
- * <P>
+ * <p>
  * Handles initialization, polling, output, and input for multiple Serial Nodes.
  *
  * @author Bob Jacobsen Copyright (C) 2003
@@ -29,6 +29,9 @@ import org.slf4j.LoggerFactory;
  */
 public class SerialTrafficController extends AbstractMRNodeTrafficController implements SerialInterface {
 
+    /**
+     * Create a new C/MRI SerialTrafficController instance.
+     */
     public SerialTrafficController() {
         super();
 
@@ -121,8 +124,6 @@ public class SerialTrafficController extends AbstractMRNodeTrafficController imp
     //------------------------------------------
     private int initTimeout = 500;
     private int xmitTimeout = 2;
-    private int pollTimeout = 2;
-
     // cpNode poll list
     public ArrayList<Integer> cmriNetPollList = new ArrayList<>();
 

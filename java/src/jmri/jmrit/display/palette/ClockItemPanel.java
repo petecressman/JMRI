@@ -47,8 +47,12 @@ public class ClockItemPanel extends IconItemPanel {
 
     @Override
     protected void addIconsToPanel(HashMap<String, NamedIcon> iconMap) {
-        _iconPanel = new ImagePanel();
-        updateBackgrounds(); // create array of backgrounds
+        if (_iconPanel == null) {
+            _iconPanel = new ImagePanel();            
+            _iconPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        } else {
+            _iconPanel.removeAll();
+        }
 
         Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
         while (it.hasNext()) {
@@ -71,16 +75,11 @@ public class ClockItemPanel extends IconItemPanel {
                 label.setName(borderName);
                 panel.add(label);
             } catch (java.lang.ClassNotFoundException cnfe) {
-                cnfe.printStackTrace();
+                log.error("Unable to find class supporting {}", Editor.POSITIONABLE_FLAVOR, cnfe);
             }
             _iconPanel.add(panel);
         }
-        add(_iconPanel, 1);
-    }
-
-    @Override
-    public void initButtonPanel() {
-        add(makeBgButtonPanel(_iconPanel, null, _backgrounds, _paletteFrame));
+        _iconPanel.setImage(_backgrounds[_paletteFrame.getPreviewBg()]); // pick up shared setting
     }
 
     public class ClockDragJLabel extends DragJLabel {
@@ -107,7 +106,7 @@ public class ClockItemPanel extends IconItemPanel {
                 c.setOpaque(false);
                 c.update();
                 c.setLevel(Editor.CLOCK);
-                return c;                
+                return c;
             } else if (DataFlavor.stringFlavor.equals(flavor)) {
                 StringBuilder sb = new StringBuilder(_itemType);
                 sb.append(" icon \"");

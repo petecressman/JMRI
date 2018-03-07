@@ -39,7 +39,6 @@ abstract public class PositionableTestBase{
         JUnitUtil.tearDown();
     }
 
-
     @Test
     public void testGetAndSetPositionable() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
@@ -126,7 +125,7 @@ abstract public class PositionableTestBase{
     @Test
     public void testClone() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Positionable p2 = p.deepClone();
+        p.deepClone();
 
         // this next line is consistently failing (on all object types).  
         // It should pass.

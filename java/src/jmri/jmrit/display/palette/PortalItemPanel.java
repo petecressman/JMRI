@@ -59,7 +59,7 @@ public /*abstract*/ class PortalItemPanel extends FamilyItemPanel {
 
     private void setDefaults() {
         HashMap<String, NamedIcon> map = getIconMap();
-        ControlPanelEditor.setDefaultPortalIcons(jmri.jmrit.display.PositionableIcon.cloneMap(map, null));
+        ((ControlPanelEditor)_editor).setDefaultPortalIcons(jmri.jmrit.display.PositionableIcon.cloneMap(map, null));
     }
 
     @Override

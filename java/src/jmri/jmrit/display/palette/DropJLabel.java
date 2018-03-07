@@ -35,7 +35,7 @@ public class DropJLabel extends PositionableLabel implements DropTargetListener 
         try {
             _dataFlavor = new DataFlavor(ImageIndexEditor.IconDataFlavorMime);
         } catch (ClassNotFoundException cnfe) {
-            cnfe.printStackTrace();
+            log.error("Unable to find class supporting {}", ImageIndexEditor.IconDataFlavorMime, cnfe);
         }
         new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
         //if (log.isDebugEnabled()) log.debug("DropJLabel ctor");

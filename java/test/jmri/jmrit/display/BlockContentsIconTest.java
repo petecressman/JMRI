@@ -1,6 +1,9 @@
 package jmri.jmrit.display;
 
+import static jmri.InstanceManager.getDefault;
+
 import java.awt.GraphicsEnvironment;
+import jmri.BlockManager;
 import jmri.util.JUnitUtil;
 import jmri.jmrit.catalog.NamedIcon;
 import org.junit.Assert;
@@ -24,7 +27,7 @@ public class BlockContentsIconTest extends PositionableLabelTest {
     @Test
     public void testCtor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        BlockContentsIcon bci = new BlockContentsIcon("foo",editor);
+        new BlockContentsIcon("foo",editor);
         Assert.assertNotNull("BlockContentsIcon Constructor",p);
     }
 
@@ -34,7 +37,7 @@ public class BlockContentsIconTest extends PositionableLabelTest {
         JUnitUtil.initConfigureManager();
         if(!GraphicsEnvironment.isHeadless()){
            editor = new EditorScaffold();
-           jmri.Block block = jmri.InstanceManager.blockManagerInstance().provideBlock("B1");
+           jmri.Block block = jmri.InstanceManager.getDefault(BlockManager.class).provideBlock("B1");
            NamedIcon icon = new NamedIcon("resources/icons/redTransparentBox.gif", "box"); // 13x13
            BlockContentsIcon bci = new BlockContentsIcon(icon,editor);
            bci.setIcon(icon);

@@ -329,7 +329,7 @@ public abstract class PositionableShape extends PositionableJComponent implement
      * Attach a named sensor to a PositionableShape.
      *
      * @param pName Used as a system/user name to lookup the sensor object
-     */ 
+     */
     public String setControlSensor(String pName) {
         String msg = null;
         log.debug("setControlSensor: name= {}", pName);
@@ -395,11 +395,11 @@ public abstract class PositionableShape extends PositionableJComponent implement
     public void setChangeLevel(int l) {
         _changeLevel = l;
     }
-    
+
     public void setListener() {
         if (_controlSensor != null) {
-            getControlSensor().addPropertyChangeListener(this, getSensorName(), "PositionalShape");                        
-        }        
+            getControlSensor().addPropertyChangeListener(this, getSensorName(), "PositionalShape");
+        }
     }
 
     /*
