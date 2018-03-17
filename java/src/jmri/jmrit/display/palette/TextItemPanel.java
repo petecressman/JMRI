@@ -56,13 +56,10 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             blurb.add(new JLabel(Bundle.getMessage("addTextAndAttrs")));
             blurb.add(new JLabel(Bundle.getMessage("ToolTipDragText")));
             blurb.add(Box.createVerticalStrut(ItemPalette.STRUT_SIZE));
-            blurb.add(new JLabel(Bundle.getMessage("ToLinkToURL", "Text")));
-            blurb.add(new JLabel(Bundle.getMessage("enterPanel")));
-            blurb.add(new JLabel(Bundle.getMessage("enterURL")));
             JPanel p = new JPanel();
             p.add(blurb);
             add(p);
-            DragDecoratorLabel sample = new DragDecoratorLabel(Bundle.getMessage("sample"));
+            DragDecoratorLabel sample = new DragDecoratorLabel(Bundle.getMessage("sample"), _editor);
             _decorator = new DecoratorPanel(_editor, _paletteFrame);
             _decorator.initDecoratorPanel(sample);
             add(_decorator);
@@ -93,8 +90,8 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
 
         DataFlavor dataFlavor;
 
-        public DragDecoratorLabel(String s) {
-            super(s, null);
+        public DragDecoratorLabel(String s, Editor editor) {
+            super(s, editor);
             DragSource dragSource = DragSource.getDefaultDragSource();
             dragSource.createDefaultDragGestureRecognizer(this,
                     DnDConstants.ACTION_COPY, this);
@@ -171,6 +168,7 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             PositionablePopupUtil util = _decorator.getPositionablePopupUtil();
             l.setPopupUtility(util.clone());
             l.setLevel(this.getDisplayLevel());
+            System.out.println("TextItemPanel.getTransferData(): PositionableLabel font= "+l.getFont().getFamily());
             return l;
         }
     }

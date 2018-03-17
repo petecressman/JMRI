@@ -570,7 +570,7 @@ public class PositionablePopupUtil {
         }
     }
 
->>>>>>> branch 'pc-PaintByCoodAlias' of https://github.com/petecressman/JMRI.git*/
+///>>>>>>> branch 'pc-PaintByCoodAlias' of https://github.com/petecressman/JMRI.git*/
     public void copyItem(JPopupMenu popup) {
         JMenuItem edit = new JMenuItem("Copy");
         edit.addActionListener((ActionEvent e) -> {
