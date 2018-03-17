@@ -221,6 +221,8 @@ public interface Positionable extends Cloneable {
 
     public Color getForeground();
 
+    public void setFont(Font f);
+
     public Font getFont();
 
     public void setBorder(Border border);

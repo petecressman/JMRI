@@ -58,7 +58,7 @@ public class PositionablePopupUtil {
         util.setHorizontalAlignment(getJustification());
         util.setFixedWidth(getFixedWidth());
         util.setFixedHeight(getFixedHeight());
-        util.setFont(util.getFont().deriveFont(getFontStyle()));
+        util.setFont(getFont().deriveFont(getFontStyle()));
         util.setFontSize(getFontSize());
         util.setBorderSize(_borderSize);
         util.setMarginSize(_marginSize);
@@ -360,6 +360,8 @@ public class PositionablePopupUtil {
             _parent.updateSize();
             _parent.getEditor().setAttributes(_self, _parent);
         }
+        System.out.println("PositionablePopupUtil.setFont(): _parent font= \""+_parent.getFont().getFamily()+
+                "\" _textComponent font= \""+_textComponent.getFont().getFamily()+"\"");
     }
 
     public Font getFont() {

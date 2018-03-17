@@ -100,8 +100,6 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
 
     JColorChooser _chooser;
     ImagePanel _previewPanel;
-    Color  _bkgrnd;
-
     JPanel _samplePanel;
     private PositionablePopupUtil _util;
     private Hashtable<String, PositionableLabel> _sample = null;
@@ -188,7 +186,6 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     /* Called by Palette's TextItemPanel i.e. make a new panel item to drag */
     protected void initDecoratorPanel(DragDecoratorLabel sample) {
         sample.setDisplayLevel(Editor.LABELS);
-        sample.setBackground(_bkgrnd);
         _util = sample.getPopupUtility();
         _sample.put("Text", sample);
         makeFontPanels();
@@ -199,14 +196,13 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
 
     /* Called by Editor's TextAttrDialog - i.e. update a panel item from menu */
     public void initDecoratorPanel(Positionable pos) {
-        Positionable item = pos.deepClone(); // copy of PositionableLabel being edited
-        _util = item.getPopupUtility();
+        _util = pos.getPopupUtility().clone();
         makeFontPanels();
 
         if (pos instanceof SensorIcon && !((SensorIcon)pos).isIcon()) {
             SensorIcon si = (SensorIcon) pos;
             if (!si.isIcon() && si.isText()) {
-                PositionableLabel sample = new PositionableLabel(si.getActiveText(), null);
+                PositionableLabel sample = new PositionableLabel(si.getActiveText(), _editor);
                 sample.setForeground(si.getTextActive());
                 Color color = si.getBackgroundActive();
                 if (color!=null) {
@@ -215,7 +211,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 }
                 doPopupUtility("Active", ACTIVE_FONT, sample, true); // NOI18N
 
-                sample = new PositionableLabel(si.getInactiveText(), null);
+                sample = new PositionableLabel(si.getInactiveText(), _editor);
                 sample.setForeground(si.getTextInActive());
                 color = si.getBackgroundInActive();
                 if (color!=null) {
@@ -224,7 +220,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 }
                 doPopupUtility("InActive", INACTIVE_FONT, sample, true); // NOI18N
 
-                sample = new PositionableLabel(si.getUnknownText(), null);
+                sample = new PositionableLabel(si.getUnknownText(), _editor);
                 sample.setForeground(si.getTextUnknown());
                 color = si.getBackgroundUnknown();
                 if (color!=null) {
@@ -233,7 +229,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 }
                 doPopupUtility("Unknown", UNKOWN_FONT, sample, true); // NOI18N
 
-                sample = new PositionableLabel(si.getInconsistentText(), null);
+                sample = new PositionableLabel(si.getInconsistentText(), _editor);
                 sample.setForeground(si.getTextInconsistent());
                 color = si.getBackgroundInconsistent();
                 if (color!=null) {
@@ -243,7 +239,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 doPopupUtility("Inconsistent", INCONSISTENT_FONT, sample, true); // NOI18N
             }
         } else { // not a SensorIcon
-            PositionableLabel sample = new PositionableLabel("", null);
+            PositionableLabel sample = new PositionableLabel("", _editor);
             sample.setForeground(pos.getForeground());
             sample.setBackground(pos.getBackground());
 //            sample.setOpaque(_util.hasBackground());
@@ -665,6 +661,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             } else {
                 pos.getPopupUtility().setBackgroundColor(null);                
             }
+            pos.setFont(_util.getFont());
 //            _util.setHasBackground(sample.isOpaque());
         }
     }
