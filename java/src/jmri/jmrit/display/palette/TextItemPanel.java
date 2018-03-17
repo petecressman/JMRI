@@ -168,7 +168,6 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             PositionablePopupUtil util = _decorator.getPositionablePopupUtil();
             l.setPopupUtility(util.clone());
             l.setLevel(this.getDisplayLevel());
-            System.out.println("TextItemPanel.getTransferData(): PositionableLabel font= "+l.getFont().getFamily());
             return l;
         }
     }
