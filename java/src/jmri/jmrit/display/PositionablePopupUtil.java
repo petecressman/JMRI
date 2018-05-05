@@ -360,8 +360,6 @@ public class PositionablePopupUtil {
             _parent.updateSize();
             _parent.getEditor().setAttributes(_self, _parent);
         }
-        System.out.println("PositionablePopupUtil.setFont(): _parent font= \""+_parent.getFont().getFamily()+
-                "\" _textComponent font= \""+_textComponent.getFont().getFamily()+"\"");
     }
 
     public Font getFont() {

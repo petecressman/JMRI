@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
  * coordinates of Graphics2D.  This allows animated icons to continue their
  * animation after an AffineTransform.
  * </p>
+ * This is the root class for all panel display objects.  It holds the data needed for
+ * transforming the position of the object.
  *
  * @author Howard G. Penny copyright (C) 2005
  * @author Pete Cressman copyright (C) 2017
@@ -65,12 +67,10 @@ public class PositionableJComponent extends JComponent implements Positionable {
         setPopupUtility(new PositionablePopupUtil(this, this));
     }
 
-    @Override
     public Positionable deepClone() {
         PositionableJComponent pos = new PositionableJComponent(_editor);
         return finishClone(pos);
     }
-
 
     public Positionable finishClone(Positionable pos) {
         pos.setScale(_scale);
@@ -84,13 +84,9 @@ public class PositionableJComponent extends JComponent implements Positionable {
         pos.setShowToolTip(_showTooltip);
         pos.setToolTip(_tooltip);
         pos.setEditable(_editable);
+        
         pos.updateSize();
         return pos;
-    }
-
-    @Override
-    public JComponent getTextComponent() {
-        return this;
     }
 
     public void displayState() {
@@ -372,22 +368,20 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return _flip;
     }
 
+    public JComponent getTextComponent() {
+        return this;
+    }
+
     /**
      * ************** end Positionable methods *********************
      */
-    /**
-     * Clean up when this object is no longer needed. Should not be called while
-     * the object is still displayed; see remove()
-     */
-    public void dispose() {
-    }
     /**
      * Removes this object from display and persistance
      */
     @Override
     public void remove() {
         _editor.removeFromContents(this);
-        cleanup();
+        dispose();
         // remove from persistence by flagging inactive
         active = false;
     }
@@ -395,7 +389,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
     /**
      * To be overridden if any special work needs to be done
      */
-    void cleanup() {
+    public void dispose() {
     }
 
     boolean active = true;
@@ -408,6 +402,10 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return active;
     }
 
+    /**
+     * Provides a generic method to return the bean associated with the
+     * Positionable
+     */
     @Override
     public jmri.NamedBean getNamedBean() {
         return null;

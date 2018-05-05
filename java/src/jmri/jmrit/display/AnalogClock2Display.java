@@ -264,16 +264,6 @@ public class AnalogClock2Display extends PositionableJComponent implements Linki
     }
 
     @Override
-    void cleanup() {
-    }
-
-    @Override
-    public void dispose() {
-        rateButtonGroup = null;
-        runMenu = null;
-    }
-
-    @Override
     public String getURL() {
         return _url;
     }

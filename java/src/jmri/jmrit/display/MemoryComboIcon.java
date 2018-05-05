@@ -49,8 +49,6 @@ public class MemoryComboIcon extends PositionableJPanel
         _comboBox.addActionListener(this);
         setDisplayLevel(Editor.LABELS);
 
-        setLayout(new java.awt.GridBagLayout());
-        add(_comboBox);
         addMouseMotionListener(this);
         _comboBox.addMouseListener(this);
 
@@ -61,7 +59,10 @@ public class MemoryComboIcon extends PositionableJPanel
                 component.addMouseMotionListener(this);
             }
         }
-        setPopupUtility(new PositionablePopupUtil(this, _comboBox));
+        JPanel panel = new JPanel();
+        panel.setLayout(new java.awt.GridBagLayout());
+        panel.add(_comboBox, new java.awt.GridBagConstraints());
+        super.addItem(panel);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class MemoryComboIcon extends PositionableJPanel
         return finishClone(pos);
     }
 
-    protected Positionable finishClone(MemoryComboIcon pos) {
+    public Positionable finishClone(MemoryComboIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
     }
@@ -157,6 +158,11 @@ public class MemoryComboIcon extends PositionableJPanel
             return null;
         }
         return namedMemory.getBean();
+    }
+
+    @Override
+    public jmri.NamedBean getNamedBean() {
+        return getMemory();
     }
 
     public ComboModel getComboModel() {
@@ -216,7 +222,6 @@ public class MemoryComboIcon extends PositionableJPanel
      */
     DefaultListModel<String> _listModel;
 
-    @Override
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JList<String> list;
@@ -321,16 +326,17 @@ public class MemoryComboIcon extends PositionableJPanel
     }
 
     @Override
-    void cleanup() {
+    public void dispose() {
         if (namedMemory != null) {
             getMemory().removePropertyChangeListener(this);
         }
         if (_comboBox != null) {
-//            _comboBox.removeMouseMotionListener(this);
+            _comboBox.removeMouseMotionListener(this);
             _comboBox.removeMouseListener(this);
             _comboBox = null;
         }
         namedMemory = null;
+        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemoryComboIcon.class);

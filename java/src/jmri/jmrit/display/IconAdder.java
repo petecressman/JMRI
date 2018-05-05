@@ -474,7 +474,7 @@ public class IconAdder extends JPanel implements ListSelectionListener {
      * @return the selected item
      */
     public NamedBean getTableSelection() {
-        if (InstanceManager.getDefault(ImageIndexEditor.class).isIndexChanged()) {
+        if (InstanceManager.getDefault(CatalogTreeManager.class).isIndexChanged()) {
             checkIconSizes();
         }
         int row = _table.getSelectedRow();
@@ -723,7 +723,7 @@ public class IconAdder extends JPanel implements ListSelectionListener {
             }
         }
         root.add(_defaultIcons);
-        InstanceManager.getDefault(ImageIndexEditor.class).indexChanged(true);
+        InstanceManager.getDefault(CatalogTreeManager.class).indexChanged(true);
     }
 
     private class IconButton extends DropButton {

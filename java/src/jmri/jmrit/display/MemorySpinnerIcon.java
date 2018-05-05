@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
@@ -37,12 +38,16 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         super(editor);
         setDisplayLevel(Editor.LABELS);
 
-        setLayout(new java.awt.GridBagLayout());
-        add(spinner, new java.awt.GridBagConstraints());
         spinner.addChangeListener(this);
         javax.swing.JTextField textBox = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
         textBox.addMouseMotionListener(this);
         textBox.addMouseListener(this);
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new java.awt.GridBagLayout());
+        panel.add(spinner, new java.awt.GridBagConstraints());
+        super.addItem(panel);
+        
         setPopupUtility(new PositionablePopupUtil(this, textBox));
     }
 
@@ -52,7 +57,7 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         return finishClone(pos);
     }
 
-    protected Positionable finishClone(MemorySpinnerIcon pos) {
+    public Positionable finishClone(MemorySpinnerIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
     }
@@ -167,7 +172,6 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         return true;
     }
 
-    @Override
     protected void edit() {
         makeIconEditorFrame(this, "Memory", true, null);
         _iconEditor.setPickList(jmri.jmrit.picker.PickListModel.memoryPickModelInstance());
@@ -256,7 +260,7 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
     }
 
     @Override
-    void cleanup() {
+    public void dispose() {
         if (namedMemory != null) {
             getMemory().removePropertyChangeListener(this);
         }
@@ -267,6 +271,7 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         }
         spinner = null;
         namedMemory = null;
+        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemorySpinnerIcon.class);
