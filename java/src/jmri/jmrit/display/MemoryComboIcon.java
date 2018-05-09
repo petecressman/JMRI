@@ -49,6 +49,8 @@ public class MemoryComboIcon extends PositionableJPanel
         _comboBox.addActionListener(this);
         setDisplayLevel(Editor.LABELS);
 
+        setLayout(new java.awt.GridBagLayout());
+        add(_comboBox);
         addMouseMotionListener(this);
         _comboBox.addMouseListener(this);
 
@@ -59,10 +61,7 @@ public class MemoryComboIcon extends PositionableJPanel
                 component.addMouseMotionListener(this);
             }
         }
-        JPanel panel = new JPanel();
-        panel.setLayout(new java.awt.GridBagLayout());
-        panel.add(_comboBox, new java.awt.GridBagConstraints());
-        super.addItem(panel);
+        setPopupUtility(new PositionablePopupUtil(this, _comboBox));
     }
 
     @Override
@@ -222,6 +221,7 @@ public class MemoryComboIcon extends PositionableJPanel
      */
     DefaultListModel<String> _listModel;
 
+    @Override
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JList<String> list;
@@ -310,6 +310,7 @@ public class MemoryComboIcon extends PositionableJPanel
     /**
      * Drive the current state of the display from the state of the Memory.
      */
+    @Override
     public void displayState() {
         log.debug("displayState");
         if (namedMemory == null) {  // leave alone if not connected yet
@@ -331,7 +332,7 @@ public class MemoryComboIcon extends PositionableJPanel
             getMemory().removePropertyChangeListener(this);
         }
         if (_comboBox != null) {
-            _comboBox.removeMouseMotionListener(this);
+            removeMouseMotionListener(this);
             _comboBox.removeMouseListener(this);
             _comboBox = null;
         }

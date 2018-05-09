@@ -67,6 +67,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         setPopupUtility(new PositionablePopupUtil(this, this));
     }
 
+    @Override
     public Positionable deepClone() {
         PositionableJComponent pos = new PositionableJComponent(_editor);
         return finishClone(pos);
@@ -368,6 +369,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return _flip;
     }
 
+    @Override
     public JComponent getTextComponent() {
         return this;
     }

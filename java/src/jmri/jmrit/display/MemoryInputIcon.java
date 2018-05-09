@@ -38,6 +38,8 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _nCols = nCols;
         setDisplayLevel(Editor.LABELS);
 
+        setLayout(new java.awt.GridBagLayout());
+        add(_textBox, new java.awt.GridBagConstraints());
         _textBox.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -50,11 +52,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _textBox.setColumns(_nCols);
         _textBox.addMouseMotionListener(this);
         _textBox.addMouseListener(this);
-        JPanel panel = new JPanel();
-        panel.setLayout(new java.awt.GridBagLayout());
-        panel.add(_textBox, new java.awt.GridBagConstraints());
-        super.addItem(panel);
-        
         setPopupUtility(new PositionablePopupUtil(this, _textBox));
     }
 
@@ -184,6 +181,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
      */
     SpinnerNumberModel _spinModel = new SpinnerNumberModel(3, 1, 100, 1);
 
+    @Override
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JSpinner spinner = new JSpinner(_spinModel);
@@ -230,6 +228,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     /**
      * Drive the current state of the display from the state of the Memory.
      */
+    @Override
     public void displayState() {
         log.debug("displayState");
         if (namedMemory == null) {  // leave alone if not connected yet

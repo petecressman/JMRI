@@ -103,7 +103,7 @@ public class PositionablePopupUtil {
 
     public final void setBorderColor(Color color) {
         _borderColor = color;
-//        _parent.setBorder();
+        _parent.setBorder();
     }
 
     public Color getBorderColor() {
@@ -125,7 +125,7 @@ public class PositionablePopupUtil {
             _textComponent.setBackground(color);
         }
         _parent.setBackground(color);
-//        _parent.setBorder();
+        _parent.setBorder();
     }
 
     public Color getBackgroundColor() {

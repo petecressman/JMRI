@@ -9,15 +9,13 @@ import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.palette.IconItemPanel;
 import jmri.jmrit.display.palette.ItemPanel;
-import jmri.util.MathUtil;
 import jmri.util.SystemType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -580,7 +578,13 @@ public class PositionableLabel extends PositionableJComponent {
             if (textHeight>iconHeight) {
                 vOffSet += (textHeight - iconHeight)/2;             
             }
-            _namedIcon.paintIcon(this, g2d, hOffSet, vOffSet);            
+            g2d.setClip(hOffSet, vOffSet, iconWidth, iconHeight);
+            _namedIcon.paintIcon(this, g2d, hOffSet, vOffSet);
+//            g2d.setColor(java.awt.Color.red);
+//            g2d.drawRect(0, 0, getWidth(), getHeight());
+//            g2d.setColor(Color.green);
+//            java.awt.Rectangle r = g2d.getClipBounds();
+//            g2d.drawRect(r.x, r.y, r.width, r.height);
         }
 
         if (_text && _textString!=null && _textString.length()>0) {
@@ -633,8 +637,6 @@ public class PositionableLabel extends PositionableJComponent {
             vOffSet += ascent;
             g2d.setColor(getForeground());
             g2d.drawString(_textString, hOffSet, vOffSet);             
-        } else {
-            g2d.setClip(null);
         }
         g2d.dispose();
     }
