@@ -33,7 +33,6 @@ import javax.swing.event.ChangeListener;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.jmrit.display.SensorIcon;
@@ -200,6 +199,9 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     /* Called by Editor's TextAttrDialog - i.e. update a panel item from menu */
     public void initDecoratorPanel(Positionable pos) {
         _util = pos.getPopupUtility().clone();
+        Positionable item = pos.deepClone(); // need copy of PositionableJPanel in PopupUtility
+        _util = item.getPopupUtility();
+        item.remove();      // don't need copy any more. Removes ghost image of PositionableJPanels
         makeFontPanels();
 
         if (pos instanceof SensorIcon && !((SensorIcon)pos).isIcon()) {
@@ -267,13 +269,13 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 sample.setText(field.getText());
                 addtextField = false;
             } else {
-                addtextField = true;                
+                addtextField = true;
             }
             doPopupUtility("Text", TEXT_FONT, sample, addtextField);
         }
         finishInit(false);
     }
-    
+
     private void finishInit(boolean addBgCombo) {
         _chooser.getSelectionModel().addChangeListener(this);
         _chooser.setPreviewPanel(new JPanel());
@@ -290,7 +292,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         updateSamples();
         setButtonSelected(_fontButton);
     }
-    
+
     private void doPopupUtility(String type, int which, 
             PositionableLabel sample, boolean editText) {
         PositionablePopupUtil util = sample.getPopupUtility();
@@ -667,13 +669,13 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                 !(pos instanceof jmri.jmrit.display.MemoryIcon)) {
                 ((PositionableLabel) pos).setText(sample.getText());
             }
+            PositionablePopupUtil util = pos.getPopupUtility();
             if (sample.isOpaque()) {
-                pos.getPopupUtility().setBackgroundColor(sample.getBackground());                
+                util.setBackgroundColor(sample.getBackground());                
             } else {
-                pos.getPopupUtility().setBackgroundColor(null);                
+                util.setBackgroundColor(null);                
             }
-            pos.setFont(_util.getFont());
-//            _util.setHasBackground(sample.isOpaque());
+            util.setFont(_util.getFont());
         }
     }
     
@@ -785,7 +787,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             }
         updateSamples();
     }
-    
+
     private void setButtonSelected(AJRadioButton button) {
         if (button != null) {
             _selectedButton = button.which;

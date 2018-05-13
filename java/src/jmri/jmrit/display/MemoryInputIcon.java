@@ -1,9 +1,11 @@
 package jmri.jmrit.display;
 
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -53,6 +55,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _textBox.addMouseMotionListener(this);
         _textBox.addMouseListener(this);
         setPopupUtility(new PositionablePopupUtil(this, _textBox));
+        setLayout(new FlowLayout());
     }
 
     @Override
@@ -156,6 +159,11 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         return name;
     }
 
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        updateMemory();
+    }
+
     private void updateMemory() {
         if (namedMemory == null) {
             return;
@@ -181,7 +189,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
      */
     SpinnerNumberModel _spinModel = new SpinnerNumberModel(3, 1, 100, 1);
 
-    @Override
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JSpinner spinner = new JSpinner(_spinModel);
@@ -250,7 +257,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         if (_textBox != null) {
             _textBox.removeMouseMotionListener(this);
             _textBox.removeMouseListener(this);
-            _textBox = null;
         }
         namedMemory = null;
         super.dispose();

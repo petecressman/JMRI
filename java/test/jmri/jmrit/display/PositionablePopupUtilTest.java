@@ -24,6 +24,7 @@ public class PositionablePopupUtilTest {
         Assert.assertNotNull("exists",t);
     }
 
+    /* testHasBackground removed
     @Test
     public void testHasBackground() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
@@ -35,7 +36,7 @@ public class PositionablePopupUtilTest {
         Assert.assertTrue("hasBackground",t.hasBackground());
         t.setHasBackground(false);
         Assert.assertFalse("hasBackground",t.hasBackground());
-    }
+    }*/
 
     @Test
     public void testSetBackgroundColor() {
@@ -45,11 +46,11 @@ public class PositionablePopupUtilTest {
         javax.swing.JPanel jp = new javax.swing.JPanel();
         PositionablePopupUtil t = new PositionablePopupUtil(iti,jp);
         t.setBackgroundColor(new java.awt.Color(0,0,0,255));
-        Assert.assertEquals("color set",java.awt.Color.black, t.getBackground());
-        Assert.assertTrue("hasBackground",t.hasBackground());
+        Assert.assertEquals("color set",java.awt.Color.black, t.getBackgroundColor());
+//        Assert.assertTrue("hasBackground",t.hasBackground());
         t.setBackgroundColor(new java.awt.Color(255,255,255,0));
-        Assert.assertEquals("color set",new java.awt.Color(255,255,255,0), t.getBackground());
-        Assert.assertFalse("hasBackground",t.hasBackground());
+        Assert.assertEquals("color set",new java.awt.Color(255,255,255,0), t.getBackgroundColor());
+//        Assert.assertFalse("hasBackground",t.hasBackground());
     }
 
     // The minimal setup for log4J

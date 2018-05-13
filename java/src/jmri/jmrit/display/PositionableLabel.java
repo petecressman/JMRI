@@ -2,8 +2,6 @@ package jmri.jmrit.display;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
@@ -16,7 +14,6 @@ import javax.swing.JScrollPane;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.palette.IconItemPanel;
 import jmri.jmrit.display.palette.ItemPanel;
-import jmri.util.SystemType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +149,9 @@ public class PositionableLabel extends PositionableJComponent {
         if (_popupUtil!=null) {
             width += (_popupUtil.getBorderSize() + _popupUtil.getMarginSize()) * 2;            
         }
+        if (log.isDebugEnabled()) {
+            log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
+        }
         return Math.max(width, PositionablePopupUtil.MIN_SIZE); // don't let item disappear
     }
 
@@ -160,6 +160,9 @@ public class PositionableLabel extends PositionableJComponent {
         int height = Math.max(getIconHeight(), getTextHeight());
         if (_popupUtil!=null) {
             height += (_popupUtil.getBorderSize() + _popupUtil.getMarginSize()) * 2;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
         }
         return Math.max(height, PositionablePopupUtil.MIN_SIZE);    // don't let item disappear
     }
@@ -539,26 +542,7 @@ public class PositionableLabel extends PositionableJComponent {
     }
 
     @Override
-    public void paint(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g.create();
-        g2d.transform(getTransform());
-
-        // set antialiasing hint for macOS and Windows
-        // note: antialiasing has performance problems on constrained systems
-        // like the Raspberry Pi, assuming Linux variants are constrained
-        if (SystemType.isMacOSX() || SystemType.isWindows()) {
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-            // Turned off due to poor performance, see Issue #3850 and PR #3855 for background
-            // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-        }
-        super.paint(g2d);
-
+    public void paintComponent(Graphics g) {
         int iconWidth = getIconWidth();
         int iconHeight = getIconHeight();
         int textWidth = getTextWidth();
@@ -578,8 +562,8 @@ public class PositionableLabel extends PositionableJComponent {
             if (textHeight>iconHeight) {
                 vOffSet += (textHeight - iconHeight)/2;             
             }
-            g2d.setClip(hOffSet, vOffSet, iconWidth, iconHeight);
-            _namedIcon.paintIcon(this, g2d, hOffSet, vOffSet);
+            g.setClip(hOffSet, vOffSet, iconWidth, iconHeight);
+            _namedIcon.paintIcon(this, g, hOffSet, vOffSet);
 //            g2d.setColor(java.awt.Color.red);
 //            g2d.drawRect(0, 0, getWidth(), getHeight());
 //            g2d.setColor(Color.green);
@@ -589,7 +573,7 @@ public class PositionableLabel extends PositionableJComponent {
 
         if (_text && _textString!=null && _textString.length()>0) {
             java.awt.Font font = getFont();
-            g2d.setFont(font);
+            g.setFont(font);
             hOffSet = borderSize + marginSize;
             vOffSet = borderSize + marginSize;
             int fixedWidth = 0;
@@ -630,15 +614,11 @@ public class PositionableLabel extends PositionableJComponent {
             if (iconHeight>textHeight) {
                 vOffSet += (iconHeight - textHeight)/2;
             }
-//            g2d.setStroke(new java.awt.BasicStroke(1));
-//            g2d.setColor(java.awt.Color.white);
-//            g2d.drawRect(borderSize, vOffSet, getWidth()-2*borderSize, height);
-            g2d.setClip(borderSize, vOffSet, getWidth()-2*borderSize, height);
+            g.setClip(borderSize, vOffSet, getWidth()-2*borderSize, height);
             vOffSet += ascent;
-            g2d.setColor(getForeground());
-            g2d.drawString(_textString, hOffSet, vOffSet);             
+            g.setColor(getForeground());
+            g.drawString(_textString, hOffSet, vOffSet);             
         }
-        g2d.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableLabel.class);

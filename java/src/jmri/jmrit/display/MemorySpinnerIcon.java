@@ -1,6 +1,7 @@
 package jmri.jmrit.display;
 
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -44,6 +45,7 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         textBox.addMouseMotionListener(this);
         textBox.addMouseListener(this);
         setPopupUtility(new PositionablePopupUtil(this, textBox));
+        setLayout(new FlowLayout());
     }
 
     @Override
@@ -167,7 +169,6 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         return true;
     }
 
-    @Override
     protected void edit() {
         makeIconEditorFrame(this, "Memory", true, null);
         _iconEditor.setPickList(jmri.jmrit.picker.PickListModel.memoryPickModelInstance());
@@ -266,7 +267,6 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
             ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().removeMouseMotionListener(this);
             ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField().removeMouseListener(this);
         }
-        spinner = null;
         namedMemory = null;
         super.dispose();
     }

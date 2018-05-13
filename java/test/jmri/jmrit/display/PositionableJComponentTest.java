@@ -34,7 +34,7 @@ public class PositionableJComponentTest extends PositionableTestBase {
     @Test
     @Override
     @Ignore("PositionableJComponent does not support rotate")
-    public void testGetAndSetRotationDegrees(){
+    public void testGetAndSetDegrees(){
     }
 
     @Override

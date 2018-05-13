@@ -21,9 +21,9 @@ public class PositionableJPanelTest extends PositionableTestBase {
 
     @Test
     @Override
-    public void testGetAndSetRotationDegrees(){
+    public void testGetAndSetDegrees(){
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        p.rotate(50);
+        p.setDegrees(50);
         // setting rotation is currently ignored by PositionableJPanel 
         // and it's sub classes.
         Assert.assertEquals("Degrees",0,p.getDegrees());
@@ -41,6 +41,7 @@ public class PositionableJPanelTest extends PositionableTestBase {
     }
 
     // The minimal setup for log4J
+    @Override
     @Before
     public void setUp() {
         JUnitUtil.setUp();

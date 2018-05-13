@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import javax.swing.BorderFactory;
@@ -13,6 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
+import jmri.util.SystemType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -560,16 +563,34 @@ public class PositionableJComponent extends JComponent implements Positionable {
     
     @Override
     public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D)g.create();
+        g2d.transform(getTransform());
 
-        g.setFont(getFont());
+        // set antialiasing hint for macOS and Windows
+        // note: antialiasing has performance problems on constrained systems
+        // like the Raspberry Pi, assuming Linux variants are constrained
+        if (SystemType.isMacOSX() || SystemType.isWindows()) {
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            // Turned off due to poor performance, see Issue #3850 and PR #3855 for background
+            // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+            //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        }
+
         if (_popupUtil!=null) {
             java.awt.Color backgroundColor = _popupUtil.getBackgroundColor();
             if (backgroundColor!=null) {
-                g.setColor(backgroundColor);
-                g.fillRect(0, 0, getWidth(), getHeight());
+                g2d.setColor(backgroundColor);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
             }
         }
-        super.paintBorder(g);
+        super.paint(g2d);
+        super.paintBorder(g2d);
+        g2d.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableJComponent.class);
