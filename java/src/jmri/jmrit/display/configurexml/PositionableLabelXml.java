@@ -52,7 +52,7 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
 
         if (p.isIcon() && p.getIcon() != null) {
             element.setAttribute("icon", "yes");
-            element.addContent(storeIcon("icon", (NamedIcon) p.getIcon()));
+            element.addContent(storeIcon("icon", p.getIcon()));
         }
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.PositionableLabelXml");
@@ -76,34 +76,34 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         GuiLafPreferencesManager manager = InstanceManager.getDefault(GuiLafPreferencesManager.class);
         String defaultFontName = manager.getDefaultFont().getFontName();
 
-        String fontName = util.getFont().getFontName();
+        String fontName = p.getFont().getFontName();
         if (!fontName.equals(defaultFontName)) {
-            element.setAttribute("fontname", "" + util.getFont().getFontName());
+            element.setAttribute("fontname", "" + p.getFont().getFontName());
         }
 
         element.setAttribute("size", "" + util.getFontSize());
         element.setAttribute("style", "" + util.getFontStyle());
 
         // always write the foreground (text) color
-        element.setAttribute("red", "" + util.getForeground().getRed());
-        element.setAttribute("green", "" + util.getForeground().getGreen());
-        element.setAttribute("blue", "" + util.getForeground().getBlue());
+        element.setAttribute("red", "" + p.getForeground().getRed());
+        element.setAttribute("green", "" + p.getForeground().getGreen());
+        element.setAttribute("blue", "" + p.getForeground().getBlue());
 
-        Color backGround = util.getBackgroundColor(); 
+        Color backGround = p.getBackgroundColor(); 
         if (backGround!=null) {
             element.setAttribute("redBack", "" + backGround.getRed());
             element.setAttribute("greenBack", "" + backGround.getGreen());
             element.setAttribute("blueBack", "" + backGround.getBlue());
         }
 
-        if (util.getMarginSize() != 0) {
-            element.setAttribute("margin", "" + util.getMarginSize());
+        if (p.getMarginSize() != 0) {
+            element.setAttribute("margin", "" + p.getMarginSize());
         }
-        if (util.getBorderSize() != 0) {
-            element.setAttribute("borderSize", "" + util.getBorderSize());
-            element.setAttribute("redBorder", "" + util.getBorderColor().getRed());
-            element.setAttribute("greenBorder", "" + util.getBorderColor().getGreen());
-            element.setAttribute("blueBorder", "" + util.getBorderColor().getBlue());
+        if (p.getBorderSize() != 0) {
+            element.setAttribute("borderSize", "" + p.getBorderSize());
+            element.setAttribute("redBorder", "" + p.getBorderColor().getRed());
+            element.setAttribute("greenBorder", "" + p.getBorderColor().getGreen());
+            element.setAttribute("blueBorder", "" + p.getBorderColor().getBlue());
         }
         if (util.getFixedWidth() != 0) {
             element.setAttribute("fixedWidth", "" + util.getFixedWidth());
@@ -307,7 +307,7 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         a = element.getAttribute("fontname");
         try {
             if (a != null) {
-                util.setFont(new Font(a.getValue(), util.getFontStyle(), util.getFontSize()));
+                l.setFont(new Font(a.getValue(), util.getFontStyle(), util.getFontSize()));
                 // Reset util to the new instance
                 // The setFont process clones the current util instance but the rest of loadTextInfo used the orignal instance.
                 util = l.getPopupUtility();
@@ -320,7 +320,7 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
             int red = element.getAttribute("red").getIntValue();
             int blue = element.getAttribute("blue").getIntValue();
             int green = element.getAttribute("green").getIntValue();
-            util.setForeground(new Color(red, green, blue));
+            l.setForeground(new Color(red, green, blue));
         } catch (org.jdom2.DataConversionException e) {
             log.warn("Could not parse color attributes!");
         } catch (NullPointerException e) {  // considered normal if the attributes are not present
@@ -330,11 +330,11 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
             int red = element.getAttribute("redBack").getIntValue();
             int blue = element.getAttribute("blueBack").getIntValue();
             int green = element.getAttribute("greenBack").getIntValue();
-            util.setBackgroundColor(new Color(red, green, blue));
+            l.setBackgroundColor(new Color(red, green, blue));
         } catch (org.jdom2.DataConversionException e) {
             log.warn("Could not parse background color attributes!");
         } catch (NullPointerException e) {
-            util.setBackgroundColor(null);
+            l.setBackgroundColor(null);
         }            
         
         int fixedWidth = 0;
@@ -359,18 +359,18 @@ public class PositionableLabelXml extends AbstractXmlAdapter {
         if ((util.getFixedWidth() == 0) || (util.getFixedHeight() == 0)) {
             try {
                 margin = element.getAttribute("margin").getIntValue();
-                util.setMarginSize(margin);
+                l.setMarginSize(margin);
             } catch (org.jdom2.DataConversionException e) {
                 log.warn("Could not parse margin attribute!");
             } catch (NullPointerException e) {  // considered normal if the attributes are not present
             }
         }
         try {
-            util.setBorderSize(element.getAttribute("borderSize").getIntValue());
+            l.setBorderSize(element.getAttribute("borderSize").getIntValue());
             int red = element.getAttribute("redBorder").getIntValue();
             int blue = element.getAttribute("blueBorder").getIntValue();
             int green = element.getAttribute("greenBorder").getIntValue();
-            util.setBorderColor(new Color(red, green, blue));
+            l.setBorderColor(new Color(red, green, blue));
         } catch (org.jdom2.DataConversionException e) {
             log.warn("Could not parse border attributes!");
         } catch (NullPointerException e) {  // considered normal if the attribute not present

@@ -1,7 +1,6 @@
 package jmri.jmrit.display;
 
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -40,12 +39,12 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
 
         setLayout(new java.awt.GridBagLayout());
         add(spinner, new java.awt.GridBagConstraints());
+        setTextComponent(spinner);
+
         spinner.addChangeListener(this);
         javax.swing.JTextField textBox = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
         textBox.addMouseMotionListener(this);
         textBox.addMouseListener(this);
-        setPopupUtility(new PositionablePopupUtil(this, textBox));
-        setLayout(new FlowLayout());
     }
 
     @Override

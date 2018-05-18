@@ -47,7 +47,7 @@ public class PositionableLabel extends PositionableJComponent {
         if (debug) {
             log.debug("PositionableLabel ctor (text) " + s);
         }
-        setPopupUtility(new PositionablePopupUtil(this, this));
+        setPopupUtility(new PositionablePopupUtil(this));
         updateSize();
     }
 
@@ -127,12 +127,6 @@ public class PositionableLabel extends PositionableJComponent {
         pos._icon = _icon;
         pos._control = _control;
         pos._textString = _textString;
-        if (getPopupUtility() == null) {
-            pos.setPopupUtility(null);
-        } else {
-            pos.setPopupUtility(getPopupUtility().clone());
-        }
-        pos.setOpaque(isOpaque());
         if (_namedIcon != null) {
             pos._namedIcon = new NamedIcon(_namedIcon);
             pos.setIcon(pos._namedIcon);
@@ -146,9 +140,7 @@ public class PositionableLabel extends PositionableJComponent {
     @Override
     public int getWidth() {
         int width = Math.max(getIconWidth(), getTextWidth());
-        if (_popupUtil!=null) {
-            width += (_popupUtil.getBorderSize() + _popupUtil.getMarginSize()) * 2;            
-        }
+        width += (getBorderSize() + getMarginSize()) * 2;            
         if (log.isDebugEnabled()) {
             log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
         }
@@ -158,9 +150,7 @@ public class PositionableLabel extends PositionableJComponent {
     @Override
     public int getHeight() {
         int height = Math.max(getIconHeight(), getTextHeight());
-        if (_popupUtil!=null) {
-            height += (_popupUtil.getBorderSize() + _popupUtil.getMarginSize()) * 2;
-        }
+        height += (getBorderSize() + getMarginSize()) * 2;
         if (log.isDebugEnabled()) {
             log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
         }
@@ -547,12 +537,8 @@ public class PositionableLabel extends PositionableJComponent {
         int iconHeight = getIconHeight();
         int textWidth = getTextWidth();
         int textHeight = getTextHeight();
-        int borderSize = 0;
-        int marginSize = 0;
-        if (_popupUtil!=null) {
-            borderSize = _popupUtil.getBorderSize();
-            marginSize = _popupUtil.getMarginSize();            
-        }
+        int borderSize = getBorderSize();
+        int marginSize = getMarginSize();
         int hOffSet =  borderSize + marginSize;
         int vOffSet =  borderSize + marginSize;
         if (_icon && _namedIcon!=null) {

@@ -57,6 +57,12 @@ public class PositionableJComponent extends JComponent implements Positionable {
     public final static int NOFLIP = 0X00;
     public final static int HORIZONTALFLIP = 0X01;
     public final static int VERTICALFLIP = 0X02;
+    
+    private int _marginSize = 0;
+    private int _borderSize = 0;
+    private Color _borderColor = null;
+    private Color _backgroundColor = null;
+
 
     private AffineTransform _transformCA = new AffineTransform();   // Scaled, Rotated & translated for coord alias
 
@@ -67,7 +73,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         JLabel l = new JLabel();
         setFont(l.getFont());
         setOpaque(false);
-        setPopupUtility(new PositionablePopupUtil(this, this));
+        setPopupUtility(new PositionablePopupUtil(this));
     }
 
     @Override
@@ -88,7 +94,19 @@ public class PositionableJComponent extends JComponent implements Positionable {
         pos.setShowToolTip(_showTooltip);
         pos.setToolTip(_tooltip);
         pos.setEditable(_editable);
-        
+
+        if (getPopupUtility() == null) {
+            pos.setPopupUtility(null);
+        } else {
+            pos.setPopupUtility(getPopupUtility().clone());
+        }
+        pos.setOpaque(isOpaque());
+        pos.setBorderSize(_borderSize);
+        pos.setBorderColor(_borderColor);
+        pos.setMarginSize(_marginSize);
+        pos.setBackgroundColor(_backgroundColor);
+        pos.setForeground(getForeground());
+
         pos.updateSize();
         return pos;
     }
@@ -234,6 +252,46 @@ public class PositionableJComponent extends JComponent implements Positionable {
     }
 
     @Override
+    public final void setBorderSize(int border) {
+        _borderSize = border;
+    }
+
+    @Override
+    public int getBorderSize() {
+        return _borderSize;
+    }
+
+    @Override
+    public final void setBorderColor(Color color) {
+        _borderColor = color;
+    }
+
+    @Override
+    public Color getBorderColor() {
+        return _borderColor;
+    }
+
+    @Override
+    public final void setMarginSize(int margin) {
+        _marginSize = margin;
+    }
+
+    @Override
+    public int getMarginSize() {
+        return _marginSize;
+    }
+
+    @Override
+    public final void setBackgroundColor(Color color) {
+        _backgroundColor = color;
+    }
+
+    @Override
+    public Color getBackgroundColor() {
+        return _backgroundColor;
+    }
+
+    @Override
     public String getNameString() {
         return getName();
     }
@@ -370,11 +428,6 @@ public class PositionableJComponent extends JComponent implements Positionable {
     }
     int getFlip() {
         return _flip;
-    }
-
-    @Override
-    public JComponent getTextComponent() {
-        return this;
     }
 
     /**
@@ -535,28 +588,23 @@ public class PositionableJComponent extends JComponent implements Positionable {
 
     @Override
     public void setBorder() {
-        if (_popupUtil == null) {
-            return;
-        }
-        Color color = _popupUtil.getBackgroundColor();
+        Color color = getBackgroundColor();
         setOpaque(color != null);
         super.setBackground(color);
-        int marginSize = _popupUtil.getMarginSize();
         Border borderMargin;        
         if (isOpaque()) {
-            borderMargin = BorderFactory.createLineBorder(color, marginSize);
+            borderMargin = BorderFactory.createLineBorder(color, _marginSize);
         } else {
-            borderMargin = BorderFactory.createEmptyBorder(marginSize, marginSize, marginSize, marginSize);
+            borderMargin = BorderFactory.createEmptyBorder(_marginSize, _marginSize, _marginSize, _marginSize);
         }
-        color = _popupUtil.getBorderColor();
-        int borderSize = _popupUtil.getBorderSize();
+        color = getBorderColor();
         Border borderOutline;
         if (color != null) {
-            borderOutline = BorderFactory.createLineBorder(color, borderSize);
+            borderOutline = BorderFactory.createLineBorder(color, _borderSize);
         } else {
-            borderOutline = BorderFactory.createEmptyBorder(borderSize, borderSize, borderSize, borderSize);
+            borderOutline = BorderFactory.createEmptyBorder(_borderSize, _borderSize, _borderSize, _borderSize);
         }
-        if (marginSize > 0 || borderSize > 0) {
+        if (_marginSize > 0 || _borderSize > 0) {
             super.setBorder(new javax.swing.border.CompoundBorder(borderOutline, borderMargin));            
         }
     }
@@ -582,14 +630,14 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
 
         if (_popupUtil!=null) {
-            java.awt.Color backgroundColor = _popupUtil.getBackgroundColor();
+            java.awt.Color backgroundColor = getBackgroundColor();
             if (backgroundColor!=null) {
                 g2d.setColor(backgroundColor);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
             }
         }
-        super.paint(g2d);
         super.paintBorder(g2d);
+        super.paint(g2d);
         g2d.dispose();
     }
 

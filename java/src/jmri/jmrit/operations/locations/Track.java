@@ -249,7 +249,7 @@ public class Track {
         newTrack.setReservationFactor(getReservationFactor());
         newTrack.setRoadNames(getRoadNames());
         newTrack.setRoadOption(getRoadOption());
-        newTrack.setScheduleId(getScheduleId());
+        newTrack.setSchedule(getSchedule());
         newTrack.setScheduleMode(getScheduleMode());
         newTrack.setServiceOrder(getServiceOrder());
         newTrack.setShipLoadNames(getShipLoadNames());
@@ -1578,6 +1578,14 @@ public class Track {
         }
         return schedule;
     }
+    
+    public void setSchedule(Schedule schedule) {
+        String scheduleId = NONE;
+        if (schedule != null) {
+            scheduleId = schedule.getId();
+        }
+        setScheduleId(scheduleId);
+    }
 
     public String getScheduleId() {
         // Only spurs can have a schedule
@@ -2253,6 +2261,13 @@ public class Track {
         return _destinationIdList.size();
     }
 
+    /**
+     * adds a location to the list of acceptable destinations for this track.
+     * 
+     * @param destination location that is acceptable
+     * @return true if added to list, false if destination is already part of
+     *         list.
+     */
     public boolean addDestination(Location destination) {
         if (_destinationIdList.contains(destination.getId())) {
             return false;

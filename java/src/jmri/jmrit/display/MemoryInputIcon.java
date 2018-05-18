@@ -1,6 +1,5 @@
 package jmri.jmrit.display;
 
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -42,6 +41,8 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
 
         setLayout(new java.awt.GridBagLayout());
         add(_textBox, new java.awt.GridBagConstraints());
+        setTextComponent(_textBox);
+
         _textBox.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -54,8 +55,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _textBox.setColumns(_nCols);
         _textBox.addMouseMotionListener(this);
         _textBox.addMouseListener(this);
-        setPopupUtility(new PositionablePopupUtil(this, _textBox));
-        setLayout(new FlowLayout());
     }
 
     @Override

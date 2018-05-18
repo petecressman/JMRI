@@ -62,7 +62,8 @@ import jmri.jmrit.display.SignalMastIcon;
 import jmri.jmrit.signalling.SignallingGuiTools;
 import jmri.util.JmriJFrame;
 import jmri.util.MathUtil;
-import jmri.util.swing.*;
+import jmri.util.swing.JComboBoxUtil;
+import jmri.util.swing.JmriBeanComboBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1199,7 +1200,11 @@ public class LayoutEditorTools {
     /**
      * Places a signal head icon on the panel after rotation at the designated
      * place, with all icons taken care of.
+     *
+     * @deprecated since 4.11.6, use 
+     * {@link #setSignalHeadOnPanel(double, String, int, int)} directly.
      */
+    @Deprecated
     public void setSignalHeadOnPanel(int rotation,
             @Nullable String signalHeadName,
             int xLoc, int yLoc) {
@@ -1235,26 +1240,26 @@ public class LayoutEditorTools {
     /**
      * Places a signal head icon on the panel after rotation at the designated
      * place, with all icons taken care of.
+     *
+     * @param directionDEG rotation in degrees.
+     * @param signalHeadName name of a signal head.
+     * @param where coordinates for placing signal head on panel.
      */
     public void setSignalHeadOnPanel(double directionDEG, @Nonnull String signalHeadName, @Nonnull Point2D where) {
         setSignalHeadOnPanel(directionDEG, signalHeadName, (int) where.getX(), (int) where.getY());
     }
 
+    /**
+     * Places a signal head icon on the panel after rotation at the designated
+     * place, with all icons taken care of.
+     *
+     * @param directionDEG rotation in degrees.
+     * @param signalHeadName name of a signal head.
+     * @param xLoc x coordinate for placing signal head on panel.
+     * @param yLoc y coordinate for placing signal head on panel.
+     */
     public void setSignalHeadOnPanel(double directionDEG, @Nonnull String signalHeadName, int xLoc, int yLoc) {
-        SignalHeadIcon l = new SignalHeadIcon(layoutEditor);
-
-        l.setSignalHead(signalHeadName);
-
-        l.setIcon(Bundle.getMessage("SignalHeadStateRed"), signalIconEditor.getIcon(0));
-        l.setIcon(Bundle.getMessage("SignalHeadStateFlashingRed"), signalIconEditor.getIcon(1));
-        l.setIcon(Bundle.getMessage("SignalHeadStateYellow"), signalIconEditor.getIcon(2));
-        l.setIcon(Bundle.getMessage("SignalHeadStateFlashingYellow"), signalIconEditor.getIcon(3));
-        l.setIcon(Bundle.getMessage("SignalHeadStateGreen"), signalIconEditor.getIcon(4));
-        l.setIcon(Bundle.getMessage("SignalHeadStateFlashingGreen"), signalIconEditor.getIcon(5));
-        l.setIcon(Bundle.getMessage("SignalHeadStateDark"), signalIconEditor.getIcon(6));
-        l.setIcon(Bundle.getMessage("SignalHeadStateHeld"), signalIconEditor.getIcon(7));
-        l.setIcon(Bundle.getMessage("SignalHeadStateLunar"), signalIconEditor.getIcon(8));
-        l.setIcon(Bundle.getMessage("SignalHeadStateFlashingLunar"), signalIconEditor.getIcon(9));
+        SignalHeadIcon l = getSignalHeadIcon(signalHeadName);
 
         if (directionDEG > 0) {
             l.setDegrees((int)directionDEG);
@@ -11918,20 +11923,20 @@ public class LayoutEditorTools {
     static class BeanDetails {
 
         private String bundleName;
-        private String beanString;
-        private JLabel textLabel;
+        private final String beanString;
+        private final JLabel textLabel;
 
         private final String boundaryLabelText = Bundle.getMessage("BoundaryOf");
         private final JLabel boundaryLabel = new JLabel(boundaryLabelText);
 
-        private Manager manager;
+        private final Manager manager;
 
         private final JPanel detailsPanel = new JPanel(new FlowLayout());
         private final JRadioButton addBeanCheck = new JRadioButton(Bundle.getMessage("DoNotPlace"));
         private final JRadioButton left = new JRadioButton(Bundle.getMessage("LeftHandSide"));
         private final JRadioButton right = new JRadioButton(Bundle.getMessage("RightHandSide"));
         private final ButtonGroup buttonGroup = new ButtonGroup();
-        private JmriBeanComboBox beanCombo;
+        private final JmriBeanComboBox beanCombo;
 
         private final JLabel boundaryBlocks = new JLabel();
 
@@ -12063,7 +12068,7 @@ public class LayoutEditorTools {
     private boolean setSignalsAtSlipOpenFlag = false;
     private boolean setSignalsAtSlipFromMenuFlag = false;
 
-    private final JComboBox<String> slipNameComboBox = new JComboBox<String>();
+    private final JComboBox<String> slipNameComboBox = new JComboBox<>();
 
     private final JmriBeanComboBox a1SlipSignalHeadComboBox
             = new JmriBeanComboBox(
@@ -13389,8 +13394,18 @@ public class LayoutEditorTools {
         }
     }
 
+
+    /**
+     * get a signal head icon for the given signal head
+     *
+     * @param signalName name of a signal head.
+     * @return a SignalHeadIcon for the signal.
+     */
     @CheckReturnValue
     public SignalHeadIcon getSignalHeadIcon(@Nonnull String signalName) {
+        if(signalIconEditor == null) {
+           signalIconEditor = layoutEditor.signalIconEditor;
+        }
         SignalHeadIcon l = new SignalHeadIcon(layoutEditor);
         l.setSignalHead(signalName);
         l.setIcon(Bundle.getMessage("SignalHeadStateRed"), signalIconEditor.getIcon(0));

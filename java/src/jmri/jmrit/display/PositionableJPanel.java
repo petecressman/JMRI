@@ -1,9 +1,14 @@
 package jmri.jmrit.display;
 
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.JComponent;
+import javax.swing.JTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +17,21 @@ import org.slf4j.LoggerFactory;
  */
 public class PositionableJPanel extends PositionableJComponent implements MouseListener, MouseMotionListener {
     
+    private JComponent _textComponent;
+    
     public PositionableJPanel(Editor editor) {
         super(editor);
-//        setLayout(new FlowLayout());
+        setLayout(new FlowLayout());
+    }
+    
+    protected void setTextComponent(JComponent t) {
+        _textComponent = t;
     }
 
+    protected JComponent getTextComponent() {
+        return _textComponent;
+    }
+    
     @Override
     public Positionable deepClone() {
         PositionableJPanel pos = new PositionableJPanel(_editor);
@@ -84,19 +99,12 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    @Override
-    public JComponent getTextComponent() {
-        if (_popupUtil != null) {
-            return _popupUtil._textComponent;
-        }
-        return this;
-    }
-
     /**************************************************************/
 
     @Override
     public int getWidth() {
-        int width = _popupUtil._textComponent.getPreferredSize().width;;
+        int width = _textComponent.getPreferredSize().width;;
+        width += (getBorderSize() + getMarginSize()) * 2;            
         if (log.isDebugEnabled()) {
             log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
         }
@@ -105,37 +113,58 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
 
     @Override
     public int getHeight() {
-        int height = _popupUtil._textComponent.getPreferredSize().height;
+        int height = _textComponent.getPreferredSize().height;
+        height += (getBorderSize() + getMarginSize()) * 2;
         if (log.isDebugEnabled()) {
             log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
         }
         return height;
     }
 
-/*    @Override
-    public void paint(Graphics g) {
-        Graphics2D g2d = (Graphics2D)g.create();
-        g2d.transform(getTransform());
+    @Override
+    public void setForeground(Color c) {
+        super.setForeground(c);
+        _textComponent.setForeground(c);
+    }
 
-        // set antialiasing hint for macOS and Windows
-        // note: antialiasing has performance problems on constrained systems
-        // like the Raspberry Pi, assuming Linux variants are constrained
-        if (SystemType.isMacOSX() || SystemType.isWindows()) {
-            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-                    RenderingHints.VALUE_RENDER_QUALITY);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-            // Turned off due to poor performance, see Issue #3850 and PR #3855 for background
-            // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-            //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+    @Override
+    public Color getForeground() {
+        return _textComponent.getForeground();
+    }
+
+    @Override
+    public void setFont(Font font) {
+        Font oldFont = _textComponent.getFont();
+        Font newFont = new Font(font.getFamily(), oldFont.getStyle(), oldFont.getSize());
+        if (!oldFont.equals(newFont)) {
+            _textComponent.setFont(newFont);
+            super.setFont(newFont);
+            updateSize();
         }
-        super.paint(g2d);
+    }
 
-        _itemPanel.paint(g2d);
+    @Override
+    public Font getFont() {
+        return _textComponent.getFont();
+    }
 
-    }*/
+    @Override
+    public void paintComponent(Graphics g) {
+        if (_textComponent instanceof JTextField && _popupUtil!=null) {
+            int justification = _popupUtil.getJustification();
+            switch (justification) {
+                case PositionablePopupUtil.LEFT:
+                    ((JTextField) _textComponent).setHorizontalAlignment(JTextField.LEFT);
+                    break;
+                case PositionablePopupUtil.RIGHT:
+                    ((JTextField) _textComponent).setHorizontalAlignment(JTextField.RIGHT);
+                    break;
+                default:
+                    ((JTextField) _textComponent).setHorizontalAlignment(JTextField.CENTER);
+            }
+        }
+        super.paintComponent(g); 
+    }
     
     private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class.getName());
 }

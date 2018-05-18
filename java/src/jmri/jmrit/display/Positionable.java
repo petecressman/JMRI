@@ -8,7 +8,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
 
@@ -73,6 +72,22 @@ public interface Positionable extends Cloneable {
 
     public void setDisplayLevel(int l);
 
+    public void setBorderSize(int border);
+
+    public int getBorderSize();
+
+    public void setBorderColor(Color color);
+
+    public Color getBorderColor();
+
+    public void setMarginSize(int margin);
+
+    public int getMarginSize();
+
+    public void setBackgroundColor(Color color);
+
+    public Color getBackgroundColor();
+
     public Editor getEditor();
 
     public void setEditor(Editor ed);
@@ -131,8 +146,6 @@ public interface Positionable extends Cloneable {
     
     public AffineTransform getTransform();
     
-    public JComponent getTextComponent();
-
     public void remove();
 
     /**
