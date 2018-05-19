@@ -41,11 +41,8 @@ public class OperationsCarRouterTest extends OperationsTestCase {
         Assert.assertTrue("Default routing using yards", Setup.isCarRoutingViaYardsEnabled());
         Assert.assertFalse("Default routing through staging", Setup.isCarRoutingViaStagingEnabled());
         
-        Assert.assertEquals("default build report level", Setup.BUILD_REPORT_VERY_DETAILED, Setup.getBuildReportLevel());
-                   
+        Assert.assertEquals("default build report level", Setup.BUILD_REPORT_VERY_DETAILED, Setup.getBuildReportLevel());                
     }
-    
-
 
     /**
      * Original test, has been broken down into multiple shorter tests and
@@ -4956,26 +4953,15 @@ public class OperationsCarRouterTest extends OperationsTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
+        // change report level to increase test coverage
+        Setup.setRouterBuildReportLevel(Setup.BUILD_REPORT_VERY_DETAILED);
+        
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
         // disable build messages
         tmanager.setBuildMessagesEnabled(false);
         // disable build reports
         tmanager.setBuildReportEnabled(false);
         
-        Setup.setBuildAggressive(false);
-        Setup.setTrainIntoStagingCheckEnabled(true);
-        Setup.setMaxTrainLength(1000);
-        Setup.setRouterBuildReportLevel(Setup.BUILD_REPORT_VERY_DETAILED);
-        Setup.setLocalInterchangeMovesEnabled(false);
-        Setup.setLocalSpurMovesEnabled(false);
-        Setup.setLocalYardMovesEnabled(false);
-        Setup.setCarMoves(7); // set default to 7 moves per location
-        Setup.setMaxNumberEngines(6);
-        Setup.setTrainIntoStagingCheckEnabled(true);
-        Setup.setAllowReturnToStagingEnabled(false);
-        Setup.setGenerateCsvManifestEnabled(false);
-        Setup.setPromptToStagingEnabled(false);
-        Setup.setCarRoutingEnabled(true);
     }
 
     public OperationsCarRouterTest(String s) {
