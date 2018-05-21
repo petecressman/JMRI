@@ -3,59 +3,101 @@ package jmri.jmrit.display;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import javax.annotation.Nonnull;
 import jmri.jmrit.catalog.NamedIcon;
-
 /**
- * Gather common methods for Turnouts, Semsors, SignalHeads, Masts, etc.
+ * Gather common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
+ * The common ancestor of Namedbeans having multiple states and displays
+ * each state as either an icon or a decorated text string.
  *
- * @author PeteCressman Copyright (C) 2011
+ * @author PeteCressman Copyright (C) 2011, 2018
  */
 public class PositionableIcon extends PositionableLabel {
 
-    protected HashMap<String, NamedIcon> _iconMap;
+    protected HashMap<String, PositionableLabel> _iconMap;
     protected String _iconFamily;
-    protected double _scale = 1.0;          // getScale, come from net result found in one of the icons
-    protected int _rotate = 0;
+    protected boolean _control = false;
 
     public PositionableIcon(Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(new NamedIcon("resources/icons/misc/X-red.gif", "resources/icons/misc/X-red.gif"), editor);
+        super(editor);
+        _control = true;
     }
 
     public PositionableIcon(NamedIcon s, Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(s, editor);
+        super(editor);
+        setIsIcon(true);
+        setIsText(false);
     }
 
     public PositionableIcon(String s, Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(s, editor);
+        super(editor);
+        setIsIcon(false);
+        setIsText(true);
     }
 
+    @Override
     public Positionable deepClone() {
         PositionableIcon pos = new PositionableIcon(_editor);
         return finishClone(pos);
     }
     protected Positionable finishClone(PositionableIcon pos) {
         pos._iconFamily = _iconFamily;
-        pos._scale = _scale;
-        pos._rotate = _rotate;
         pos._iconMap = cloneMap(_iconMap, pos);
         return super.finishClone(pos);
     }
 
     /**
      * Get icon by its bean state name key found in
-     * jmri.NamedBeanBundle.properties Get icon by its localized bean state name
+     * jmri.NamedBeanBundle.properties
+     * @param state state of the bean
+     * @return NamedIcon icon representing the state of the bean
      */
     public NamedIcon getIcon(String state) {
-        return _iconMap.get(state);
+        return _iconMap.get(state).getIcon();
     }
 
+    /**
+     * Get text by its bean state name key found in
+     * jmri.NamedBeanBundle.properties
+     * @param state state of the bean
+     * @return String text representing the state of the bean
+     */
+    public String getText(String state) {
+        return _iconMap.get(state).getText();
+    }
+
+    /**
+     * Set the icon representing the state of the bean
+     * into the state map.
+     * @param state state of the bean
+     * @param icon NamedIcon representing the state of the bean 
+     */
+    public void setStateIcon(@Nonnull String state, NamedIcon icon) {
+        _iconMap.get(state).setIcon(icon);
+    }
+
+    /**
+     * Set the test representing the state of the bean
+     * into the state map.
+     * @param state state of the bean
+     * @param text text representing the state of the bean 
+     */
+    public void setStateText(@Nonnull String state, String text) {
+        _iconMap.get(state).setText(text);
+    }
+
+    /**
+     * Get the name for the family of icons in the icon map
+     * @return name
+     */
     public String getFamily() {
         return _iconFamily;
     }
 
+    /**
+     * Set the name for the family of icons in the icon map
+     * @param family name
+     */
     public void setFamily(String family) {
         _iconFamily = family;
     }
@@ -67,14 +109,14 @@ public class PositionableIcon extends PositionableLabel {
     public void displayState(int state) {
     }
 
-    public static HashMap<String, NamedIcon> cloneMap(HashMap<String, NamedIcon> map,
-            PositionableLabel pos) {
-        HashMap<String, NamedIcon> clone = new HashMap<String, NamedIcon>();
+    public static HashMap<String, PositionableLabel> cloneMap(HashMap<String, PositionableLabel> map,
+            PositionableIcon pos) {
+        HashMap<String, PositionableLabel> clone = new HashMap<>();
         if (map != null) {
-            Iterator<Entry<String, NamedIcon>> it = map.entrySet().iterator();
+            Iterator<Entry<String, PositionableLabel>> it = map.entrySet().iterator();
             while (it.hasNext()) {
-                Entry<String, NamedIcon> entry = it.next();
-                clone.put(entry.getKey(), new NamedIcon(entry.getValue()));
+                Entry<String, PositionableLabel> entry = it.next();
+                clone.put(entry.getKey(), (PositionableLabel)entry.getValue().deepClone());
             }
         }
         return clone;

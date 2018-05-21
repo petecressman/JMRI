@@ -53,7 +53,7 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         return finishClone(pos);
     }
 
-    public Positionable finishClone(MemorySpinnerIcon pos) {
+    protected Positionable finishClone(MemorySpinnerIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
     }

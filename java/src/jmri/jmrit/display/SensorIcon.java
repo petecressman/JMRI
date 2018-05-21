@@ -47,25 +47,18 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     String _overlayText;
 
     public SensorIcon(Editor editor) {
-        // super ctor call to make sure this is an icon label
-        this(new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
-                "resources/icons/smallschematics/tracksegments/circuit-error.gif"), editor);
+        super(editor);
+        setIsIcon(true);
     }
 
     public SensorIcon(NamedIcon s, Editor editor) {
-        // super ctor call to make sure this is an icon label
         super(s, editor);
-        _control = true;
-        setPopupUtility(new SensorPopupUtil(this, this));
     }
 
     public SensorIcon(String s, Editor editor) {
         super(s, editor);
-        _control = true;
-        setOverlayText(s);
-        setPopupUtility(new SensorPopupUtil(this, this));
-        displayState(sensorState());
     }
+
 
     @Override
     public Positionable deepClone() {
@@ -76,7 +69,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     protected Positionable finishClone(SensorIcon pos) {
         pos.setSensor(getNamedSensor().getName());
         pos.makeIconMap();
-        pos._iconMap = cloneMap(_iconMap, pos);
         pos.setMomentary(getMomentary());
         pos._overlayText = _overlayText;
         pos.activeText = activeText;
@@ -643,21 +635,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         super.dispose();
     }
 
-    protected HashMap<Integer, NamedIcon> cloneMap(HashMap<Integer, NamedIcon> map,
-            SensorIcon pos) {
-        HashMap<Integer, NamedIcon> clone = new HashMap<>();
-        if (map != null) {
-            Iterator<Entry<Integer, NamedIcon>> it = map.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<Integer, NamedIcon> entry = it.next();
-                clone.put(entry.getKey(), new NamedIcon(entry.getValue()));
-                if (pos != null) {
-                    pos.setIcon(pos._state2nameMap.get(entry.getKey()), _iconMap.get(entry.getKey().toString()));
-                }
-            }
-        }
-        return clone;
-    }
     // The code below here is from the layoutsensoricon.
 
     Color textColorActive = Color.red;

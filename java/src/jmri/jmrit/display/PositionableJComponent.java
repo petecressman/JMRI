@@ -12,7 +12,6 @@ import java.awt.geom.AffineTransform;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.Border;
 import jmri.util.SystemType;
@@ -70,8 +69,6 @@ public class PositionableJComponent extends JComponent implements Positionable {
         _editor = editor;
         _scale = 1.0;
         _flip = NOFLIP;
-        JLabel l = new JLabel();
-        setFont(l.getFont());
         setOpaque(false);
         setPopupUtility(new PositionablePopupUtil(this));
     }
@@ -82,7 +79,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return finishClone(pos);
     }
 
-    public Positionable finishClone(Positionable pos) {
+    protected Positionable finishClone(PositionableJComponent pos) {
         pos.setScale(_scale);
         pos.setDegrees(_degree);
         pos.setFlip(_flip);

@@ -38,8 +38,7 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
         return finishClone(pos);
     }
 
-    @Override
-    public Positionable finishClone(Positionable pos) {
+    protected Positionable finishClone(PositionableJPanel pos) {
         if (getPopupUtility() == null) {
             pos.setPopupUtility(null);
         } else {

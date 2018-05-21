@@ -104,7 +104,7 @@ public class MemoryComboIcon extends PositionableJPanel
         return finishClone(pos);
     }
 
-    public Positionable finishClone(MemoryComboIcon pos) {
+    protected Positionable finishClone(MemoryComboIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
     }

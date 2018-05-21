@@ -63,7 +63,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         return finishClone(pos);
     }
 
-    public Positionable finishClone(MemoryInputIcon pos) {
+    protected Positionable finishClone(MemoryInputIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
     }

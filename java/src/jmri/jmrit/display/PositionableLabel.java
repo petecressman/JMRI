@@ -32,7 +32,10 @@ public class PositionableLabel extends PositionableJComponent {
     protected NamedIcon _namedIcon;
     private boolean _icon = false;
     private boolean _text = false;
-    protected boolean _control = false;
+
+    public PositionableLabel(Editor editor) {
+        super(editor);
+    }
 
     /**
      * {@inheritDoc}
@@ -120,9 +123,7 @@ public class PositionableLabel extends PositionableJComponent {
         return finishClone(pos);
     }
 
-    @Override
-    public Positionable finishClone(Positionable p) {
-        PositionableLabel pos = (PositionableLabel) p;
+    protected Positionable finishClone(PositionableLabel pos) {
         pos._text = _text;
         pos._icon = _icon;
         pos._control = _control;
