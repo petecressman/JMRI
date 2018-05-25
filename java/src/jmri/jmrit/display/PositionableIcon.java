@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import javax.annotation.Nonnull;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JPopupMenu;
 import jmri.jmrit.catalog.NamedIcon;
 /**
  * Gather common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
@@ -16,7 +18,7 @@ public class PositionableIcon extends PositionableLabel {
 
     protected HashMap<String, PositionableLabel> _iconMap;
     protected String _iconFamily;
-    protected boolean _control = false;
+    protected boolean _control;
 
     public PositionableIcon(Editor editor) {
         super(editor);
@@ -43,6 +45,7 @@ public class PositionableIcon extends PositionableLabel {
     protected Positionable finishClone(PositionableIcon pos) {
         pos._iconFamily = _iconFamily;
         pos._iconMap = cloneMap(_iconMap, pos);
+        pos._control = _control;
         return super.finishClone(pos);
     }
 
@@ -107,6 +110,22 @@ public class PositionableIcon extends PositionableLabel {
     }
 
     public void displayState(int state) {
+    }
+
+    ///////////////////////////// popup methods ////////////////////////////
+
+    @Override
+    public boolean setDisableControlMenu(JPopupMenu popup) {
+        if (_control) {
+            JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
+            disableItem.setSelected(!isControlling());
+            popup.add(disableItem);
+            disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
+                setControlling(!disableItem.isSelected());
+            });
+            return true;
+        }
+        return false;
     }
 
     public static HashMap<String, PositionableLabel> cloneMap(HashMap<String, PositionableLabel> map,

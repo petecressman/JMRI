@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -126,7 +125,6 @@ public class PositionableLabel extends PositionableJComponent {
     protected Positionable finishClone(PositionableLabel pos) {
         pos._text = _text;
         pos._icon = _icon;
-        pos._control = _control;
         pos._textString = _textString;
         if (_namedIcon != null) {
             pos._namedIcon = new NamedIcon(_namedIcon);
@@ -511,22 +509,6 @@ public class PositionableLabel extends PositionableJComponent {
     public boolean setTextEditMenu(JPopupMenu popup) {
         if (isText()) {
             popup.add(CoordinateEdit.getTextEditAction(this, "EditText"));
-            return true;
-        }
-        return false;
-    }
-
-    JCheckBoxMenuItem disableItem = null;
-
-    @Override
-    public boolean setDisableControlMenu(JPopupMenu popup) {
-        if (_control) {
-            disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
-            disableItem.setSelected(!isControlling());
-            popup.add(disableItem);
-            disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
-                setControlling(!disableItem.isSelected());
-            });
             return true;
         }
         return false;
