@@ -40,7 +40,7 @@ public class TrainIconXml extends LocoIconXml {
         if (p.getText() != null) {
             element.setAttribute(Xml.TEXT, p.getText());
         }
-        storeTextInfo(p, element);
+        storeFontInfo(p, element);
         element.setAttribute(Xml.ICON, Xml.YES);
         element.setAttribute(Xml.DOCK_X, "" + p.getDockX());
         element.setAttribute(Xml.DOCK_Y, "" + p.getDockY());

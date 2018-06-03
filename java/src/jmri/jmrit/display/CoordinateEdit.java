@@ -424,16 +424,15 @@ public class CoordinateEdit extends JmriJFrame {
     }
 
     public void initBorder() {
-        PositionablePopupUtil util = pl.getPopupUtility();
-        oldX = util.getBorderSize();
+        oldX = pl.getBorderSize();
 
         textX = new JLabel();
-        textX.setText(Bundle.getMessage("Border") + ": " + util.getBorderSize());
+        textX.setText(Bundle.getMessage("Border") + ": " + pl.getBorderSize());
         textX.setVisible(true);
 
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, 1000, 1);
         spinX = new JSpinner(model);
-        spinX.setValue(Integer.valueOf(util.getBorderSize()));
+        spinX.setValue(Integer.valueOf(pl.getBorderSize()));
         spinX.setToolTipText("Enter border size");
         spinX.setMaximumSize(new Dimension(
                 spinX.getMaximumSize().width, spinX.getPreferredSize().height));
@@ -446,9 +445,7 @@ public class CoordinateEdit extends JmriJFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int l = ((Number) spinX.getValue()).intValue();
-                PositionablePopupUtil util = pl.getPopupUtility();
-                util.setBorderSize(l);
-                pl.getEditor().setAttributes(util, pl);
+                pl.setBorderSize(l);
                 textX.setText(Bundle.getMessage("Border") + ": " + l);
                 dispose();
             }
@@ -457,7 +454,7 @@ public class CoordinateEdit extends JmriJFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pl.getPopupUtility().setBorderSize(oldX);
+                pl.setBorderSize(oldX);
                 dispose();
             }
         });
@@ -465,16 +462,15 @@ public class CoordinateEdit extends JmriJFrame {
     }
 
     public void initMargin() {
-        PositionablePopupUtil util = pl.getPopupUtility();
-        oldX = util.getMarginSize();
+        oldX = pl.getMarginSize();
 
         textX = new JLabel();
-        textX.setText(Bundle.getMessage("Margin") + ": " + util.getMarginSize());
+        textX.setText(Bundle.getMessage("Margin") + ": " + pl.getMarginSize());
         textX.setVisible(true);
 
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, 1000, 1);
         spinX = new JSpinner(model);
-        spinX.setValue(Integer.valueOf(util.getMarginSize()));
+        spinX.setValue(Integer.valueOf(pl.getMarginSize()));
         spinX.setToolTipText("Enter margin size");
         spinX.setMaximumSize(new Dimension(
                 spinX.getMaximumSize().width, spinX.getPreferredSize().height));
@@ -487,9 +483,7 @@ public class CoordinateEdit extends JmriJFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int l = ((Number) spinX.getValue()).intValue();
-                PositionablePopupUtil util = pl.getPopupUtility();
-                pl.getPopupUtility().setMarginSize(l);
-                pl.getEditor().setAttributes(util, pl);
+                pl.setMarginSize(l);
                 textX.setText(Bundle.getMessage("Margin") + ": " + l);
                 dispose();
             }
@@ -498,7 +492,7 @@ public class CoordinateEdit extends JmriJFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pl.getPopupUtility().setMarginSize(oldX);
+                pl.setMarginSize(oldX);
                 dispose();
             }
         });
@@ -506,26 +500,25 @@ public class CoordinateEdit extends JmriJFrame {
     }
 
     public void initFixedSize() {
-        PositionablePopupUtil util = pl.getPopupUtility();
-        oldX = util.getFixedHeight();
-        oldY = util.getFixedWidth();
+        oldX = pl.getFixedHeight();
+        oldY = pl.getFixedWidth();
 
         textX = new JLabel();
-        textX.setText("Height = " + util.getFixedHeight());
+        textX.setText("Height = " + pl.getFixedHeight());
         textX.setVisible(true);
         textY = new JLabel();
-        textY.setText("Width = " + util.getFixedWidth());
+        textY.setText("Width = " + pl.getFixedWidth());
         textY.setVisible(true);
 
         SpinnerNumberModel model = new SpinnerNumberModel(0, 0, 1000, 1);
         spinX = new JSpinner(model);
-        spinX.setValue(Integer.valueOf(util.getFixedHeight()));
+        spinX.setValue(Integer.valueOf(pl.getFixedHeight()));
         spinX.setToolTipText(Bundle.getMessage("FixedSizeHeight"));
         spinX.setMaximumSize(new Dimension(
                 spinX.getMaximumSize().width, spinX.getPreferredSize().height));
         model = new SpinnerNumberModel(0, 0, 1000, 1);
         spinY = new JSpinner(model);
-        spinY.setValue(Integer.valueOf(util.getFixedWidth()));
+        spinY.setValue(Integer.valueOf(pl.getFixedWidth()));
         spinY.setToolTipText(Bundle.getMessage("FixedSizeWidth"));
         spinY.setMaximumSize(new Dimension(
                 spinY.getMaximumSize().width, spinY.getPreferredSize().height));
@@ -539,11 +532,9 @@ public class CoordinateEdit extends JmriJFrame {
             public void actionPerformed(ActionEvent e) {
                 int height = ((Number) spinX.getValue()).intValue();
                 int width = ((Number) spinY.getValue()).intValue();
-                PositionablePopupUtil util = pl.getPopupUtility();
-                util.setFixedSize(width, height);
-                pl.getEditor().setAttributes(util, pl);
-                textX.setText("Height: " + util.getFixedHeight());
-                textY.setText("Width: " + util.getFixedWidth());
+                pl.setFixedSize(width, height);
+                textX.setText("Height: " + pl.getFixedHeight());
+                textY.setText("Width: " + pl.getFixedWidth());
                 dispose();
             }
         });
@@ -551,7 +542,7 @@ public class CoordinateEdit extends JmriJFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                pl.getPopupUtility().setFixedSize(oldY, oldX);
+                pl.setFixedSize(oldY, oldX);
                 dispose();
             }
         });
@@ -659,7 +650,7 @@ public class CoordinateEdit extends JmriJFrame {
                 String t = xTextField.getText();
                 if (pp.isIcon()) {
                     if (pp instanceof SensorIcon) {
-                       ((SensorIcon)pp).setOverlayText(t); 
+                       ((SensorIcon)pp).setText(t); 
                        pp.updateSize();
                        dispose();
                     } else {

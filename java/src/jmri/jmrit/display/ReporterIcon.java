@@ -19,28 +19,20 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
         // super ctor call to make sure this is a String label
         super("???", editor);
         setText("???");
-        setPopupUtility(new ReporterPopupUtil(this, this));
     }
 
-    // suppress inappropriate menu items
-    static class ReporterPopupUtil extends PositionablePopupUtil {
-
-        ReporterPopupUtil(Positionable parent, javax.swing.JComponent textComp) {
-            super(parent, textComp);
-        }
-
-        @Override
-        public void setTextJustificationMenu(JPopupMenu popup) {
-        }
-
-        @Override
-        public void setFixedTextMenu(JPopupMenu popup) {
-        }
-
-        @Override
-        public void setTextMarginMenu(JPopupMenu popup) {
-        }
+//    @Override
+    public void setTextJustificationMenu(JPopupMenu popup) {
     }
+
+    @Override
+    public void setFixedTextMenu(JPopupMenu popup) {
+    }
+
+//    @Override
+    public void setTextMarginMenu(JPopupMenu popup) {
+    }
+
     // the associated Reporter object
     Reporter reporter = null;
 
@@ -116,6 +108,7 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
     /**
      * Drive the current state of the display from the state of the Reporter.
      */
+    @Override
     public void displayState() {
         if (reporter == null) {
             setText(Bundle.getMessage("NotConnected"));

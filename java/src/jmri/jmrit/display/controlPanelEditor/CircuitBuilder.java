@@ -1220,7 +1220,7 @@ public class CircuitBuilder {
             Iterator<Entry<String, NamedIcon>> iter = entry.getValue().entrySet().iterator();
             while (iter.hasNext()) {
                 Entry<String, NamedIcon> ent = iter.next();
-                t.setIcon(status, ent.getKey(), new NamedIcon(ent.getValue()));
+                t.setStateIcon(status, ent.getKey(), new NamedIcon(ent.getValue()));
             }
         }
         t.setLevel(Editor.TURNOUTS);
@@ -1243,7 +1243,7 @@ public class CircuitBuilder {
                 if (log.isDebugEnabled()) {
                     log.debug("key= " + entry.getKey());
                 }
-                t.setIcon(entry.getKey(), new NamedIcon(entry.getValue()));
+                t.setStateIcon(entry.getKey(), new NamedIcon(entry.getValue()));
             }
         }
         t.setLevel(Editor.TURNOUTS);
@@ -1310,7 +1310,7 @@ public class CircuitBuilder {
         } else if (pos instanceof PositionableLabel) {
             PositionableLabel pl = (PositionableLabel) pos;
             if (pl.isIcon()) {
-                NamedIcon icon = (NamedIcon) pl.getIcon();
+                NamedIcon icon = pl.getIcon();
                 if (icon != null) {
                     String fileName = icon.getURL();
                     // getURL() returns Unix separatorChar= "/" even on windows
@@ -1334,7 +1334,7 @@ public class CircuitBuilder {
         } else if (pos instanceof PositionableLabel) {
             PositionableLabel pl = (PositionableLabel) pos;
             if (pl.isIcon()) {
-                NamedIcon icon = (NamedIcon) pl.getIcon();
+                NamedIcon icon = pl.getIcon();
                 if (icon != null) {
                     String fileName = icon.getURL();
                     if (log.isDebugEnabled()) {

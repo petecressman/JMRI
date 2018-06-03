@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 @SuppressFBWarnings(value = "NM_SAME_SIMPLE_NAME_AS_SUPERCLASS", justification="Cannot rename for user data compatiblity reasons.")
 public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
 
-    private String defaultText = " ";
+    private final String defaultText = " ";
 
     public MemoryIcon(String s, LayoutEditor panel) {
         super(s, panel);
@@ -82,7 +82,7 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
                     setIcon(null);
                     setIsText(true);
                     setIsIcon(false);
-                    setAttributes(getPopupUtility(), this);
+//                    setAttributes(getPopupUtility(), this);
                     updateSize();
                     return;
                 } else if (val instanceof javax.swing.ImageIcon) {
@@ -133,7 +133,7 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
         }
     }
 
-    private JCheckBoxMenuItem updateBlockItem = new JCheckBoxMenuItem("Update Block Details");
+    private final JCheckBoxMenuItem updateBlockItem = new JCheckBoxMenuItem("Update Block Details");
 
     @Override
     public boolean showPopUp(JPopupMenu popup) {

@@ -20,13 +20,11 @@ public class LinkingLabel extends PositionableLabel implements LinkingObject {
     public LinkingLabel(@Nonnull String s, @Nonnull Editor editor, @Nonnull String url) {
         super(s, editor);
         this.url = url;
-        setPopupUtility(new PositionablePopupUtil(this, this));
     }
 
     public LinkingLabel(NamedIcon s, @Nonnull Editor editor, @Nonnull String url) {
         super(s, editor);
         this.url = url;
-        setPopupUtility(new PositionablePopupUtil(this, this));
     }
 
     @Override

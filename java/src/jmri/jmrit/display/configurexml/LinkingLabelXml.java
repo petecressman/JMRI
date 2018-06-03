@@ -34,12 +34,12 @@ public class LinkingLabelXml extends PositionableLabelXml {
         }
         Element element = new Element("linkinglabel");
         storeCommonAttributes(p, element);
+        storeFontInfo(p, element);
 
         if (p.isText()) {
             if (p.getText() != null) {
                 element.setAttribute("text", p.getText());
             }
-            storeTextInfo(p, element);
         }
 
         if (p.isIcon() && p.getIcon() != null) {
@@ -93,7 +93,6 @@ public class LinkingLabelXml extends PositionableLabelXml {
             }
 */
             l = new LinkingLabel(icon, editor, url);
-            l.setPopupUtility(null); // no text
             try {
                 Attribute a = element.getAttribute("rotate");
                 if (a != null && icon != null) {
@@ -123,7 +122,6 @@ public class LinkingLabelXml extends PositionableLabelXml {
             //l.setSize(l.getPreferredSize().width, l.getPreferredSize().height);
         } else if (element.getAttribute("text") != null) {
             l = new LinkingLabel(element.getAttribute("text").getValue(), editor, url);
-            loadTextInfo(l, element);
 
         } else {
             log.error("LinkingLabel is null!");
@@ -144,6 +142,7 @@ public class LinkingLabelXml extends PositionableLabelXml {
             editor.loadFailed();
             return;
         }
+        loadFontInfo(l, element);
         editor.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.LABELS, element);

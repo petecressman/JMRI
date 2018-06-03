@@ -5,10 +5,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
-import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.palette.IconItemPanel;
@@ -28,9 +25,15 @@ public class PositionableLabel extends PositionableJComponent {
 
     private boolean debug = false;
     private String _textString;
+
+    
     protected NamedIcon _namedIcon;
     private boolean _icon = false;
     private boolean _text = false;
+    protected boolean _control;
+
+    static final public int MIN_SIZE = 10;
+
 
     public PositionableLabel(Editor editor) {
         super(editor);
@@ -43,13 +46,13 @@ public class PositionableLabel extends PositionableJComponent {
      */
     public PositionableLabel(String s, Editor editor) {
         super(editor);
+        _control = false;
         _text = true;
         _textString = s;
         debug = log.isDebugEnabled();
         if (debug) {
             log.debug("PositionableLabel ctor (text) " + s);
         }
-        setPopupUtility(new PositionablePopupUtil(this));
         updateSize();
     }
 
@@ -64,18 +67,34 @@ public class PositionableLabel extends PositionableJComponent {
         updateSize();
      }
 
+    /**
+     * Answers whether icon should be displayed
+     * @return display icon
+     */
     public final boolean isIcon() {
         return _icon;
     }
 
+    /**
+     * Answers whether text should be displayed
+     * @return display text
+     */
     public final boolean isText() {
         return _text;
     }
     
+    /**
+     * Set whether icon should be displayed
+     * @param b if true, display icon
+     */
     public final void setIsIcon(boolean b) {
         _icon = b;
     }
 
+    /**
+     * Set whether text should be displayed
+     * @param b if true, display text
+     */
     public final void setIsText(boolean b) {
         _text = b;
     }
@@ -126,6 +145,7 @@ public class PositionableLabel extends PositionableJComponent {
         pos._text = _text;
         pos._icon = _icon;
         pos._textString = _textString;
+        pos._control = _control;
         if (_namedIcon != null) {
             pos._namedIcon = new NamedIcon(_namedIcon);
             pos.setIcon(pos._namedIcon);
@@ -133,7 +153,7 @@ public class PositionableLabel extends PositionableJComponent {
         return super.finishClone(pos);
     }
 
-    /**
+    /*
      * ************** end Positionable methods *********************
      */
     @Override
@@ -143,7 +163,7 @@ public class PositionableLabel extends PositionableJComponent {
         if (log.isDebugEnabled()) {
             log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
         }
-        return Math.max(width, PositionablePopupUtil.MIN_SIZE); // don't let item disappear
+        return Math.max(width, MIN_SIZE); // don't let item disappear
     }
 
     @Override
@@ -153,7 +173,7 @@ public class PositionableLabel extends PositionableJComponent {
         if (log.isDebugEnabled()) {
             log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
         }
-        return Math.max(height, PositionablePopupUtil.MIN_SIZE);    // don't let item disappear
+        return Math.max(height, MIN_SIZE);    // don't let item disappear
     }
     
     public int getIconWidth() {
@@ -176,10 +196,8 @@ public class PositionableLabel extends PositionableJComponent {
         if (!_text) {
             return 0;
         }
-        int width = 0;
-        if (_popupUtil != null && _popupUtil.getFixedWidth() > 0) {
-            width = _popupUtil.getFixedWidth();
-        } else {
+        int width = getFixedWidth();
+        if (width == 0) {
             if (_textString != null && getFont()!=null) {
                 width = getFontMetrics(getFont()).stringWidth(_textString);
             }
@@ -188,10 +206,8 @@ public class PositionableLabel extends PositionableJComponent {
     }
     
     private int getTextHeight() {
-        int height = 0;
-        if (_popupUtil != null && _popupUtil.getFixedHeight() > 0) {
-            height = _popupUtil.getFixedHeight();
-        } else {
+        int height = getFixedHeight();
+        if (height == 0) {
             if (_text && _textString != null && getFont()!=null) {
                 height = Math.max(height, getFontMetrics(getFont()).getHeight());
             }
@@ -228,94 +244,7 @@ public class PositionableLabel extends PositionableJComponent {
         return (getDisplayLevel() == Editor.BKG);
     }
 
-    /*
-     * ***** Methods to add menu items to popup *******
-     */
-
-    /**
-     * PanelEditor Rotate othogonally return true if popup is set
-     */
-    @Override
-    public boolean setRotateOrthogonalMenu(JPopupMenu popup) {
-
-        if (isIcon() && getDisplayLevel() > Editor.BKG) {
-            // Bundle property includes degree symbol
-            popup.add(new AbstractAction(Bundle.getMessage("RotateOrthoSign", getDegrees())) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    rotateOrthogonal();
-                }
-            });
-            return true;
-        }
-        return false;
-    }
-
-    protected void rotateOrthogonal() {
-        int deg = getDegrees();
-        setDegrees(deg+90);
-        updateSize();
-    }
-    
-    public boolean setFlipMenu(JPopupMenu popup) {
-        if (isIcon() && getDisplayLevel() > Editor.BKG) {
-            JMenu edit = new JMenu(Bundle.getMessage("mirrorMenu")+"...");
-            JMenu flipMenu = new JMenu("mirrorMenu");
-            ButtonGroup buttonGrp = new ButtonGroup();
-            buttonGrp.add(flipMenuEntry(flipMenu, HORIZONTALFLIP));
-            buttonGrp.add(flipMenuEntry(flipMenu, VERTICALFLIP));
-            buttonGrp.add(flipMenuEntry(flipMenu, NOFLIP));
-            edit.add(flipMenu);
-            popup.add(edit);        
-            popup.add(new AbstractAction(Bundle.getMessage("mirrorMenu")) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    makeFlipMenu();
-                }
-            });
-            return true;
-        }
-        return false;
-        
-    }
-    
-    private void makeFlipMenu() {
-        JMenu edit = new JMenu(Bundle.getMessage("mirrorMenu")+"...");
-        JMenu flipMenu = new JMenu(Bundle.getMessage("mirrorMenu"));
-        ButtonGroup buttonGrp = new ButtonGroup();
-        buttonGrp.add(flipMenuEntry(flipMenu, HORIZONTALFLIP));
-        buttonGrp.add(flipMenuEntry(flipMenu, VERTICALFLIP));
-        buttonGrp.add(flipMenuEntry(flipMenu, NOFLIP));
-        edit.add(flipMenu);
-    }
-    JRadioButtonMenuItem flipMenuEntry(JMenu menu, int flip) {
-        String menuItem;
-        switch (flip) {
-            case HORIZONTALFLIP:
-                menuItem = "flipHorizontal";
-                break;
-            case VERTICALFLIP:
-                menuItem = "flipVertical";
-                break;
-            default:
-                menuItem = "flipNone";
-        }
-        JRadioButtonMenuItem r = new JRadioButtonMenuItem(Bundle.getMessage(menuItem));
-        r.addActionListener(new ActionListener() {
-            final int f = flip;
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setFlip(f);
-            }
-        });
-        if (getFlip() == flip) {
-            r.setSelected(true);
-        } else {
-            r.setSelected(false);
-        }
-        menu.add(r);
-        return r;
-    }
+    ///////////////////////////// popup methods ////////////////////////////
 
 /*    @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
@@ -514,6 +443,10 @@ public class PositionableLabel extends PositionableJComponent {
         return false;
     }
 
+    protected void paintIcon(Graphics g) {
+        
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         int iconWidth = getIconWidth();
@@ -545,17 +478,11 @@ public class PositionableLabel extends PositionableJComponent {
             g.setFont(font);
             hOffSet = borderSize + marginSize;
             vOffSet = borderSize + marginSize;
-            int fixedWidth = 0;
-            int fixedHeight = 0;
-            int justification = PositionablePopupUtil.CENTRE;
-            if (_popupUtil!=null) {
-                fixedWidth = _popupUtil.getFixedWidth();
-                fixedHeight = _popupUtil.getFixedHeight();
-                justification = _popupUtil.getJustification();
-            }
             int height = getFontMetrics(font).getHeight();
             int width = getFontMetrics(font).stringWidth(_textString);
             int ascent = getFontMetrics(font).getAscent();
+            int fixedHeight = getFixedHeight();
+            int fixedWidth = getFixedWidth();
             if (fixedHeight > 0) {
                 if (fixedHeight > height) {
                     vOffSet += Math.max(0, (fixedHeight - height)/2);
@@ -565,10 +492,10 @@ public class PositionableLabel extends PositionableJComponent {
                 }
             }
             if (fixedWidth > 0) {
-               switch (justification) {
-                    case PositionablePopupUtil.LEFT:
+               switch (getJustification()) {
+                    case LEFT:
                         break;
-                    case PositionablePopupUtil.RIGHT:
+                    case RIGHT:
                         hOffSet += fixedWidth - width; // + borderSize/2;
                         break;
                     default:        // and PositionablePopupUtil.CENTRE:

@@ -107,7 +107,7 @@ public class MemoryIconXml extends PositionableLabelXml {
             name = attr.getValue();
         }
 
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
 
         Memory m = jmri.InstanceManager.memoryManagerInstance().getMemory(name);
         if (m != null) {

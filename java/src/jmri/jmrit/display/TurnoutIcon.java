@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import javax.swing.JCheckBoxMenuItem;
@@ -31,20 +30,17 @@ import org.slf4j.LoggerFactory;
  * traffic.
  *
  * @author Bob Jacobsen Copyright (c) 2002
- * @author PeteCressman Copyright (C) 2010, 2011
+ * @author PeteCressman Copyright (C) 2010, 2011, 2018
  */
 public class TurnoutIcon extends PositionableIcon implements java.beans.PropertyChangeListener {
 
-    protected HashMap<Integer, NamedIcon> _iconStateMap;     // state int to icon
-    protected HashMap<String, Integer> _name2stateMap;       // name to state
-    protected HashMap<Integer, String> _state2nameMap;       // state to name
+    // the associated Turnout object
+    private NamedBeanHandle<Turnout> namedTurnout = null;
+    protected HashMap<Integer, String> _state2nameMap;       // state int to bean name
 
     public TurnoutIcon(Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(new NamedIcon("resources/icons/smallschematics/tracksegments/os-lefthand-east-closed.gif",
-                "resources/icons/smallschematics/tracksegments/os-lefthand-east-closed.gif"), editor);
-        _control = true;
-        setPopupUtility(null);
+        super(editor);
+        setIsIcon(true);
     }
 
     @Override
@@ -54,18 +50,16 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     }
 
     protected Positionable finishClone(TurnoutIcon pos) {
-        pos.setTurnout(getNamedTurnout().getName());
-        pos._iconStateMap = cloneMap(_iconStateMap, pos);
+        NamedBeanHandle<Turnout> to = getNamedTurnout();
+        if (to != null) {
+            pos.setTurnout(to.getName());
+        }
         pos.setTristate(getTristate());
         pos.setMomentary(getMomentary());
         pos.setDirectControl(getDirectControl());
-        pos._iconFamily = _iconFamily;
         return super.finishClone(pos);
     }
 
-    // the associated Turnout object
-    //Turnout turnout = null;
-    private NamedBeanHandle<Turnout> namedTurnout = null;
 
     /**
      * Attach a named turnout to this display item.
@@ -91,17 +85,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         }
         namedTurnout = to;
         if (namedTurnout != null) {
-            _iconStateMap = new HashMap<>();
-            _name2stateMap = new HashMap<>();
-            _name2stateMap.put("BeanStateUnknown", Integer.valueOf(Turnout.UNKNOWN));
-            _name2stateMap.put("BeanStateInconsistent", Integer.valueOf(Turnout.INCONSISTENT));
-            _name2stateMap.put("TurnoutStateClosed", Integer.valueOf(Turnout.CLOSED));
-            _name2stateMap.put("TurnoutStateThrown", Integer.valueOf(Turnout.THROWN));
-            _state2nameMap = new HashMap<>();
-            _state2nameMap.put(Integer.valueOf(Turnout.UNKNOWN), "BeanStateUnknown");
-            _state2nameMap.put(Integer.valueOf(Turnout.INCONSISTENT), "BeanStateInconsistent");
-            _state2nameMap.put(Integer.valueOf(Turnout.CLOSED), "TurnoutStateClosed");
-            _state2nameMap.put(Integer.valueOf(Turnout.THROWN), "TurnoutStateThrown");
             displayState(turnoutState());
             getTurnout().addPropertyChangeListener(this, namedTurnout.getName(), "Panel Editor Turnout Icon");
         }
@@ -120,63 +103,64 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         return getTurnout();
     }
 
+    private void makeStateNameMap() {
+        _state2nameMap = new HashMap<>();
+        _state2nameMap.put(Integer.valueOf(Turnout.UNKNOWN), "BeanStateUnknown");
+        _state2nameMap.put(Integer.valueOf(Turnout.INCONSISTENT), "BeanStateInconsistent");
+        _state2nameMap.put(Integer.valueOf(Turnout.CLOSED), "TurnoutStateClosed");
+        _state2nameMap.put(Integer.valueOf(Turnout.THROWN), "TurnoutStateThrown");
+    }
+
+    @Override
+    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        makeStateNameMap();
+        HashMap<String, PositionableLabel> oldMap = getIconMap();
+        HashMap<String, PositionableLabel> map = new HashMap<>();
+        Iterator <String> iter = _state2nameMap.values().iterator();
+        while (iter.hasNext()) {
+            String state = iter.next();
+            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
+            if (oldMap != null) {
+                pos.setIcon(oldMap.get(state).getIcon());
+                pos.setIsIcon(true);
+            }
+            map.put(state, pos);
+        }
+        return map;
+    }
+
     /**
      * Place icon by its localized bean state name.
      *
      * @param name the state name
      * @param icon the icon to place
      */
-    public void setIcon(String name, NamedIcon icon) {
+    @Override
+    public void setStateIcon(String name, NamedIcon icon) {
         if (log.isDebugEnabled()) {
-            log.debug("setIcon for name \"" + name
-                    + "\" state= " + _name2stateMap.get(name));
+            log.debug("setIcon for name \"" + name);
         }
-        _iconStateMap.put(_name2stateMap.get(name), icon);
-        displayState(turnoutState());
+        super.setStateIcon(name, icon);
+//        displayState(turnoutState());
     }
 
     /**
      * Get icon by its localized bean state name.
-     */
-    @Override
-    public NamedIcon getIcon(String state) {
-        return _iconStateMap.get(_name2stateMap.get(state));
-    }
-
+     *
     public NamedIcon getIcon(int state) {
-        return _iconStateMap.get(Integer.valueOf(state));
-    }
-/*
-    @Override
-    public int maxHeight() {
-        int max = 0;
-        Iterator<NamedIcon> iter = _iconStateMap.values().iterator();
-        while (iter.hasNext()) {
-            max = Math.max(iter.next().getIconHeight(), max);
-        }
-        return max;
-    }
-
-    @Override
-    public int maxWidth() {
-        int max = 0;
-        Iterator<NamedIcon> iter = _iconStateMap.values().iterator();
-        while (iter.hasNext()) {
-            max = Math.max(iter.next().getIconWidth(), max);
-        }
-        return max;
+        return getIcon(_state2nameMap.get(state));
     }*/
 
     /**
      * Get current state of attached turnout
      *
-     * @return A state variable from a Turnout, e.g. Turnout.CLOSED
+     * @return A state name from a Turnout, e.g. Turnout.CLOSED
      */
-    int turnoutState() {
+    protected String turnoutState() {
         if (namedTurnout != null) {
-            return getTurnout().getKnownState();
+            return _state2nameMap.get(getTurnout().getKnownState());
         } else {
-            return Turnout.UNKNOWN;
+            return _state2nameMap.get(Turnout.UNKNOWN);
         }
     }
 
@@ -195,18 +179,18 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
                 && (e.getPropertyName().equals("CommandedState"))) {
             if (getTurnout().getCommandedState() != getTurnout().getKnownState()) {
                 int now = Turnout.INCONSISTENT;
-                displayState(now);
+                displayState(_state2nameMap.get(now));
             }
             // this takes care of the quick double click
             if (getTurnout().getCommandedState() == getTurnout().getKnownState()) {
                 int now = ((Integer) e.getNewValue()).intValue();
-                displayState(now);
+                displayState(_state2nameMap.get(now));
             }
         }
 
         if (e.getPropertyName().equals("KnownState")) {
             int now = ((Integer) e.getNewValue()).intValue();
-            displayState(now);
+            displayState(_state2nameMap.get(now));
         }
     }
 
@@ -345,25 +329,37 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         displayState(turnoutState());
     }*/
 
+    @Override
+    public void displayState() {
+        displayState(turnoutState());
+    }
+
     /**
      * Drive the current state of the display from the state of the turnout.
+     * @param state bean state name
      */
-    @Override
-    public void displayState(int state) {
+    public void displayState(String state) {
         if (getNamedTurnout() == null) {
             log.debug("Display state " + state + ", disconnected");
-        } else {
-//            log.debug(getNameString() +" displayState "+_state2nameMap.get(state));
-            if (isText()) {
-                super.setText(_state2nameMap.get(state));
-            }
-            if (isIcon()) {
-                NamedIcon icon = getIcon(state);
-                if (icon != null) {
-                    super.setIcon(icon);
+//            super.setText(getText(_state2nameMap.get(Turnout.UNKNOWN)));
+//            super.setIcon(getIcon(_state2nameMap.get(Turnout.UNKNOWN)));
+            state = _state2nameMap.get(Turnout.UNKNOWN);
+//            return;
+       }
+        setDisplayState(state);
+/*       if (isIcon()) {
+            NamedIcon icon = getIcon(state);
+            if (icon != null) {
+                super.setIcon(icon);
+                if (!isText()) {
+                    setOpaque(false);
                 }
             }
         }
+        if (isText()) {
+            String text = getText(state);
+            setText(text);
+        }*/
         updateSize();
     }
 
@@ -384,7 +380,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     protected void editItem() {
         _paletteFrame = makePaletteFrame(java.text.MessageFormat.format(Bundle.getMessage("EditItem"),
                 Bundle.getMessage("BeanNameTurnout")));
-        _itemPanel = new TableItemPanel(_paletteFrame, "Turnout", _iconFamily,
+        _itemPanel = new TableItemPanel(_paletteFrame, "Turnout", getFamily(),
                 PickListModel.turnoutPickModelInstance(), _editor); // NOI18N
         ActionListener updateAction = new ActionListener() {
             @Override
@@ -393,15 +389,15 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             }
         };
         // duplicate icon map with state names rather than int states and unscaled and unrotated
-        HashMap<String, NamedIcon> strMap = new HashMap<>();
-        Iterator<Entry<Integer, NamedIcon>> it = _iconStateMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<Integer, NamedIcon> entry = it.next();
-            NamedIcon oldIcon = entry.getValue();
+        HashMap<String, NamedIcon> map = new HashMap<>();
+        Iterator<String> iter = getIconStateNames();
+        while (iter.hasNext()) {
+            String  state = iter.next();
+            NamedIcon oldIcon = getIcon(state);
             NamedIcon newIcon = new NamedIcon(oldIcon);
-            strMap.put(_state2nameMap.get(entry.getKey()), newIcon);
+            map.put(state, newIcon);
         }
-        _itemPanel.init(updateAction, strMap);
+        _itemPanel.init(updateAction, map);
         _itemPanel.setSelection(getTurnout());
         initPaletteFrame(_paletteFrame, _itemPanel);
     }
@@ -410,9 +406,8 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         if (!_itemPanel.oktoUpdate()) {
             return;
         }
-        HashMap<Integer, NamedIcon> oldMap = cloneMap(_iconStateMap, this);
         setTurnout(_itemPanel.getTableSelection().getSystemName());
-        _iconFamily = _itemPanel.getFamilyName();
+        setFamily(_itemPanel.getFamilyName());
         HashMap<String, NamedIcon> iconMap = _itemPanel.getIconMap();
         if (iconMap != null) {
             Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
@@ -421,15 +416,14 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
                 if (log.isDebugEnabled()) {
                     log.debug("key= " + entry.getKey());
                 }
-                NamedIcon newIcon = entry.getValue();
-                NamedIcon oldIcon = oldMap.get(_name2stateMap.get(entry.getKey()));
-                setIcon(entry.getKey(), newIcon);
+                NamedIcon newIcon = new NamedIcon(entry.getValue());
+                setStateIcon(entry.getKey(), newIcon);
             }
         }   // otherwise retain current map
         finishItemUpdate(_paletteFrame, _itemPanel);
     }
 
-    @Override
+/*    @Override
     public boolean setEditIconMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameTurnout"));
         popup.add(new javax.swing.AbstractAction(txt) {
@@ -483,7 +477,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         _iconEditorFrame = null;
         _iconEditor = null;
         invalidate();
-    }
+    }*/
 
     public boolean buttonLive() {
         if (namedTurnout == null) {
@@ -545,27 +539,8 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             getTurnout().removePropertyChangeListener(this);
         }
         namedTurnout = null;
-        _iconStateMap = null;
-        _name2stateMap = null;
         _state2nameMap = null;
-
         super.dispose();
-    }
-
-    protected HashMap<Integer, NamedIcon> cloneMap(HashMap<Integer, NamedIcon> map,
-            TurnoutIcon pos) {
-        HashMap<Integer, NamedIcon> clone = new HashMap<>();
-        if (map != null) {
-            Iterator<Entry<Integer, NamedIcon>> it = map.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<Integer, NamedIcon> entry = it.next();
-                 clone.put(entry.getKey(), new NamedIcon(entry.getValue()));
-                if (pos != null) {
-                    pos.setIcon(_state2nameMap.get(entry.getKey()), _iconStateMap.get(entry.getKey()));
-                }
-            }
-        }
-        return clone;
     }
 
     private final static Logger log = LoggerFactory.getLogger(TurnoutIcon.class);

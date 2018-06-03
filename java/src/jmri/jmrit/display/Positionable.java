@@ -96,7 +96,33 @@ public interface Positionable extends Cloneable {
     
     public Rectangle getBounds(Rectangle rv);
     
-    /**
+    public int getFixedWidth();
+
+    public void setFixedWidth(int w);
+
+    public int getFixedHeight();
+
+    public void setFixedHeight(int h);
+
+    public void setFixedSize(int w, int h);
+
+    public void setFontStyle(int styleValue);
+
+    public void setFontSize(float newSize);
+
+    public void setJustification(int just);
+
+    public int getJustification();
+
+    public void setScale(double s);
+
+    public double getScale();
+
+    public void setDegrees(int deg);
+
+    public int getDegrees();
+    
+   /**
      * Make a deep copy of Positional object. Implementation should create a new
      * object and immediately pass the object to finishClone() returning the
      * result of finishClone(). i.e. implementation must be: <br/>
@@ -115,7 +141,12 @@ public interface Positionable extends Cloneable {
     ////////// Methods to add popup menu items return true if a popup item is set
 
     public String getNameString();
+    
+    public void displayState();
 
+    /*
+     * Popup Menu methods
+     */
     public boolean setRotateOrthogonalMenu(JPopupMenu popup);
 
     public boolean setRotateMenu(JPopupMenu popup);
@@ -132,14 +163,6 @@ public interface Positionable extends Cloneable {
 
     public boolean showPopUp(JPopupMenu popup);
 
-    public void setScale(double s);
-
-    public double getScale();
-
-    public void setDegrees(int deg);
-
-    public int getDegrees();
-    
     public void setBorder();
     
     public void setFlip(int f);
@@ -165,13 +188,6 @@ public interface Positionable extends Cloneable {
      * @return true if Editor may add the standardpopup menu items
      */
     public boolean doViemMenu();
-    /*
-     * Utility to handle Margins, Borders and other common popup items
-     * @return null if these item do not apply
-     */
-    public PositionablePopupUtil getPopupUtility();
-
-    public void setPopupUtility(PositionablePopupUtil tu);
 
     public jmri.NamedBean getNamedBean();
 

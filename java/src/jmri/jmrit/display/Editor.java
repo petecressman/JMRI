@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
 import javax.swing.AbstractAction;
@@ -1186,7 +1187,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     public boolean setShowCoordinatesMenu(Positionable p, JPopupMenu popup) {
         //if (showCoordinates()) {
         JMenuItem edit = null;
-        if ((p instanceof MemoryIcon) && (p.getPopupUtility().getFixedWidth() == 0)) {
+        if ((p instanceof MemoryIcon) && (p.getFixedWidth() == 0)) {
             MemoryIcon pm = (MemoryIcon) p;
 
             edit = new JMenuItem(Bundle.getMessage(
@@ -1630,7 +1631,6 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     public PositionableLabel setUpBackground(String name) {
         NamedIcon icon = NamedIcon.getIconByName(name);
         PositionableLabel l = new PositionableLabel(icon, this);
-        l.setPopupUtility(null);        // no text
         l.setPositionable(false);
         l.setShowToolTip(false);
         l.setSize(icon.getIconWidth(), icon.getIconHeight());
@@ -2174,7 +2174,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         Enumeration<String> e = map.keys();
         while (e.hasMoreElements()) {
             String key = e.nextElement();
-            result.setIcon(key, map.get(key));
+            result.setStateIcon(key, map.get(key));
         }
 //        l.setActiveIcon(editor.getIcon("SensorStateActive"));
 //        l.setInactiveIcon(editor.getIcon("SensorStateInactive"));
@@ -2210,7 +2210,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         Enumeration<String> e = map.keys();
         while (e.hasMoreElements()) {
             String key = e.nextElement();
-            result.setIcon(key, map.get(key));
+            result.setStateIcon(key, map.get(key));
         }
         result.setDisplayLevel(TURNOUTS);
         setNextLocation(result);
@@ -2281,7 +2281,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         Enumeration<String> e = map.keys();
         while (e.hasMoreElements()) {
             String key = e.nextElement();
-            result.setIcon(key, map.get(key));
+            result.setStateIcon(key, map.get(key));
         }
         result.setDisplayLevel(SIGNALS);
         setNextLocation(result);
@@ -2697,7 +2697,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     protected int getItemX(Positionable p, int deltaX) {
-        if ((p instanceof MemoryIcon) && (p.getPopupUtility().getFixedWidth() == 0)) {
+        if ((p instanceof MemoryIcon) && (p.getFixedWidth() == 0)) {
             MemoryIcon pm = (MemoryIcon) p;
             return pm.getOriginalX() + (int) Math.round(deltaX / getPaintScale());
         } else {
@@ -2706,7 +2706,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     protected int getItemY(Positionable p, int deltaY) {
-        if ((p instanceof MemoryIcon) && (p.getPopupUtility().getFixedWidth() == 0)) {
+        if ((p instanceof MemoryIcon) && (p.getFixedWidth() == 0)) {
             MemoryIcon pm = (MemoryIcon) p;
             return pm.getOriginalY() + (int) Math.round(deltaY / getPaintScale());
         } else {
@@ -2725,66 +2725,63 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         if (nb == null || item == null) {
             return;
         }
-        for (Positionable pos : _contents) {
-            if (pos.getNamedBean() == nb && pos.getPopupUtility() != null) {
+        for (Positionable p : _contents) {
+            PositionableJComponent pos = (PositionableJComponent) p;
+            if (pos.getNamedBean() == nb) {
                 switch (menu) {
                     case VIEWPOPUPONLY:
-                        pos.getPopupUtility().addViewPopUpMenu(item);
+                        pos.addViewPopUpMenu(item);
                         break;
                     case EDITPOPUPONLY:
-                        pos.getPopupUtility().addEditPopUpMenu(item);
+                        pos.addEditPopUpMenu(item);
                         break;
                     default:
-                        pos.getPopupUtility().addEditPopUpMenu(item);
-                        pos.getPopupUtility().addViewPopUpMenu(item);
+                        pos.addEditPopUpMenu(item);
+                        pos.addViewPopUpMenu(item);
                 }
                 return;
             } else if (pos instanceof SlipTurnoutIcon) {
-                if (pos.getPopupUtility() != null) {
-                    SlipTurnoutIcon sti = (SlipTurnoutIcon) pos;
-                    if (sti.getTurnout(SlipTurnoutIcon.EAST) == nb || sti.getTurnout(SlipTurnoutIcon.WEST) == nb
-                            || sti.getTurnout(SlipTurnoutIcon.LOWEREAST) == nb || sti.getTurnout(SlipTurnoutIcon.LOWERWEST) == nb) {
-                        switch (menu) {
-                            case VIEWPOPUPONLY:
-                                pos.getPopupUtility().addViewPopUpMenu(item);
-                                break;
-                            case EDITPOPUPONLY:
-                                pos.getPopupUtility().addEditPopUpMenu(item);
-                                break;
-                            default:
-                                pos.getPopupUtility().addEditPopUpMenu(item);
-                                pos.getPopupUtility().addViewPopUpMenu(item);
-                        }
-                        return;
+                SlipTurnoutIcon sti = (SlipTurnoutIcon) pos;
+                if (sti.getTurnout(SlipTurnoutIcon.EAST) == nb || sti.getTurnout(SlipTurnoutIcon.WEST) == nb
+                        || sti.getTurnout(SlipTurnoutIcon.LOWEREAST) == nb || sti.getTurnout(SlipTurnoutIcon.LOWERWEST) == nb) {
+                    switch (menu) {
+                        case VIEWPOPUPONLY:
+                            pos.addViewPopUpMenu(item);
+                            break;
+                        case EDITPOPUPONLY:
+                            pos.addEditPopUpMenu(item);
+                            break;
+                        default:
+                            pos.addEditPopUpMenu(item);
+                            pos.addViewPopUpMenu(item);
                     }
+                    return;
                 }
             } else if (pos instanceof MultiSensorIcon) {
-                if (pos.getPopupUtility() != null) {
-                    MultiSensorIcon msi = (MultiSensorIcon) pos;
-                    boolean match = false;
-                    for (int i = 0; i < msi.getNumEntries(); i++) {
-                        if (msi.getSensorName(i).equals(nb.getUserName())) {
-                            match = true;
-                            break;
-                        } else if (msi.getSensorName(i).equals(nb.getSystemName())) {
-                            match = true;
-                            break;
-                        }
+                MultiSensorIcon msi = (MultiSensorIcon) pos;
+                boolean match = false;
+                for (int i = 0; i < msi.getNumEntries(); i++) {
+                    if (msi.getSensorName(i).equals(nb.getUserName())) {
+                        match = true;
+                        break;
+                    } else if (msi.getSensorName(i).equals(nb.getSystemName())) {
+                        match = true;
+                        break;
                     }
-                    if (match) {
-                        switch (menu) {
-                            case VIEWPOPUPONLY:
-                                pos.getPopupUtility().addViewPopUpMenu(item);
-                                break;
-                            case EDITPOPUPONLY:
-                                pos.getPopupUtility().addEditPopUpMenu(item);
-                                break;
-                            default:
-                                pos.getPopupUtility().addEditPopUpMenu(item);
-                                pos.getPopupUtility().addViewPopUpMenu(item);
-                        }
-                        return;
+                }
+                if (match) {
+                    switch (menu) {
+                        case VIEWPOPUPONLY:
+                            pos.addViewPopUpMenu(item);
+                            break;
+                        case EDITPOPUPONLY:
+                            pos.addEditPopUpMenu(item);
+                            break;
+                        default:
+                            pos.addEditPopUpMenu(item);
+                            pos.addViewPopUpMenu(item);
                     }
+                    return;
                 }
             }
         }
@@ -2963,9 +2960,6 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     protected boolean setTextAttributes(Positionable p, JPopupMenu popup) {
-        if (p.getPopupUtility() == null) {
-            return false;
-        }
         popup.add(new AbstractAction(Bundle.getMessage("TextAttributes")) {
             Positionable comp;
 
@@ -3012,13 +3006,9 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             doneButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent a) {
-                    PositionablePopupUtil util = _decorator.getPositionablePopupUtil();
                     _decorator.setAttributes(_pos);
-                    if (_selectionGroup == null) {
-//                        _decorator.setAttributes(_pos);
-                        setAttributes(util, _pos);
-                    } else {
-                        setSelectionsAttributes(util, _pos);
+                    if (_selectionGroup != null) {
+                        setSelectionsAttributes(_pos);
                     }
                    dispose();
                 }
@@ -3038,29 +3028,74 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     /**
-     * Set attributes of a Positionable.
+     * Set attributes of a Positionable list
      *
-     * @param newUtil helper from which to get attributes
-     * @param p       the item to set attributes of
+     * @param pos    the item whose attributes should be copied
      *
      */
-    protected void setAttributes(PositionablePopupUtil newUtil, Positionable p) {
-        p.setPopupUtility(newUtil.clone());
-        if (p instanceof PositionableIcon) {
-            NamedBean bean = p.getNamedBean();
-            if (bean != null) {
-                ((PositionableIcon) p).displayState(bean.getState());
-            }
+    protected void setSelectionsAttributes(Positionable pMaster) {
+        if (_selectionGroup == null || !_selectionGroup.contains(pMaster)) {
+            return;
         }
-        p.updateSize();
-    }
-
-    protected void setSelectionsAttributes(PositionablePopupUtil util, Positionable pos) {
-        if (_selectionGroup != null && _selectionGroup.contains(pos)) {
-            for (Positionable p : _selectionGroup) {
-                if (p instanceof PositionableLabel) {
-                    setAttributes(util, p);
+        if (pMaster instanceof PositionableIcon) {
+            PositionableIcon pm = (PositionableIcon)pMaster;
+            Iterator<Map.Entry<String, PositionableLabel>> it = pm.getIconMap().entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, PositionableLabel> entry = it.next();
+                String state = entry.getKey();
+                PositionableLabel p = entry.getValue();
+                for (Positionable pSlave : _selectionGroup) {
+                    if (pSlave instanceof PositionableIcon) {
+                        PositionableIcon ps = (PositionableIcon)pSlave;
+                        PositionableLabel pi = ps.getStateData(state);
+                        pi.setText(p.getText());
+                        pi.setFont(p.getFont());
+                        pi.setFontSize(p.getFont().getSize());
+                        pi.setFontStyle(p.getFont().getStyle());
+                        pi.setJustification(p.getJustification());
+                        pi.setFixedWidth(p.getFixedWidth());
+                        pi.setFixedHeight(p.getFixedHeight());
+                        pi.setMarginSize(p.getMarginSize());
+                        pi.setBorderSize(p.getBorderSize());
+                        pi.setBorderColor(p.getBorderColor());
+                        pi.setBackgroundColor(p.getBackgroundColor());
+                        pi.setForeground(p.getForeground());
+                    } else {
+                        if (pSlave instanceof PositionableLabel &&
+                                !(pSlave instanceof jmri.jmrit.display.MemoryIcon)) {
+                            ((PositionableLabel) pSlave).setText(p.getText());
+                        }
+                        pSlave.setFont(p.getFont());
+                        pSlave.setFontSize(p.getFont().getSize());
+                        pSlave.setFontStyle(p.getFont().getStyle());
+                        pSlave.setJustification(p.getJustification());
+                        pSlave.setFixedWidth(p.getFixedWidth());
+                        pSlave.setFixedHeight(p.getFixedHeight());
+                        pSlave.setMarginSize(p.getMarginSize());
+                        pSlave.setBorderSize(p.getBorderSize());
+                        pSlave.setBorderColor(p.getBorderColor());
+                        pSlave.setBackgroundColor(p.getBackground());                
+                        pSlave.setForeground(p.getForeground());
+                    }
                 }
+            } 
+        } else {
+            for (Positionable pSlave : _selectionGroup) {
+                if (pSlave instanceof PositionableLabel &&(pSlave instanceof jmri.jmrit.display.MemoryIcon)
+                && pMaster instanceof PositionableLabel &&(pMaster instanceof jmri.jmrit.display.MemoryIcon)) {
+                    ((PositionableLabel)pSlave).setText(((PositionableLabel)pMaster).getText());
+                }
+                pSlave.setFont(pMaster.getFont());
+                pSlave.setFontSize(pMaster.getFont().getSize());
+                pSlave.setFontStyle(pMaster.getFont().getStyle());
+                pSlave.setJustification(pMaster.getJustification());
+                pSlave.setFixedWidth(pMaster.getFixedWidth());
+                pSlave.setFixedHeight(pMaster.getFixedHeight());
+                pSlave.setMarginSize(pMaster.getMarginSize());
+                pSlave.setBorderSize(pMaster.getBorderSize());
+                pSlave.setBorderColor(pMaster.getBorderColor());
+                pSlave.setBackgroundColor(pMaster.getBackground());                
+                pSlave.setForeground(pMaster.getForeground());
             }
         }
     }
@@ -3323,7 +3358,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
      * @param p     the item containing or requiring the context menu
      * @param event the event triggering the menu
      */
-    abstract protected void showPopUp(Positionable p, MouseEvent event);
+    abstract protected void showPopUp(PositionableJComponent p, MouseEvent event);
 
     /**
      * After construction, initialize all the widgets to their saved config

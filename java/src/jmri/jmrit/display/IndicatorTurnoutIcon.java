@@ -37,12 +37,12 @@ import org.slf4j.LoggerFactory;
  * The default icons are for a left-handed turnout, facing point for east-bound
  * traffic.
  *
- * @author Bob Jacobsen Copyright (c) 2002
- * @author Pete Cressman Copyright (c) 2010 2012
+ * @author Pete Cressman Copyright (c) 2010 2012, 2018
  */
 public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack {
 
-    HashMap<String, HashMap<Integer, NamedIcon>> _iconMaps;
+    // Replaces _iconMap of PositionableIcon ancestor
+    HashMap<String, HashMap<String, NamedIcon>> _iconMaps;      // state icons for each status
 
     private NamedBeanHandle<Sensor> namedOccSensor = null;
     private NamedBeanHandle<OBlock> namedOccBlock = null;
@@ -55,23 +55,49 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         super(editor);
         log.debug("IndicatorTurnoutIcon ctor: isIcon()= " + isIcon() + ", isText()= " + isText());
         _pathUtil = new IndicatorTrackPaths();
-        _status = "DontUseTrack";
-        _iconMaps = initMaps();
+        _status = "ClearTrack";
 
     }
+/*
+    void initMaps() {
+        _iconMaps = new HashMap<>();
+        _iconMaps.put("ClearTrack", new HashMap<String, NamedIcon>());
+        _iconMaps.put("OccupiedTrack", new HashMap<String, NamedIcon>());
+        _iconMaps.put("PositionTrack", new HashMap<String, NamedIcon>());
+        _iconMaps.put("AllocatedTrack", new HashMap<String, NamedIcon>());
+        _iconMaps.put("DontUseTrack", new HashMap<String, NamedIcon>());
+        _iconMaps.put("ErrorTrack", new HashMap<String, NamedIcon>());
+    }*/
+    
+    static final String[] STATUSNAME = {"ClearTrack", "OccupiedTrack", "PositionTrack", "AllocatedTrack", "DontUseTrack", "ErrorTrack"};
 
-    static HashMap<String, HashMap<Integer, NamedIcon>> initMaps() {
-        HashMap<String, HashMap<Integer, NamedIcon>> iconMaps = new HashMap<>();
-        iconMaps.put("ClearTrack", new HashMap<Integer, NamedIcon>());
-        iconMaps.put("OccupiedTrack", new HashMap<Integer, NamedIcon>());
-        iconMaps.put("PositionTrack", new HashMap<Integer, NamedIcon>());
-        iconMaps.put("AllocatedTrack", new HashMap<Integer, NamedIcon>());
-        iconMaps.put("DontUseTrack", new HashMap<Integer, NamedIcon>());
-        iconMaps.put("ErrorTrack", new HashMap<Integer, NamedIcon>());
-        return iconMaps;
+    @Override
+    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        HashMap<String, PositionableLabel> map = new HashMap<> ();
+        for (String status : STATUSNAME) {
+            PositionableIcon pos = new PositionableIcon(Bundle.getMessage(status), getEditor());
+            pos.setIconMap(pos. makeDefaultMap());  // each status needs state icons and text
+            map.put(status, pos);
+        }
+        return map;
     }
 
-    HashMap<String, HashMap<Integer, NamedIcon>> cloneMaps(IndicatorTurnoutIcon pos) {
+//    @Override
+    public static HashMap<String, PositionableLabel> cloneMap(HashMap<String, PositionableLabel> map,
+            PositionableIcon pos) {
+        HashMap<String, PositionableLabel> clone = new HashMap<>();
+        if (map != null) {
+            Iterator<Entry<String, PositionableLabel>> it = map.entrySet().iterator();
+            while (it.hasNext()) {
+                Entry<String, PositionableLabel> entry = it.next();
+                clone.put(entry.getKey(), (PositionableIcon)entry.getValue().deepClone());
+                if (log.isDebugEnabled()) log.debug("clone status ", entry.getKey());
+            }
+        }
+        return clone;
+    }
+
+/*    HashMap<String, HashMap<Integer, NamedIcon>> cloneMaps(IndicatorTurnoutIcon pos) {
         HashMap<String, HashMap<Integer, NamedIcon>> iconMaps = initMaps();
         Iterator<Entry<String, HashMap<Integer, NamedIcon>>> it = _iconMaps.entrySet().iterator();
         while (it.hasNext()) {
@@ -85,7 +111,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             }
         }
         return iconMaps;
-    }
+    }*/
 
     @Override
     public Positionable deepClone() {
@@ -96,15 +122,13 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     protected Positionable finishClone(IndicatorTurnoutIcon pos) {
         pos.setOccBlockHandle(namedOccBlock);
         pos.setOccSensorHandle(namedOccSensor);
-        pos._iconMaps = cloneMaps(pos);
         pos._pathUtil = _pathUtil.deepClone();
-        pos._iconFamily = _iconFamily;
         return super.finishClone(pos);
     }
 
-    public HashMap<String, HashMap<Integer, NamedIcon>> getIconMaps() {
+ /*   public HashMap<String, HashMap<Integer, NamedIcon>> getIconMaps() {
         return new HashMap<>(_iconMaps);
-    }
+    }*/
 
     /**
      * Attached a named sensor to display status from OBlocks
@@ -252,23 +276,21 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
      * @param stateName - NamedBean name of turnout state
      * @param icon      - icon corresponding to status and state
      */
-    public void setIcon(String status, String stateName, NamedIcon icon) {
+    public void setStateIcon(String status, String stateName, NamedIcon icon) {
         if (log.isDebugEnabled()) {
-            log.debug("setIcon for status \"" + status + "\", stateName= \""
+            log.debug("setIcon for status= \"" + status + "\", state= \""
                     + stateName + " icom= " + icon.getURL());
         }
-//                                            ") state= "+_name2stateMap.get(stateName)+
-//                                            " icon: w= "+icon.getIconWidth()+" h= "+icon.getIconHeight());
-        if (_iconMaps == null) {
-            _iconMaps = initMaps();
+        PositionableIcon statusMap = (PositionableIcon)getStateData(status);
+        statusMap.setStateIcon(stateName, icon);
+        if (status == _status && stateName == turnoutState()) {
+            setIcon(icon);
         }
-        _iconMaps.get(status).put(_name2stateMap.get(stateName), icon);
-        setIcon(_iconMaps.get("ClearTrack").get(_name2stateMap.get("BeanStateInconsistent")));
     }
 
     /*
      * Get icon by its localized bean state name
-     */
+     *
     public NamedIcon getIcon(String status, int state) {
         log.debug("getIcon: status= " + status + ", state= " + state);
         HashMap<Integer, NamedIcon> map = _iconMaps.get(status);
@@ -280,107 +302,40 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
 
     public String getStateName(Integer state) {
         return _state2nameMap.get(state);
-    }
+    }*/
 
     public String getStatus() {
         return _status;
     }
-/*
-    @Override
-    public int maxHeight() {
-        int max = 0;
-        if (_iconMaps != null) {
-            Iterator<HashMap<Integer, NamedIcon>> it = _iconMaps.values().iterator();
-            while (it.hasNext()) {
-                Iterator<NamedIcon> iter = it.next().values().iterator();
-                while (iter.hasNext()) {
-                    max = Math.max(iter.next().getIconHeight(), max);
-                }
-            }
-        }
-        return max;
-    }
 
-    @Override
-    public int maxWidth() {
-        int max = 0;
-        if (_iconMaps != null) {
-            Iterator<HashMap<Integer, NamedIcon>> it = _iconMaps.values().iterator();
-            while (it.hasNext()) {
-                Iterator<NamedIcon> iter = it.next().values().iterator();
-                while (iter.hasNext()) {
-                    max = Math.max(iter.next().getIconWidth(), max);
-                }
-            }
-        }
-        return max;
-    }*/
-
-    /**
-     * ****** popup AbstractAction.actionPerformed method overrides ********
-     */
-/*    @Override
-    protected void rotateOrthogonal() {
-        if (_iconMaps != null) {
-            Iterator<HashMap<Integer, NamedIcon>> it = _iconMaps.values().iterator();
-            while (it.hasNext()) {
-                Iterator<NamedIcon> iter = it.next().values().iterator();
-                while (iter.hasNext()) {
-                    NamedIcon icon = iter.next();
-                    icon.setRotation(icon.getRotation() + 1, this);
-                }
-            }
-        }
-        displayState(turnoutState());
-    }
-
-    @Override
-    public void setScale(double s) {
-        _scale = s;
-        if (_iconMaps != null) {
-            Iterator<HashMap<Integer, NamedIcon>> it = _iconMaps.values().iterator();
-            while (it.hasNext()) {
-                Iterator<NamedIcon> iter = it.next().values().iterator();
-                while (iter.hasNext()) {
-                    iter.next().scale(s, this);
-                }
-            }
-        }
-        displayState(turnoutState());
-    }
-
-    @Override
-    public void rotate(int deg) {
-        if (_iconMaps != null) {
-            Iterator<HashMap<Integer, NamedIcon>> it = _iconMaps.values().iterator();
-            while (it.hasNext()) {
-                Iterator<NamedIcon> iter = it.next().values().iterator();
-                while (iter.hasNext()) {
-                    iter.next().rotate(deg, this);
-                }
-            }
-        }
-        setDegrees(deg %360);
-        displayState(turnoutState());
-    }*/
 
     /**
      * Drive the current state of the display from the state of the turnout and
      * status of track.
      */
     @Override
-    public void displayState(int state) {
+    public void displayState(String state) {
         if (getNamedTurnout() == null) {
             log.debug("Display state " + state + ", disconnected");
-        } else {
-            if (_status != null && _iconMaps != null) {
-                NamedIcon icon = getIcon(_status, state);
-                if (icon != null) {
-                    super.setIcon(icon);
+            PositionableIcon statusMap = (PositionableIcon)getStateData("ErrorTrack");
+            super.setText(statusMap.getText(_state2nameMap.get(Turnout.UNKNOWN)));
+            super.setIcon(statusMap.getIcon(_state2nameMap.get(Turnout.UNKNOWN)));
+            return;
+       }
+       PositionableIcon statusMap = (PositionableIcon)getStateData(_status);
+       if (isIcon()) {
+            NamedIcon icon = statusMap.getIcon(state);
+            if (icon != null) {
+                super.setIcon(icon);
+                if (!isText()) {
+                    setOpaque(false);
                 }
             }
         }
-        super.displayState(state);
+        if (isText()) {
+            String text = statusMap.getText(state);
+            setText(text);
+        }
         updateSize();
     }
 
@@ -443,7 +398,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     @Override
     protected void editItem() {
         _paletteFrame = makePaletteFrame(java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("IndicatorTO")));
-        _TOPanel = new IndicatorTOItemPanel(_paletteFrame, "IndicatorTO", _iconFamily,
+        _TOPanel = new IndicatorTOItemPanel(_paletteFrame, "IndicatorTO", getFamily(),
                 PickListModel.turnoutPickModelInstance(), _editor);
         ActionListener updateAction = new ActionListener() {
             @Override
@@ -452,25 +407,18 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             }
         };
         // Convert _iconMaps state (ints) to Palette's bean names
-        HashMap<String, HashMap<String, NamedIcon>> iconMaps
-                = new HashMap<>();
-        iconMaps.put("ClearTrack", new HashMap<String, NamedIcon>());
-        iconMaps.put("OccupiedTrack", new HashMap<String, NamedIcon>());
-        iconMaps.put("PositionTrack", new HashMap<String, NamedIcon>());
-        iconMaps.put("AllocatedTrack", new HashMap<String, NamedIcon>());
-        iconMaps.put("DontUseTrack", new HashMap<String, NamedIcon>());
-        iconMaps.put("ErrorTrack", new HashMap<String, NamedIcon>());
-        Iterator<Entry<String, HashMap<Integer, NamedIcon>>> it = _iconMaps.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, HashMap<Integer, NamedIcon>> entry = it.next();
-            HashMap<String, NamedIcon> clone = iconMaps.get(entry.getKey());
-            Iterator<Entry<Integer, NamedIcon>> iter = entry.getValue().entrySet().iterator();
+        HashMap<String, HashMap<String, NamedIcon>> iconMaps = new HashMap<>();
+        for (String status : STATUSNAME) {
+            PositionableIcon pos = (PositionableIcon)getStateData(status);
+            HashMap<String, NamedIcon> map = new HashMap<>();
+            Iterator<String> iter = pos.getIconStateNames();    // state names for this status name
             while (iter.hasNext()) {
-                Entry<Integer, NamedIcon> ent = iter.next();
-                NamedIcon oldIcon = ent.getValue();
+                String state  = iter.next();
+                NamedIcon oldIcon = pos.getIcon(state);
                 NamedIcon newIcon = new NamedIcon(oldIcon);
-                clone.put(_state2nameMap.get(ent.getKey()), newIcon);
+                map.put(state, newIcon);
             }
+            iconMaps.put(status, map);
         }
         _TOPanel.initUpdate(updateAction, iconMaps);
         _TOPanel.setSelection(getTurnout());
@@ -494,7 +442,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         setOccSensor(_TOPanel.getOccSensor());
         setOccBlock(_TOPanel.getOccBlock());
         _pathUtil.setShowTrain(_TOPanel.getShowTrainName());
-        _iconFamily = _TOPanel.getFamilyName();
+        setFamily(_TOPanel.getFamilyName());
         _pathUtil.setPaths(_TOPanel.getPaths());
         HashMap<String, HashMap<String, NamedIcon>> iconMap = _TOPanel.getIconMaps();
         if (iconMap != null) {
@@ -502,16 +450,15 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             while (it.hasNext()) {
                 Entry<String, HashMap<String, NamedIcon>> entry = it.next();
                 String status = entry.getKey();
-                HashMap<Integer, NamedIcon> oldMap = _iconMaps.get(entry.getKey());
+                PositionableIcon pos = (PositionableIcon)getStateData(status);
                 Iterator<Entry<String, NamedIcon>> iter = entry.getValue().entrySet().iterator();
                 while (iter.hasNext()) {
                     Entry<String, NamedIcon> ent = iter.next();
                     if (log.isDebugEnabled()) {
                         log.debug("key= " + ent.getKey());
                     }
-                    NamedIcon newIcon = new NamedIcon(ent.getValue());
-                    NamedIcon oldIcon = oldMap.get(_name2stateMap.get(ent.getKey()));
-                    setIcon(status, ent.getKey(), newIcon);
+                    NamedIcon icon = new NamedIcon(ent.getValue());
+                    pos.setStateIcon(ent.getKey(), icon);
                 }
             }
         }   // otherwise retain current map

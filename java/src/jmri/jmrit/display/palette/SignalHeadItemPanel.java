@@ -214,7 +214,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
                 Iterator<Entry<String, NamedIcon>> iter = map.entrySet().iterator();
                 while (iter.hasNext()) {
                     Entry<String, NamedIcon> ent = iter.next();
-                    sh.setIcon(Bundle.getMessage(ent.getKey()), new NamedIcon(ent.getValue()));
+                    sh.setStateIcon(Bundle.getMessage(ent.getKey()), new NamedIcon(ent.getValue()));
                 }
                 sh.setFamily(_family);
                 sh.setLevel(Editor.SIGNALS);

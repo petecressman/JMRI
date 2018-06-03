@@ -307,7 +307,7 @@ public class TableItemPanel extends FamilyItemPanel implements ListSelectionList
                     Iterator<Entry<String, NamedIcon>> iter = iMap.entrySet().iterator();
                     while (iter.hasNext()) {
                         Entry<String, NamedIcon> ent = iter.next();
-                        t.setIcon(ent.getKey(), new NamedIcon(ent.getValue()));
+                        t.setStateIcon(ent.getKey(), new NamedIcon(ent.getValue()));
                     }
                     t.setFamily(_family);
                     t.setLevel(Editor.TURNOUTS);
@@ -318,7 +318,7 @@ public class TableItemPanel extends FamilyItemPanel implements ListSelectionList
                     Iterator<Entry<String, NamedIcon>> iter = iMap.entrySet().iterator();
                     while (iter.hasNext()) {
                         Entry<String, NamedIcon> ent = iter.next();
-                        s.setIcon(ent.getKey(), new NamedIcon(ent.getValue()));
+                        s.setStateIcon(ent.getKey(), new NamedIcon(ent.getValue()));
                     }
                     s.setSensor(bean.getDisplayName());
                     s.setFamily(_family);

@@ -51,7 +51,8 @@ import java.util.ResourceBundle;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -100,7 +101,6 @@ import jmri.BlockManager;
 import jmri.ConfigureManager;
 import jmri.InstanceManager;
 import jmri.JmriException;
-import jmri.Manager;
 import jmri.Memory;
 import jmri.MemoryManager;
 import jmri.NamedBean;
@@ -129,7 +129,6 @@ import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
 import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.jmrit.display.ReporterIcon;
 import jmri.jmrit.display.SensorIcon;
 import jmri.jmrit.display.SignalHeadIcon;
@@ -5034,7 +5033,7 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                             if (selectedObject instanceof MemoryIcon) {
                                 MemoryIcon pm = (MemoryIcon) selectedObject;
 
-                                if (pm.getPopupUtility().getFixedWidth() == 0) {
+                                if (pm.getFixedWidth() == 0) {
                                     startDelta.setLocation((pm.getOriginalX() - dLoc.getX()),
                                             (pm.getOriginalY() - dLoc.getY()));
                                 }
@@ -5694,7 +5693,7 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
      * Select the menu items to display for the Positionable's popup
      */
     @Override
-    protected void showPopUp(@Nonnull Positionable p, @Nonnull MouseEvent event) {
+    protected void showPopUp(@Nonnull PositionableJComponent p, @Nonnull MouseEvent event) {
         if (!((JComponent) p).isVisible()) {
             return; //component must be showing on the screen to determine its location
         }
@@ -5738,21 +5737,17 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                 popupSet = p.setEditIconMenu(popup);
                 popupSet = p.setTextEditMenu(popup);
 
-                PositionablePopupUtil util = p.getPopupUtility();
-
-                if (util != null) {
-                    util.setFixedTextMenu(popup);
-                    util.setTextMarginMenu(popup);
-                    util.setTextBorderMenu(popup);
-                    util.setTextFontMenu(popup);
-                    util.setBackgroundMenu(popup);
-                    util.setTextJustificationMenu(popup);
-                    util.setTextOrientationMenu(popup);
-                    popup.addSeparator();
-                    util.propertyUtil(popup);
-                    util.setAdditionalEditPopUpMenu(popup);
-                    popupSet = true;
-                }
+                p.setFixedTextMenu(popup);
+                p.setTextMarginMenu(popup);
+                p.setTextBorderMenu(popup);
+                p.setTextFontMenu(popup);
+                p.setBackgroundMenu(popup);
+                p.setTextJustificationMenu(popup);
+                p.setTextOrientationMenu(popup);
+                popup.addSeparator();
+                p.propertyUtil(popup);
+                p.setAdditionalEditPopUpMenu(popup);
+                popupSet = true;
 
                 if (popupSet) {
                     popup.addSeparator();
@@ -5773,13 +5768,9 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
             }
         } else {
             p.showPopUp(popup);
-            PositionablePopupUtil util = p.getPopupUtility();
-
-            if (util != null) {
-                util.setAdditionalViewPopUpMenu(popup);
-            }
+            p.setAdditionalViewPopUpMenu(popup);
         }
-        popup.show((Component) p, p.getWidth() / 2 + (int) ((getZoom() - 1.0) * p.getX()),
+        popup.show(p, p.getWidth() / 2 + (int) ((getZoom() - 1.0) * p.getX()),
                 p.getHeight() / 2 + (int) ((getZoom() - 1.0) * p.getY()));
 
         /*popup.show((Component)pt, event.getX(), event.getY());*/
@@ -6467,7 +6458,7 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
             Point2D delta = new Point2D.Double(deltaX, deltaY);
             for (Positionable c : _positionableSelection) {
                 Point2D newPoint = c.getLocation();
-                if ((c instanceof MemoryIcon) && (c.getPopupUtility().getFixedWidth() == 0)) {
+                if ((c instanceof MemoryIcon) && (c.getFixedWidth() == 0)) {
                     MemoryIcon pm = (MemoryIcon) c;
                     newPoint = new Point2D.Double(pm.getOriginalX(), pm.getOriginalY());
                 }
@@ -6616,7 +6607,7 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                     Point2D newPoint;
 
                     for (Positionable c : _positionableSelection) {
-                        if ((c instanceof MemoryIcon) && (c.getPopupUtility().getFixedWidth() == 0)) {
+                        if ((c instanceof MemoryIcon) && (c.getFixedWidth() == 0)) {
                             MemoryIcon pm = (MemoryIcon) c;
                             newPoint = new Point2D.Double(pm.getOriginalX(), pm.getOriginalY());
                         } else {
@@ -8220,10 +8211,10 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
         SensorIcon l = new SensorIcon(new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
                 "resources/icons/smallschematics/tracksegments/circuit-error.gif"), this);
 
-        l.setIcon("SensorStateActive", sensorIconEditor.getIcon(0));
-        l.setIcon("SensorStateInactive", sensorIconEditor.getIcon(1));
-        l.setIcon("BeanStateInconsistent", sensorIconEditor.getIcon(2));
-        l.setIcon("BeanStateUnknown", sensorIconEditor.getIcon(3));
+        l.setStateIcon("SensorStateActive", sensorIconEditor.getIcon(0));
+        l.setStateIcon("SensorStateInactive", sensorIconEditor.getIcon(1));
+        l.setStateIcon("BeanStateInconsistent", sensorIconEditor.getIcon(2));
+        l.setStateIcon("BeanStateUnknown", sensorIconEditor.getIcon(3));
         l.setSensor(newName);
         l.setDisplayLevel(Editor.SENSORS);
 
@@ -8278,16 +8269,16 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
         //create and set up signal icon
         SignalHeadIcon l = new SignalHeadIcon(this);
         l.setSignalHead(newName);
-        l.setIcon(rbean.getString("SignalHeadStateRed"), signalIconEditor.getIcon(0));
-        l.setIcon(rbean.getString("SignalHeadStateFlashingRed"), signalIconEditor.getIcon(1));
-        l.setIcon(rbean.getString("SignalHeadStateYellow"), signalIconEditor.getIcon(2));
-        l.setIcon(rbean.getString("SignalHeadStateFlashingYellow"), signalIconEditor.getIcon(3));
-        l.setIcon(rbean.getString("SignalHeadStateGreen"), signalIconEditor.getIcon(4));
-        l.setIcon(rbean.getString("SignalHeadStateFlashingGreen"), signalIconEditor.getIcon(5));
-        l.setIcon(rbean.getString("SignalHeadStateDark"), signalIconEditor.getIcon(6));
-        l.setIcon(rbean.getString("SignalHeadStateHeld"), signalIconEditor.getIcon(7));
-        l.setIcon(rbean.getString("SignalHeadStateLunar"), signalIconEditor.getIcon(8));
-        l.setIcon(rbean.getString("SignalHeadStateFlashingLunar"), signalIconEditor.getIcon(9));
+        l.setStateIcon(rbean.getString("SignalHeadStateRed"), signalIconEditor.getIcon(0));
+        l.setStateIcon(rbean.getString("SignalHeadStateFlashingRed"), signalIconEditor.getIcon(1));
+        l.setStateIcon(rbean.getString("SignalHeadStateYellow"), signalIconEditor.getIcon(2));
+        l.setStateIcon(rbean.getString("SignalHeadStateFlashingYellow"), signalIconEditor.getIcon(3));
+        l.setStateIcon(rbean.getString("SignalHeadStateGreen"), signalIconEditor.getIcon(4));
+        l.setStateIcon(rbean.getString("SignalHeadStateFlashingGreen"), signalIconEditor.getIcon(5));
+        l.setStateIcon(rbean.getString("SignalHeadStateDark"), signalIconEditor.getIcon(6));
+        l.setStateIcon(rbean.getString("SignalHeadStateHeld"), signalIconEditor.getIcon(7));
+        l.setStateIcon(rbean.getString("SignalHeadStateLunar"), signalIconEditor.getIcon(8));
+        l.setStateIcon(rbean.getString("SignalHeadStateFlashingLunar"), signalIconEditor.getIcon(9));
         unionToPanelBounds(l.getBounds());
         setNextLocation(l);
         setDirty();
@@ -10174,101 +10165,101 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
 
         if (nb instanceof Sensor) {
             for (SensorIcon si : sensorList) {
-                if ((si.getNamedBean() == nb) && (si.getPopupUtility() != null)) {
+                if (si.getNamedBean() == nb) {
                     switch (menu) {
                         case Editor.VIEWPOPUPONLY: {
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                             break;
                         }
 
                         case Editor.EDITPOPUPONLY: {
-                            si.getPopupUtility().addEditPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
                             break;
                         }
 
                         default:
-                            si.getPopupUtility().addEditPopUpMenu(item);
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                     }
                 }
             }
         } else if (nb instanceof SignalHead) {
             for (SignalHeadIcon si : signalList) {
-                if ((si.getNamedBean() == nb) && (si.getPopupUtility() != null)) {
+                if (si.getNamedBean() == nb) {
                     switch (menu) {
                         case Editor.VIEWPOPUPONLY: {
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                             break;
                         }
 
                         case Editor.EDITPOPUPONLY: {
-                            si.getPopupUtility().addEditPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
                             break;
                         }
 
                         default:
-                            si.getPopupUtility().addEditPopUpMenu(item);
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                     }
                 }
             }
         } else if (nb instanceof SignalMast) {
             for (SignalMastIcon si : signalMastList) {
-                if ((si.getNamedBean() == nb) && (si.getPopupUtility() != null)) {
+                if ((si.getNamedBean() == nb)) {
                     switch (menu) {
                         case Editor.VIEWPOPUPONLY: {
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                             break;
                         }
 
                         case Editor.EDITPOPUPONLY: {
-                            si.getPopupUtility().addEditPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
                             break;
                         }
 
                         default:
-                            si.getPopupUtility().addEditPopUpMenu(item);
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                     }
                 }
             }
         } else if (nb instanceof Block) {
             for (BlockContentsIcon si : blockContentsLabelList) {
-                if ((si.getNamedBean() == nb) && (si.getPopupUtility() != null)) {
+                if ((si.getNamedBean() == nb)) {
                     switch (menu) {
                         case Editor.VIEWPOPUPONLY: {
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                             break;
                         }
 
                         case Editor.EDITPOPUPONLY: {
-                            si.getPopupUtility().addEditPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
                             break;
                         }
 
                         default:
-                            si.getPopupUtility().addEditPopUpMenu(item);
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                     }
                 }
             }
         } else if (nb instanceof Memory) {
             for (MemoryIcon si : memoryLabelList) {
-                if ((si.getNamedBean() == nb) && (si.getPopupUtility() != null)) {
+                if (si.getNamedBean() == nb) {
                     switch (menu) {
                         case Editor.VIEWPOPUPONLY: {
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                             break;
                         }
 
                         case Editor.EDITPOPUPONLY: {
-                            si.getPopupUtility().addEditPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
                             break;
                         }
 
                         default:
-                            si.getPopupUtility().addEditPopUpMenu(item);
-                            si.getPopupUtility().addViewPopUpMenu(item);
+                            si.addEditPopUpMenu(item);
+                            si.addViewPopUpMenu(item);
                     }
                 }
             }

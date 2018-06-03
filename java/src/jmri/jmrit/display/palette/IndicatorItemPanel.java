@@ -17,7 +17,6 @@ import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.IndicatorTrackIcon;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,7 +167,7 @@ public class IndicatorItemPanel extends FamilyItemPanel {
                 Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
                 while (it.hasNext()) {
                     Entry<String, NamedIcon> entry = it.next();
-                    t.setIcon(entry.getKey(), new NamedIcon(entry.getValue()));
+                    t.setStateIcon(entry.getKey(), new NamedIcon(entry.getValue()));
                 }
                 t.setLevel(Editor.TURNOUTS);
                 return t;                

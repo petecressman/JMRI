@@ -48,7 +48,6 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
                 "resources/icons/smallschematics/tracksegments/os-slip-lower-west-upper-east.gif"), editor);
         _control = true;
         displayState(turnoutState());
-        setPopupUtility(null);
     }
 
     // the associated Turnout object

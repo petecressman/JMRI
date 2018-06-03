@@ -1286,7 +1286,7 @@ public class SwitchboardEditor extends Editor {
      * @param event MouseEvent heard
      */
     @Override
-    protected void showPopUp(Positionable p, MouseEvent event) {
+    protected void showPopUp(PositionableJComponent p, MouseEvent event) {
         _currentSelection = null;
     }
 

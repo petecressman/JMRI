@@ -50,23 +50,25 @@ public class LocoIcon extends PositionableLabel {
         setShowToolTip(false);
         //setEditable(false);
         setIsText(true); //Markers are an icon with text
-        setPopupUtility(new PositionablePopupUtil(this, this) {       // need this class for Font Edit
-            @Override
-            public void setFixedTextMenu(JPopupMenu popup) {
-            }
+    }
 
-            @Override
-            public void setTextMarginMenu(JPopupMenu popup) {
-            }
+    @Override
+    public void setFixedTextMenu(JPopupMenu popup) {
+    }
 
-            @Override
-            public void setTextBorderMenu(JPopupMenu popup) {
-            }
+//    @Override
+    @Override
+    public void setTextMarginMenu(JPopupMenu popup) {
+    }
 
-            @Override
-            public void setTextJustificationMenu(JPopupMenu popup) {
-            }
-        });
+//    @Override
+    @Override
+    public void setTextBorderMenu(JPopupMenu popup) {
+    }
+
+//    @Override
+    @Override
+    public void setTextJustificationMenu(JPopupMenu popup) {
     }
 
     @Override
@@ -124,14 +126,14 @@ public class LocoIcon extends PositionableLabel {
             getEditor().setShowCoordinatesMenu(this, popup);
             popup.add(makeDockingMenu());
             popup.add(makeDockMenu());
-            getPopupUtility().setTextFontMenu(popup);
+            setTextFontMenu(popup);
         } else {
             setRotateMenu(popup);
             if (_entry == null) {
                 setTextEditMenu(popup);
             }
             popup.add(makeDockMenu());
-            getPopupUtility().setTextFontMenu(popup);
+            setTextFontMenu(popup);
             getEditor().setRemoveMenu(this, popup);
         }
         return true;
@@ -291,7 +293,7 @@ public class LocoIcon extends PositionableLabel {
      * Called at load time to get "background" color
      */
     public void init() {
-        NamedIcon icon = (NamedIcon) getIcon();
+        NamedIcon icon = getIcon();
         String name = icon.getURL();
         if (name != null) {
             if (name.endsWith("loco-white.gif")) {
@@ -326,8 +328,7 @@ public class LocoIcon extends PositionableLabel {
                 if (block != null) {
                     block.setMarkerForeground(getForeground());
                     block.setMarkerBackground(_locoColor);
-                    PositionablePopupUtil util = getPopupUtility();
-                    block.setMarkerFont(util.getFont());
+                    block.setMarkerFont(getFont());
                     String name = getText(); // rotated icons have null text
                     if (name == null || name.length() == 0) {
                         name = getText();

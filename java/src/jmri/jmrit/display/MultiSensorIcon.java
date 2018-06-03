@@ -37,7 +37,6 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
                 "resources/icons/smallschematics/tracksegments/circuit-error.gif"), editor);
         _control = true;
         displayState();
-        setPopupUtility(null);
     }
 
     boolean updown = false;
@@ -337,6 +336,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     /**
      * Drive the current state of the display from the state of the turnout.
      */
+    @Override
     public void displayState() {
 
         updateSize();

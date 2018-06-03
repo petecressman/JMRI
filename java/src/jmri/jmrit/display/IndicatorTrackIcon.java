@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * <P>
  * A click on the icon does not change any of the above conditions..
  * <P>
- * @author Pete Cressman Copyright (c) 2010
+ * @author Pete Cressman Copyright (c) 2010, 2018
  */
 public class IndicatorTrackIcon extends PositionableIcon
         implements java.beans.PropertyChangeListener, IndicatorTrack {
@@ -47,7 +47,6 @@ public class IndicatorTrackIcon extends PositionableIcon
         super(editor);
         _pathUtil = new IndicatorTrackPaths();
         _status = "ClearTrack";
-        _iconMap = new HashMap<>();
     }
 
     @Override
@@ -59,17 +58,31 @@ public class IndicatorTrackIcon extends PositionableIcon
     protected Positionable finishClone(IndicatorTrackIcon pos) {
         pos.setOccSensorHandle(namedOccSensor);
         pos.setOccBlockHandle(namedOccBlock);
-        pos._iconMap = cloneMap(_iconMap, pos);
         pos._pathUtil = _pathUtil.deepClone();
-        pos._iconFamily = _iconFamily;
-        pos._namedIcon = null;
         pos._status = _status;
         return super.finishClone(pos);
     }
 
-    public HashMap<String, NamedIcon> getIconMap() {
-        return cloneMap(_iconMap, this);
+    @Override
+    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        HashMap<String, PositionableLabel> map = new HashMap<>();
+        Iterator<String> iter = getIconStateNames();
+        if (iter == null) {
+            return map;
+        }
+        HashMap<String, PositionableLabel> oldMap = getIconMap();
+        while (iter.hasNext()) {
+            String state = iter.next();
+            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
+            if (oldMap != null) {
+                pos.setIcon(oldMap.get(state).getIcon());
+                pos.setIsIcon(true);
+            }
+            map.put(state, pos);
+        }
+        return map;
     }
+
 
     /**
      * Attached a named sensor to display status
@@ -101,9 +114,6 @@ public class IndicatorTrackIcon extends PositionableIcon
         }
         namedOccSensor = senHandle;
         if (namedOccSensor != null) {
-            if (_iconMap == null) {
-                _iconMap = new HashMap<>();
-            }
             Sensor sensor = getOccSensor();
             sensor.addPropertyChangeListener(this, namedOccSensor.getName(), "Indicator Track");
             _status = _pathUtil.getStatus(sensor.getKnownState());
@@ -150,9 +160,6 @@ public class IndicatorTrackIcon extends PositionableIcon
         }
         namedOccBlock = blockHandle;
         if (namedOccBlock != null) {
-            if (_iconMap == null) {
-                _iconMap = new HashMap<>();
-            }
             OBlock block = getOccBlock();
             block.addPropertyChangeListener(this, namedOccBlock.getName(), "Indicator Track");
             setStatus(block, block.getState());
@@ -214,11 +221,12 @@ public class IndicatorTrackIcon extends PositionableIcon
     /*
      * Place icon by its bean state name
      */
-    public void setIcon(String name, NamedIcon icon) {
+    @Override
+    public void setStateIcon(String name, NamedIcon icon) {
         if (log.isDebugEnabled()) {
             log.debug("set \"" + name + "\" icon= " + icon);
         }
-        _iconMap.put(name, icon);
+        super.setStateIcon(name, icon);
         if (_status.equals(name)) {
             setIcon(icon);            
         }
@@ -227,26 +235,6 @@ public class IndicatorTrackIcon extends PositionableIcon
     public String getStatus() {
         return _status;
     }
-/*
-    @Override
-    public int maxHeight() {
-        int max = 0;
-        Iterator<NamedIcon> iter = _iconMap.values().iterator();
-        while (iter.hasNext()) {
-            max = Math.max(iter.next().getIconHeight(), max);
-        }
-        return max;
-    }
-
-    @Override
-    public int maxWidth() {
-        int max = 0;
-        Iterator<NamedIcon> iter = _iconMap.values().iterator();
-        while (iter.hasNext()) {
-            max = Math.max(iter.next().getIconWidth(), max);
-        }
-        return max;
-    }*/
 
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -313,21 +301,25 @@ public class IndicatorTrackIcon extends PositionableIcon
      */
     public void displayState(String status) {
         if (log.isDebugEnabled()) {
-            log.debug(getNameString() + " displayStatus " + _status);
+            log.debug(getNameString() + " displayStatus " + status);
         }
-        NamedIcon icon = getIcon(status);
-        if (icon != null) {
-            super.setIcon(icon);
+        setDisplayState(status);
+/*        if (isIcon()) {
+            NamedIcon icon = getIcon(status);
+            if (icon != null) {
+                super.setIcon(icon);
+                if (!isText()) {
+                    setOpaque(false);
+                }
+            }
         }
+        if (isText()) {
+            String text = getText(status);
+            setText(text);
+        }*/
         updateSize();
     }
-/*    
-    @Override
-    public void rotate(int deg) {
-        super.rotate(deg);
-        displayState(_status);
-    }
-*/
+
     @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("IndicatorTrack"));
@@ -343,7 +335,7 @@ public class IndicatorTrackIcon extends PositionableIcon
     protected void editItem() {
         _paletteFrame = makePaletteFrame(java.text.MessageFormat.format(Bundle.getMessage("EditItem"),
                 Bundle.getMessage("IndicatorTrack")));
-        _trackPanel = new IndicatorItemPanel(_paletteFrame, "IndicatorTrack", _iconFamily, _editor);
+        _trackPanel = new IndicatorItemPanel(_paletteFrame, "IndicatorTrack", getFamily(), _editor);
 
         ActionListener updateAction = new ActionListener() {
             @Override
@@ -351,14 +343,14 @@ public class IndicatorTrackIcon extends PositionableIcon
                 updateItem();
             }
         };
-        // duplicate _iconMap map with unscaled and unrotated icons
+        // duplicate _iconMap map
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<Entry<String, NamedIcon>> it = _iconMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            NamedIcon oldIcon = entry.getValue();
+        Iterator<String> iter = getIconStateNames();
+        while (iter.hasNext()) {
+            String  state = iter.next();
+            NamedIcon oldIcon = getIcon(state);
             NamedIcon newIcon = new NamedIcon(oldIcon);
-            map.put(entry.getKey(), newIcon);
+            map.put(state, newIcon);
         }
         _trackPanel.init(updateAction, map);
         if (namedOccSensor != null) {
@@ -376,20 +368,18 @@ public class IndicatorTrackIcon extends PositionableIcon
         setOccSensor(_trackPanel.getOccSensor());
         setOccBlock(_trackPanel.getOccBlock());
         _pathUtil.setShowTrain(_trackPanel.getShowTrainName());
-        _iconFamily = _trackPanel.getFamilyName();
+        setFamily(_trackPanel.getFamilyName());
         _pathUtil.setPaths(_trackPanel.getPaths());
         HashMap<String, NamedIcon> iconMap = _trackPanel.getIconMap();
         if (iconMap != null) {
-            HashMap<String, NamedIcon> oldMap = cloneMap(_iconMap, this);
             Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
             while (it.hasNext()) {
                 Entry<String, NamedIcon> entry = it.next();
                 if (log.isDebugEnabled()) {
                     log.debug("key= " + entry.getKey());
                 }
-                NamedIcon newIcon = entry.getValue();
-                NamedIcon oldIcon = oldMap.get(entry.getKey());
-                setIcon(entry.getKey(), newIcon);
+                NamedIcon newIcon = new NamedIcon(entry.getValue());
+                setStateIcon(entry.getKey(), newIcon);
             }
         }   // otherwise retain current map
         finishItemUpdate(_paletteFrame, _trackPanel);
@@ -406,7 +396,6 @@ public class IndicatorTrackIcon extends PositionableIcon
             getOccBlock().removePropertyChangeListener(this);
         }
         namedOccBlock = null;
-        _iconMap = null;
         super.dispose();
     }
 

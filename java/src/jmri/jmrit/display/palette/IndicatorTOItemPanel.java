@@ -572,7 +572,7 @@ public class IndicatorTOItemPanel extends TableItemPanel {
                     Iterator<Entry<String, NamedIcon>> iter = entry.getValue().entrySet().iterator();
                     while (iter.hasNext()) {
                         Entry<String, NamedIcon> ent = iter.next();
-                        t.setIcon(status, ent.getKey(), new NamedIcon(ent.getValue()));
+                        t.setStateIcon(status, ent.getKey(), new NamedIcon(ent.getValue()));
                     }
                 }
                 t.setLevel(Editor.TURNOUTS);

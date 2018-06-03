@@ -31,7 +31,7 @@ public class ReporterIconXml extends PositionableLabelXml {
         element.setAttribute("reporter", p.getReporter().getSystemName());
         storeCommonAttributes(p, element);
 
-        storeTextInfo(p, element);
+        storeFontInfo(p, element);
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.ReporterIconXml");
 
@@ -52,7 +52,7 @@ public class ReporterIconXml extends PositionableLabelXml {
         l.setReporter(jmri.InstanceManager.getDefault(jmri.ReporterManager.class).getReporter(
                 element.getAttribute("reporter").getValue()));
 
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
 
         l.setSize(l.getPreferredSize().width, l.getPreferredSize().height);
         ed.putItem(l);

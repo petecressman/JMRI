@@ -1,7 +1,6 @@
 package jmri.jmrit.display.controlPanelEditor;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -35,7 +34,6 @@ import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -58,13 +56,10 @@ import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.IndicatorTrack;
 import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.LocoIcon;
-import jmri.jmrit.display.MemoryIcon;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableIcon;
 import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableJPanel;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.jmrit.display.SensorIcon;
 import jmri.jmrit.display.ToolTip;
 import jmri.jmrit.display.controlPanelEditor.shape.ShapeDrawer;
@@ -717,16 +712,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                             pos.updateSize();
                             pos.setVisible(true);
                             _selectionGroup.add(pos);
-                            if (pos instanceof PositionableIcon) {
-                                jmri.NamedBean bean = pos.getNamedBean();
-                                if (bean != null) {
-                                    ((PositionableIcon) pos).displayState(bean.getState());
-                                }
-                            } else if (pos instanceof MemoryIcon) {
-                                ((MemoryIcon) pos).displayState();
-                            } else if (pos instanceof PositionableJComponent) {
-                                ((PositionableJComponent) pos).displayState();
-                            }
+                            pos.displayState();
                             log.debug("Paste Added at ({}, {})", pos.getLocation().x, pos.getLocation().y);
                         }
                     }
@@ -1118,13 +1104,13 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         return selection;
     }
 
-    private Positionable getCopySelection(MouseEvent event) {
+    private PositionableJComponent getCopySelection(MouseEvent event) {
         if (_selectionGroup == null) {
             return null;
         }
         for (Positionable p : _selectionGroup) {
             if (pointOnItem(p, event)) {
-                return p;
+                return (PositionableJComponent)p;
             }
         }
         return null;
@@ -1241,7 +1227,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             log.debug("mouseReleased at ({},{}) dragging={}, pastePending={}, selectRect is{} null",
                     event.getX(), event.getY(), _dragging, _pastePending, (_selectRect == null ? "" : " not"));
         }
-        Positionable selection = getCurrentSelection(event);
+        PositionableJComponent selection = (PositionableJComponent)getCurrentSelection(event);
 
         if ((event.isPopupTrigger() || event.isMetaDown() || event.isAltDown()) /*&& !_dragging*/) {
             if (selection != null) {
@@ -1315,7 +1301,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         setToolTip(null); // ends tooltip if displayed
         log.debug("mouseClicked at ({},{})", event.getX(), event.getY());
 
-        Positionable selection = getCurrentSelection(event);
+        PositionableJComponent selection = (PositionableJComponent)getCurrentSelection(event);
         if (_shapeDrawer.doMouseClicked(event, this)) {
             return;
         }
@@ -1513,12 +1499,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
     void pasteItems() {
         if (_selectionGroup != null) {
             for (Positionable pos : _selectionGroup) {
-                if (pos instanceof PositionableIcon) {
-                    jmri.NamedBean bean = pos.getNamedBean();
-                    if (bean != null) {
-                        ((PositionableIcon) pos).displayState(bean.getState());
-                    }
-                }
+                pos.displayState();
                 putItem(pos);
                 log.debug("Add {}", pos.getNameString());
             }
@@ -1604,13 +1585,12 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
      * only to specific Positionable types.
      */
     @Override
-    protected void showPopUp(Positionable p, MouseEvent event) {
-        if (!((JComponent) p).isVisible()) {
-            return;     // component must be showing on the screen to determine its location
+    protected void showPopUp(PositionableJComponent p, MouseEvent event) {
+        if (p.isVisible()) {
+            return;
         }
         JPopupMenu popup = new JPopupMenu();
 
-        PositionablePopupUtil util = p.getPopupUtility();
         if (p.isEditable()) {
             // items common to all
             if (p.doViemMenu()) {
@@ -1667,9 +1647,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 popupSet = false;
             }
             p.setDisableControlMenu(popup);
-            if (util != null) {
-                util.setAdditionalEditPopUpMenu(popup);
-            }
+            p.setAdditionalEditPopUpMenu(popup);
             // for Positionables with unique settings
             p.showPopUp(popup);
 
@@ -1682,11 +1660,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 setCopyMenu(p, popup);
             }
             p.showPopUp(popup);
-            if (util != null) {
-                util.setAdditionalViewPopUpMenu(popup);
-            }
+            p.setAdditionalViewPopUpMenu(popup);
         }
-        popup.show((Component) p, p.getWidth() / 2 + (int) ((getPaintScale() - 1.0) * p.getX()),
+        popup.show(p, p.getWidth() / 2 + (int) ((getPaintScale() - 1.0) * p.getX()),
                 p.getHeight() / 2 + (int) ((getPaintScale() - 1.0) * p.getY()));
 
         _currentSelection = null;

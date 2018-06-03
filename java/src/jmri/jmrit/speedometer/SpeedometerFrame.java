@@ -643,7 +643,7 @@ public class SpeedometerFrame extends jmri.util.JmriJFrame {
         Document doc = new Document(root);
 
         // add XSLT processing instruction
-        java.util.Map<String, String> m = new java.util.HashMap<String, String>();
+        java.util.Map<String, String> m = new java.util.HashMap<>();
         m.put("type", "text/xsl");
         m.put("href", SpeedometerXml.xsltLocation + "speedometer.xsl");
         ProcessingInstruction p = new ProcessingInstruction("xml-stylesheet", m);
@@ -801,16 +801,16 @@ public class SpeedometerFrame extends jmri.util.JmriJFrame {
     }
 
     private void setupIconMap(SensorIcon sensor) {
-        sensor.setIcon("SensorStateActive",
+        sensor.setStateIcon("SensorStateActive",
                 new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-occupied.gif",
                         "resources/icons/smallschematics/tracksegments/circuit-occupied.gif"));
-        sensor.setIcon("SensorStateInactive",
+        sensor.setStateIcon("SensorStateInactive",
                 new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-empty.gif",
                         "resources/icons/smallschematics/tracksegments/circuit-empty.gif"));
-        sensor.setIcon("BeanStateInconsistent",
+        sensor.setStateIcon("BeanStateInconsistent",
                 new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
                         "resources/icons/smallschematics/tracksegments/circuit-error.gif"));
-        sensor.setIcon("BeanStateUnknown",
+        sensor.setStateIcon("BeanStateUnknown",
                 new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
                         "resources/icons/smallschematics/tracksegments/circuit-error.gif"));
     }

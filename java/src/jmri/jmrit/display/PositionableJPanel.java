@@ -1,6 +1,7 @@
 package jmri.jmrit.display;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -26,6 +27,8 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
     
     protected void setTextComponent(JComponent t) {
         _textComponent = t;
+        Dimension dim = t.getPreferredSize();
+        super.setFixedSize(dim.width, dim.height);
     }
 
     protected JComponent getTextComponent() {
@@ -39,12 +42,6 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
     }
 
     protected Positionable finishClone(PositionableJPanel pos) {
-        if (getPopupUtility() == null) {
-            pos.setPopupUtility(null);
-        } else {
-            pos.setPopupUtility(getPopupUtility().clone());
-        }
-        pos.updateSize();
         return super.finishClone(pos);
     }
 
@@ -147,15 +144,42 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
         return _textComponent.getFont();
     }
 
+    /*
+     ****************** Fixed width & height *************** 
+     */
+    @Override
+    public int getFixedWidth() {
+        return getPreferredSize().width;
+    }
+
+    @Override
+    public void setFixedWidth(int w) {
+        Dimension dim = getPreferredSize();
+        setPreferredSize(new Dimension(w, dim.height));
+        super.setFixedWidth(w);
+    }
+
+    @Override
+    public int getFixedHeight() {
+        return getPreferredSize().height;
+    }
+
+    @Override
+    public void setFixedHeight(int h) {
+        Dimension dim = getPreferredSize();
+        setPreferredSize(new Dimension(dim.width, h));
+        super.setFixedHeight(h);
+    }
+
     @Override
     public void paintComponent(Graphics g) {
         if (_textComponent instanceof JTextField && _popupUtil!=null) {
-            int justification = _popupUtil.getJustification();
+            int justification = getJustification();
             switch (justification) {
-                case PositionablePopupUtil.LEFT:
+                case PositionableJComponent.LEFT:
                     ((JTextField) _textComponent).setHorizontalAlignment(JTextField.LEFT);
                     break;
-                case PositionablePopupUtil.RIGHT:
+                case PositionableJComponent.RIGHT:
                     ((JTextField) _textComponent).setHorizontalAlignment(JTextField.RIGHT);
                     break;
                 default:

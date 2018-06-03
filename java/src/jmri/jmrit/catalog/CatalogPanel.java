@@ -52,7 +52,6 @@ import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.PositionablePopupUtil;
 import jmri.jmrit.display.palette.IconItemPanel;
 import jmri.util.FileUtil;
 import jmri.util.swing.DrawSquares;
@@ -1054,8 +1053,8 @@ public class CatalogPanel extends JPanel {
                     scale = image.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
                 }
                 image.setIcon(icon);
-                PositionablePopupUtil util = image.getPopupUtility();
-                util.setJustification(PositionablePopupUtil.CENTRE);
+
+                image.setJustification(jmri.jmrit.display.PositionableJComponent.CENTRE);
                 image.addMouseListener(new IconListener());
                 add(image, BorderLayout.NORTH);
                 

@@ -1,7 +1,6 @@
 package jmri.jmrit.display.panelEditor;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -48,7 +47,7 @@ import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionablePopupUtil;
+import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.ToolTip;
 import jmri.util.JmriJFrame;
 import org.jdom2.Element;
@@ -632,12 +631,11 @@ public class PanelEditor extends Editor implements ItemListener {
      * only to specific Positionable types.
      */
     @Override
-    protected void showPopUp(Positionable p, MouseEvent event) {
-        if (!((JComponent) p).isVisible()) {
+    protected void showPopUp(PositionableJComponent p, MouseEvent event) {
+        if (p.isVisible()) {
             return;     // component must be showing on the screen to determine its location
         }
         JPopupMenu popup = new JPopupMenu();
-        PositionablePopupUtil util = p.getPopupUtility();
         if (p.isEditable()) {
             // items for all Positionables
             if (p.doViemMenu()) {
@@ -667,20 +665,18 @@ public class PanelEditor extends Editor implements ItemListener {
                 popupSet = false;
             }
             popupSet = p.setTextEditMenu(popup);
-            if (util != null) {
-                util.setFixedTextMenu(popup);
-                util.setTextMarginMenu(popup);
-                util.setTextBorderMenu(popup);
-                util.setTextFontMenu(popup);
-                util.setBackgroundMenu(popup);
-                util.setTextJustificationMenu(popup);
-                util.setTextOrientationMenu(popup);
-                util.copyItem(popup);
-                popup.addSeparator();
-                util.propertyUtil(popup);
-                util.setAdditionalEditPopUpMenu(popup);
-                popupSet = true;
-            }
+            p.setFixedTextMenu(popup);
+            p.setTextMarginMenu(popup);
+            p.setTextBorderMenu(popup);
+            p.setTextFontMenu(popup);
+            p.setBackgroundMenu(popup);
+            p.setTextJustificationMenu(popup);
+            p.setTextOrientationMenu(popup);
+            p.copyItem(popup);
+            popup.addSeparator();
+            p.propertyUtil(popup);
+            p.setAdditionalEditPopUpMenu(popup);
+            popupSet = true;
             if (popupSet) {
                 popup.addSeparator();
                 popupSet = false;
@@ -693,11 +689,9 @@ public class PanelEditor extends Editor implements ItemListener {
             setRemoveMenu(p, popup);
         } else {
             p.showPopUp(popup);
-            if (util != null) {
-                util.setAdditionalViewPopUpMenu(popup);
-            }
+            p.setAdditionalViewPopUpMenu(popup);
         }
-        popup.show((Component) p, p.getWidth() / 2, p.getHeight() / 2);
+        popup.show(p, p.getWidth() / 2, p.getHeight() / 2);
     }
 
     /**
@@ -736,7 +730,7 @@ public class PanelEditor extends Editor implements ItemListener {
                         //Will show the copy option only
                         showMultiSelectPopUp(event, _currentSelection);
                     } else {
-                        showPopUp(_currentSelection, event);
+                        showPopUp((PositionableJComponent)_currentSelection, event);
                     }
                 }
             } else if (!event.isControlDown()) {
@@ -822,7 +816,7 @@ public class PanelEditor extends Editor implements ItemListener {
                 showMultiSelectPopUp(event, _currentSelection);
 
             } else {
-                showPopUp(_currentSelection, event);
+                showPopUp((PositionableJComponent)_currentSelection, event);
             }
         } else {
             if (_currentSelection != null && !_dragging && !event.isControlDown()) {
@@ -962,7 +956,7 @@ public class PanelEditor extends Editor implements ItemListener {
             if (_selectionGroup != null) {
                 showMultiSelectPopUp(event, _currentSelection);
             } else {
-                showPopUp(_currentSelection, event);
+                showPopUp((PositionableJComponent)_currentSelection, event);
             }
             // _selectionGroup = null; // Show popup only works for a single item
 

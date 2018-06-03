@@ -45,7 +45,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         resetDefaultIcon();
         _namedIcon = defaultIcon;
         //By default all memory is left justified
-        _popupUtil.setJustification(LEFT);
+        setJustification(PositionableJComponent.LEFT);
         this.setTransferHandler(new TransferHandler());
     }
 
@@ -53,7 +53,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         super(s, editor);
         setDisplayLevel(Editor.LABELS);
         defaultIcon = s;
-        _popupUtil.setJustification(LEFT);
+        setJustification(PositionableJComponent.LEFT);
         log.debug("MemoryIcon ctor= " + MemoryIcon.class.getName());
         this.setTransferHandler(new TransferHandler());
     }
@@ -308,6 +308,15 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         return true;
     }
 
+    @Override
+    public String getText() {
+        Object key = getMemory().getValue();
+        if (key instanceof String) {
+            return (String)key;
+        } else {
+            return "     ";
+        }
+    }
     /**
      * Drive the current state of the display from the state of the Memory.
      */
@@ -334,10 +343,10 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
      * @since 4.11.6
      * @param util The LE popup util object.
      * @param that The current positional object (this).
-     */
+     *
     public void setAttributes(PositionablePopupUtil util, Positionable that) {
         _editor.setAttributes(util, that);
-    }
+    }*/
 
     protected void displayState(Object key) {
         log.debug("displayState({})", key);
@@ -364,7 +373,6 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
                         log.debug("  getWidth()= " + getWidth() + ", getHeight()= " + getHeight());
                         log.debug("  getBackground(): {}", getBackground());
                         log.debug("  _editor.getTargetPanel().getBackground(): {}", _editor.getTargetPanel().getBackground());
-                        log.debug("  setAttributes to getPopupUtility({}) with", getPopupUtility());
                         log.debug("     getBackgroundColor() {}", getBackgroundColor());
                         log.debug("    on editor {}", _editor);
                     }
@@ -410,18 +418,20 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
     }
 
     private void doLocation() {
-        if (_popupUtil.getFixedWidth() == 0) {
+        if (getFixedWidth() == 0) {
             //setSize(getWidth(), getHeight());
-            switch (_popupUtil.getJustification()) {
-                case PositionablePopupUtil.LEFT:
+            switch (getJustification()) {
+                case PositionableJComponent.LEFT:
                     super.setLocation(getOriginalX(), getOriginalY());
                     break;
-                case PositionablePopupUtil.RIGHT:
+                case PositionableJComponent.RIGHT:
                     super.setLocation(getOriginalX() - getWidth(), getOriginalY());
                     break;
-                case PositionablePopupUtil.CENTRE:
+                case PositionableJComponent.CENTRE:
                     super.setLocation(getOriginalX() - (getWidth() / 2), getOriginalY());
                     break;
+                default:
+                    super.setLocation(getOriginalX(), getOriginalY());       
             }
         }        
     }
@@ -455,11 +465,6 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
 
     protected jmri.jmrit.roster.RosterEntry re = null;
 
-    /*As the size of a memory label can change we want to adjust the position of the x,y
-     if the width is fixed*/
-    static final int LEFT = 0x00;
-    static final int RIGHT = 0x02;
-    static final int CENTRE = 0x04;
 
     /*Stores the original location of the memory, this is then used to calculate
      the position of the text dependent upon the justification*/
@@ -482,7 +487,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
 
     @Override
     public void setLocation(int x, int y) {
-        if (_popupUtil.getFixedWidth() == 0) {
+        if (getFixedWidth() == 0) {
             setOriginalLocation(x, y);
         } else {
             super.setLocation(x, y);

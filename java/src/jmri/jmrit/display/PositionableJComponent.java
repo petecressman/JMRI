@@ -3,17 +3,29 @@ package jmri.jmrit.display;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JColorChooser;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.border.Border;
+import jmri.util.MenuScroller;
 import jmri.util.SystemType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +73,15 @@ public class PositionableJComponent extends JComponent implements Positionable {
     private int _borderSize = 0;
     private Color _borderColor = null;
     private Color _backgroundColor = null;
+    
+    private int _fixedWidth = 0;
+    private int _fixedHeight = 0;
+    private int _justification = CENTRE; //Default is always Centre
+    static public final int LEFT = 0x00;
+    static public final int RIGHT = 0x02;
+    static public final int CENTRE = 0x04;
 
+    protected PositionablePropertiesUtil _propertiesUtil;
 
     private AffineTransform _transformCA = new AffineTransform();   // Scaled, Rotated & translated for coord alias
 
@@ -70,7 +90,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         _scale = 1.0;
         _flip = NOFLIP;
         setOpaque(false);
-        setPopupUtility(new PositionablePopupUtil(this));
+        _propertiesUtil = new PositionablePropertiesUtil(this);
     }
 
     @Override
@@ -92,22 +112,19 @@ public class PositionableJComponent extends JComponent implements Positionable {
         pos.setToolTip(_tooltip);
         pos.setEditable(_editable);
 
-        if (getPopupUtility() == null) {
-            pos.setPopupUtility(null);
-        } else {
-            pos.setPopupUtility(getPopupUtility().clone());
-        }
         pos.setOpaque(isOpaque());
         pos.setBorderSize(_borderSize);
         pos.setBorderColor(_borderColor);
         pos.setMarginSize(_marginSize);
         pos.setBackgroundColor(_backgroundColor);
+        pos.setBackground(getBackground());
         pos.setForeground(getForeground());
 
         pos.updateSize();
         return pos;
     }
 
+    @Override
     public void displayState() {
     }
 
@@ -288,6 +305,76 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return _backgroundColor;
     }
 
+    /*    public void setBackground(Color c) {
+    java.awt.Component[] comps = getComponents();
+    for (int i = 0; i < comps.length; i++) {
+        comps[i].setBackground(c);
+    }
+    super.setBackground(c);
+}*/
+
+    /*
+     ****************** Fixed width & height *************** 
+     */
+    @Override
+    public void setFixedSize(int w, int h) {
+        _fixedWidth = w;
+        _fixedHeight = h;
+    }
+
+    @Override
+    public int getFixedWidth() {
+        return _fixedWidth;
+    }
+
+    @Override
+    public void setFixedWidth(int w) {
+        _fixedWidth = w;
+        if (log.isDebugEnabled()) {
+            log.debug("setFixedWidth()=" + getFixedWidth());
+        }
+        updateSize();
+    }
+
+    @Override
+    public int getFixedHeight() {
+        return _fixedHeight;
+    }
+
+    @Override
+    public void setFixedHeight(int h) {
+        _fixedHeight = h;
+        if (log.isDebugEnabled()) {
+            log.debug("setFixedHeight()=" + getFixedHeight());
+        }
+        updateSize();
+    }
+
+    @Override
+    public void setFontStyle(int styleValue) {
+        setFont(getFont().deriveFont(styleValue));
+        updateSize();
+    }
+
+    @Override
+    public void setFontSize(float newSize) {
+        setFont(getFont().deriveFont(newSize));
+        updateSize();
+    }
+
+    @Override
+    public void setJustification(int just) {
+        log.debug("setJustification: justification={}", just);
+        _justification = just;
+        updateSize();
+    }
+
+    @Override
+    public int getJustification() {
+        log.debug("getJustification: justification ={}", _justification);
+        return _justification;
+    }
+
     @Override
     public String getNameString() {
         return getName();
@@ -337,14 +424,348 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return true;
     }
 
+    //////////////////////////////// Popup Menu methods //////////////////////////////////////
     @Override
     public boolean doViemMenu() {
         return true;
     }
 
-    /**
-     * For over-riding in the using classes: add item specific menu choices
-     */
+    public void setBackgroundMenu(JPopupMenu popup) {
+        JMenuItem edit = new JMenuItem(Bundle.getMessage("FontBackgroundColor"));
+        edit.addActionListener((ActionEvent event) -> {
+            Color desiredColor = JColorChooser.showDialog(this,
+                                 Bundle.getMessage("FontBackgroundColor"),
+                                 this.getBackgroundColor());
+            if (desiredColor!=null ) {
+                this.setBackgroundColor(desiredColor);
+           }
+        });
+ 
+        popup.add(edit);
+
+    }
+
+    public void setTextMarginMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditMargin"));
+        edit.add("Margin= " + getMarginSize());
+        edit.add(CoordinateEdit.getMarginEditAction(this));
+        popup.add(edit);
+    }
+
+    public void setTextBorderMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditBorder"));
+        int _borderSize = this.getBorderSize();
+        JMenuItem jmi = edit.add("Border Size = " + _borderSize);
+        jmi.setEnabled(false);
+        edit.add(CoordinateEdit.getBorderEditAction(this));
+        JMenuItem colorMenu = new JMenuItem(Bundle.getMessage("BorderColorMenu"));
+        colorMenu.addActionListener((ActionEvent event) -> {
+            Color desiredColor = JColorChooser.showDialog(this,
+                                 Bundle.getMessage("BorderColorMenu"),
+                                 this.getBorderColor());
+            if (desiredColor!=null ) {
+                this.setBorderColor(desiredColor);
+           }
+        });
+        edit.add(colorMenu);
+        popup.add(edit);
+    }
+
+    public void setTextFontMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditFont"));
+        edit.add(makeFontMenu());
+        edit.add(makeFontSizeMenu());
+        edit.add(makeFontStyleMenu());
+        JMenuItem colorMenu = new JMenuItem(Bundle.getMessage("FontColor"));
+        colorMenu.addActionListener((ActionEvent event) -> {
+            Color desiredColor = JColorChooser.showDialog(this,
+                                 Bundle.getMessage("FontColor"),
+                                 this.getForeground());
+            if (desiredColor!=null ) {
+                this.setForeground(desiredColor);
+           }
+        });
+        edit.add(colorMenu);
+        popup.add(edit);
+    }
+
+    protected JMenu makeFontMenu() {
+        JMenu fontMenu = new JMenu("Font"); // create font menu
+        //fontMenu.setMnemonic('n'); // set mnemonic to n
+
+        // get the current font family name
+        String defaultFontFamilyName = this.getFont().getFamily();
+
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        String fontFamilyNames[] = ge.getAvailableFontFamilyNames();
+
+        // create radiobutton menu items for font names
+        ButtonGroup fontButtonGroup = new ButtonGroup(); // manages font names
+
+        // create Font radio button menu items
+        for (String fontFamilyName : fontFamilyNames) {
+            // create its menu item
+            JCheckBoxMenuItem fontMenuItem = new JCheckBoxMenuItem(fontFamilyName);
+            Font menuFont = fontMenuItem.getFont();
+            menuFont = new Font(fontFamilyName, menuFont.getStyle(), menuFont.getSize());
+            fontMenuItem.setFont(menuFont);
+
+            // set its action listener
+            fontMenuItem.addActionListener((ActionEvent e) -> {
+                Font oldFont = getFont();
+                Font newFont = new Font(fontFamilyName, oldFont.getStyle(), oldFont.getSize());
+                if (!oldFont.equals(newFont)) {
+                    setFont(newFont);
+                }
+            });
+
+            // add to button group
+            fontButtonGroup.add(fontMenuItem);
+            // set (de)selected
+            fontMenuItem.setSelected(defaultFontFamilyName.equals(fontFamilyName));
+            // add to font menu
+            fontMenu.add(fontMenuItem);
+        }
+
+        MenuScroller.setScrollerFor(fontMenu, 36);
+        return fontMenu;
+    }
+
+    protected JMenu makeFontSizeMenu() {
+        JMenu sizeMenu = new JMenu("Font Size");
+        ButtonGroup buttonGrp = new ButtonGroup();
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 6);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 8);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 10);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 11);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 12);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 14);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 16);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 18);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 20);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 24);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 28);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 32);
+        addFontSizeMenuEntry(sizeMenu, buttonGrp, 36);
+        return sizeMenu;
+    }
+
+    void addFontSizeMenuEntry(JMenu menu, ButtonGroup fontButtonGroup, final int size) {
+        JRadioButtonMenuItem r = new JRadioButtonMenuItem("" + size);
+        r.addActionListener((ActionEvent e) -> {
+            setFontSize(size);
+        });
+        fontButtonGroup.add(r);
+        r.setSelected(getFont().getSize() == size);
+        menu.add(r);
+    }
+    JMenuItem italic = null;
+    JMenuItem bold = null;
+
+    protected JMenu makeFontStyleMenu() {
+        JMenu styleMenu = new JMenu(Bundle.getMessage("FontStyle"));
+        styleMenu.add(italic = newStyleMenuItem(new AbstractAction(Bundle.getMessage("Italic")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (log.isDebugEnabled()) { // Avoid action lookup unless needed
+                    log.debug("When style item selected {} italic state is {}", getValue(NAME), italic.isSelected());
+                }
+                if (italic.isSelected()) {
+                    setFontStyle(Font.ITALIC, 0);
+                } else {
+                    setFontStyle(0, Font.ITALIC);
+                }
+            }
+        }, Font.ITALIC));
+
+        styleMenu.add(bold = newStyleMenuItem(new AbstractAction(Bundle.getMessage("Bold")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (log.isDebugEnabled()) { // Avoid action lookup unless needed
+                    log.debug("When style item selected {} bold state is {}",
+                            getValue(NAME), bold.isSelected());
+                }
+                if (bold.isSelected()) {
+                    setFontStyle(Font.BOLD, 0);
+                } else {
+                    setFontStyle(0, Font.BOLD);
+                }
+            }
+        }, Font.BOLD));
+        return styleMenu;
+    }
+
+    protected JMenuItem newStyleMenuItem(AbstractAction a, int mask) {
+        // next two lines needed because JCheckBoxMenuItem(AbstractAction) not in 1.1.8
+        JCheckBoxMenuItem c = new JCheckBoxMenuItem((String) a.getValue(AbstractAction.NAME));
+        c.addActionListener(a);
+        if (log.isDebugEnabled()) { // Avoid action lookup unless needed
+            log.debug("When creating style item {} mask was {} state was {}",
+                     a.getValue(AbstractAction.NAME), mask, getFont().getStyle());
+        }
+        if ((mask & getFont().getStyle()) == mask) {
+            c.setSelected(true);
+        }
+        return c;
+    }
+
+    public void setFontStyle(int addStyle, int dropStyle) {
+        int styleValue = (getFont().getStyle() & ~dropStyle) | addStyle;
+        log.debug("setFontStyle: addStyle={}, dropStyle={}, net styleValue is {}", addStyle, dropStyle, styleValue);
+        if (bold != null) {
+            bold.setSelected((styleValue & Font.BOLD) != 0);
+        }
+        if (italic != null) {
+            italic.setSelected((styleValue & Font.ITALIC) != 0);
+        }
+        setFont(getFont().deriveFont(styleValue));
+    }
+
+    public void setFixedTextMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("EditFixed"));
+        int fixedWidth = this.getFixedWidth();
+        if (fixedWidth == 0) {
+            edit.add("Width= Auto");
+        } else {
+            edit.add("Width= " + fixedWidth);
+        }
+
+        int fixedHeight = this.getFixedHeight();
+        if (fixedHeight == 0) {
+            edit.add("Height= Auto");
+        } else {
+            edit.add("Height= " + fixedHeight);
+        }
+
+        edit.add(CoordinateEdit.getFixedSizeEditAction(this));
+        popup.add(edit);
+    }
+    
+    public void propertyUtil(JPopupMenu popup) {
+        JMenuItem edit = new JMenuItem(Bundle.getMessage("MenuItemProperties") + "...");
+        edit.addActionListener((ActionEvent e) -> {
+            _propertiesUtil.display();
+        });
+        popup.add(edit);
+    }
+
+    public void setTextJustificationMenu(JPopupMenu popup) {
+        JMenu justMenu = new JMenu(Bundle.getMessage("Justification"));
+        justMenu.add(addJustificationMenuEntry(PositionableJComponent.LEFT));
+        justMenu.add(addJustificationMenuEntry(PositionableJComponent.RIGHT));
+        justMenu.add(addJustificationMenuEntry(PositionableJComponent.CENTRE));
+        popup.add(justMenu);
+    }
+/*
+    public void setJustification(String just) {
+        log.debug("setJustification: justification ={}", just);
+        switch (just) {
+            case "right":
+                setJustification(PositionableJComponent.RIGHT);
+                break;
+            case "center":
+            case "centre":
+                // allow US or UK spellings
+                setJustification(PositionableJComponent.CENTRE);
+                break;
+            default:
+                setJustification(PositionableJComponent.LEFT);
+                break;
+        }
+    }*/
+
+    private JRadioButtonMenuItem addJustificationMenuEntry(final int just) {
+        ButtonGroup justButtonGroup = new ButtonGroup();
+        JRadioButtonMenuItem r;
+        switch (just) {
+            case PositionableJComponent.RIGHT:
+                r = new JRadioButtonMenuItem(Bundle.getMessage("right"));
+                break;
+            case PositionableJComponent.CENTRE:
+                r = new JRadioButtonMenuItem(Bundle.getMessage("center"));
+                break;
+            case PositionableJComponent.LEFT:
+            default:
+                r = new JRadioButtonMenuItem(Bundle.getMessage("left"));
+        }
+        r.addActionListener((ActionEvent e) -> {
+            setJustification(just);
+        } //final int justification = just;
+        );
+        justButtonGroup.add(r);
+        
+        if (getJustification() == just) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+       return r;
+    }
+
+    ////////////////////// Orientation /////////////////////////
+    
+    public final static int HORIZONTAL = 0x00;
+    public final static int VERTICAL_UP = 270;
+    public final static int VERTICAL_DOWN = 90;
+
+    public void setTextOrientationMenu(JPopupMenu popup) {
+        JMenu oriMenu = new JMenu(Bundle.getMessage("Orientation"));
+        addOrientationMenuEntry(oriMenu, HORIZONTAL);
+        addOrientationMenuEntry(oriMenu, VERTICAL_UP);
+        addOrientationMenuEntry(oriMenu, VERTICAL_DOWN);
+        popup.add(oriMenu);
+    }
+
+    void addOrientationMenuEntry(JMenu menu, final int ori) {
+        ButtonGroup justButtonGroup = new ButtonGroup();
+        JRadioButtonMenuItem r;
+        switch (ori) {
+            default:
+            case HORIZONTAL:
+                r = new JRadioButtonMenuItem("Horizontal");
+                break;
+            case VERTICAL_UP:
+                r = new JRadioButtonMenuItem("Vertical Up");
+                break;
+            case VERTICAL_DOWN:
+                r = new JRadioButtonMenuItem("Vertical Down");
+                break;
+        }
+        r.addActionListener((ActionEvent e) -> {
+            setOrientation(ori);
+        });
+        justButtonGroup.add(r);
+        if (getDegrees() == ori) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        menu.add(r);
+    }
+
+    public void setOrientation(int ori) {
+        switch (ori) {
+            default:
+            case HORIZONTAL:
+                setDegrees(0);
+                break;
+            case VERTICAL_UP:
+                setDegrees(-90);
+                break;
+            case VERTICAL_DOWN:
+                setDegrees(90);
+                break;
+        }
+    }
+
+    public void copyItem(JPopupMenu popup) {
+        JMenuItem edit = new JMenuItem("Copy");
+        edit.addActionListener((ActionEvent e) -> {
+            getEditor().copyItem(this);
+        });
+        popup.add(edit);
+    }
+
     @Override
     public boolean setRotateOrthogonalMenu(JPopupMenu popup) {
         return false;
@@ -385,14 +806,63 @@ public class PositionableJComponent extends JComponent implements Positionable {
         return false;
     }
 
-    @Override
-    public void setPopupUtility(PositionablePopupUtil tu) {
-        _popupUtil = tu;
+    /**
+     * For over-riding in the using classes: add item specific menu choices
+     */
+    ArrayList<JMenuItem> editAdditionalMenu = new ArrayList<>(0);
+    ArrayList<JMenuItem> viewAdditionalMenu = new ArrayList<>(0);
+
+    /**
+     * Add a menu item to be displayed when the popup menu is called for when in
+     * edit mode.
+     *
+     * @param menu the item to add
+     */
+    public void addEditPopUpMenu(JMenuItem menu) {
+        if (!editAdditionalMenu.contains(menu)) {
+            editAdditionalMenu.add(menu);
+        }
     }
 
-    @Override
-    public PositionablePopupUtil getPopupUtility() {
-        return _popupUtil;
+    /**
+     * Add a menu item to be displayed when the popup menu is called for when in
+     * view mode.
+     *
+     * @param menu menu item or submenu to add
+     */
+    public void addViewPopUpMenu(JMenuItem menu) {
+        if (!viewAdditionalMenu.contains(menu)) {
+            viewAdditionalMenu.add(menu);
+        }
+    }
+
+    /**
+     * Add the menu items to the edit popup menu
+     *
+     * @param popup the menu to add items to
+     */
+    public void setAdditionalEditPopUpMenu(JPopupMenu popup) {
+        if (editAdditionalMenu.isEmpty()) {
+            return;
+        }
+        popup.addSeparator();
+        editAdditionalMenu.forEach((mi) -> {
+            popup.add(mi);
+        });
+    }
+
+    /**
+     * Add the menu items to the view popup menu.
+     *
+     * @param popup the menu to add items to
+     */
+    public void setAdditionalViewPopUpMenu(JPopupMenu popup) {
+        if (viewAdditionalMenu.isEmpty()) {
+            return;
+        }
+        viewAdditionalMenu.forEach((mi) -> {
+            popup.add(mi);
+        });
     }
 
     /*
@@ -575,14 +1045,6 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
     }
     
-/*    public void setBackground(Color c) {
-        java.awt.Component[] comps = getComponents();
-        for (int i = 0; i < comps.length; i++) {
-            comps[i].setBackground(c);
-        }
-        super.setBackground(c);
-    }*/
-
     @Override
     public void setBorder() {
         Color color = getBackgroundColor();
@@ -626,12 +1088,13 @@ public class PositionableJComponent extends JComponent implements Positionable {
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
 
-        if (_popupUtil!=null) {
-            java.awt.Color backgroundColor = getBackgroundColor();
-            if (backgroundColor!=null) {
-                g2d.setColor(backgroundColor);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-            }
+        java.awt.Color backgroundColor = getBackgroundColor();
+        if (backgroundColor!=null) {
+            setOpaque(true);
+            g2d.setColor(backgroundColor);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+        } else {
+            setOpaque(false);
         }
         super.paintBorder(g2d);
         super.paint(g2d);

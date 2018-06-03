@@ -27,7 +27,6 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
                 "resources/icons/smallschematics/lights/cross-off.png"), editor);
         _control = true;
         displayState(lightState());
-        setPopupUtility(null);
     }
 
     // the associated Light object
@@ -123,24 +122,6 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
         unknown = i;
         displayState(lightState());
     }
-/*
-    @Override
-    public int maxHeight() {
-        return Math.max(
-                Math.max((off != null) ? off.getIconHeight() : 0,
-                        (on != null) ? on.getIconHeight() : 0),
-                (inconsistent != null) ? inconsistent.getIconHeight() : 0
-        );
-    }
-
-    @Override
-    public int maxWidth() {
-        return Math.max(
-                Math.max((off != null) ? off.getIconWidth() : 0,
-                        (on != null) ? on.getIconWidth() : 0),
-                (inconsistent != null) ? inconsistent.getIconWidth() : 0
-        );
-    }*/
 
     /**
      * Get current state of attached light
@@ -184,37 +165,6 @@ public class LightIcon extends PositionableLabel implements java.beans.PropertyC
         return name;
     }
 
-    //
-    // ****** popup AbstractAction.actionPerformed method overrides ********
-    /*
-    @Override
-    protected void rotateOrthogonal() {
-        off.setRotation(on.getRotation() + 1, this);
-        on.setRotation(off.getRotation() + 1, this);
-        unknown.setRotation(unknown.getRotation() + 1, this);
-        inconsistent.setRotation(inconsistent.getRotation() + 1, this);
-        displayState(lightState());
-        //bug fix, must repaint icons that have same width and height
-        repaint();
-    }
-
-    @Override
-    public void setScale(double s) {
-        off.scale(s, this);
-        on.scale(s, this);
-        unknown.scale(s, this);
-        inconsistent.scale(s, this);
-        displayState(lightState());
-    }
-
-    @Override
-    public void rotate(int deg) {
-        off.rotate(deg, this);
-        on.rotate(deg, this);
-        unknown.rotate(deg, this);
-        inconsistent.rotate(deg, this);
-        displayState(lightState());
-    }*/
 
     @Override
     protected void edit() {

@@ -25,7 +25,6 @@ import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.LinkingLabel;
 import jmri.jmrit.display.Positionable;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.PositionablePopupUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,9 +112,6 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
     
     public void updateAttributes(PositionableLabel l) {
         _decorator.setAttributes(l);
-        PositionablePopupUtil util = _decorator.getPositionablePopupUtil();
-        l.setPopupUtility(util.clone());
-        l.setFont(util.getFont().deriveFont(util.getFontStyle()));
     }
 
     /**

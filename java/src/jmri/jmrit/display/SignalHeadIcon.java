@@ -2,13 +2,14 @@ package jmri.jmrit.display;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import jmri.InstanceManager;
@@ -29,14 +30,34 @@ import org.slf4j.LoggerFactory;
  * @see jmri.SignalHeadManager
  * @see jmri.InstanceManager
  * @author Bob Jacobsen Copyright (C) 2001, 2002
+ * @author Pete Cressman Copyright (C) 2018
  */
 public class SignalHeadIcon extends PositionableIcon implements java.beans.PropertyChangeListener {
 
-    String[] _validKey;
+    private NamedBeanHandle<SignalHead> namedHead;
+    /*
+     * All implementations of SignalHead use localized names for aspects.
+     * Instead of the English aspects names previously used in panel files,,
+     * this class and its xml utility use name keys as listed in jmri.NamedBeanBundle.properties
+     */
+    private final HashMap<String, String> _nameMap = new HashMap<>();
+
+    private String[] _validKey; // localized names from SignalHead implementations
 
     public SignalHeadIcon(Editor editor) {
         super(editor);
-        _control = true;
+        setIsIcon(true);
+        // map localized names from SignalHead implementation to names in jmri.NamedBeanBundle.properties
+        _nameMap.put(Bundle.getMessage("SignalHeadStateRed"), "SignalHeadStateRed");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateYellow"), "SignalHeadStateYellow");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateGreen"), "SignalHeadStateGreen");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateLunar"), "SignalHeadStateLunar");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateHeld"), "SignalHeadStateHeld");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateDark"), "SignalHeadStateDark");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateFlashingRed"), "SignalHeadStateFlashingRed");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateFlashingYellow"), "SignalHeadStateFlashingYellow");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateFlashingGreen"), "SignalHeadStateFlashingGreen");
+        _nameMap.put(Bundle.getMessage("SignalHeadStateFlashingLunar"), "SignalHeadStateFlashingLunar");
     }
 
     @Override
@@ -46,21 +67,38 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
     }
 
     protected Positionable finishClone(SignalHeadIcon pos) {
-        pos.setSignalHead(getNamedSignalHead().getName());
-        Iterator<String> e = _iconMap.keySet().iterator();
-        while (e.hasNext()) {
-            String key = e.next();
-            pos.setIcon(key, _iconMap.get(key));
-        }
+        NamedBeanHandle<SignalHead> head = getNamedSignalHead();
+        if (head != null) {
+            pos.setSignalHead(head.getName());
+            pos._validKey = Arrays.copyOf(_validKey, _validKey.length);
+       }
         pos.setClickMode(getClickMode());
         pos.setLitMode(getLitMode());
         return super.finishClone(pos);
     }
 
-//    private SignalHead mHead;
-    private NamedBeanHandle<SignalHead> namedHead;
-
-    HashMap<String, NamedIcon> _saveMap;
+    @Override
+    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        _validKey = getSignalHead().getValidStateNames();
+        HashMap<String, PositionableLabel> oldMap = getIconMap();
+        HashMap<String, PositionableLabel> map = new HashMap<>();
+        for (String key : _validKey) {
+            String state = _nameMap.get(key);
+            PositionableLabel pos = new PositionableLabel(key, getEditor());
+            if (oldMap != null) {
+                pos.setIcon(oldMap.get(state).getIcon());
+                pos.setIsIcon(true);
+            }
+            map.put(state, pos);
+        }
+        if (!isIconMapOK()) {
+            JOptionPane.showMessageDialog(_editor.getTargetFrame(),
+                    java.text.MessageFormat.format(Bundle.getMessage("SignalHeadLoadError"),
+                            new Object[]{getSignalHead().getDisplayName()}),
+                    Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
+        }
+        return map;
+    }
 
     /**
      * Attached a signalhead element to this display item
@@ -73,9 +111,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         }
         namedHead = sh;
         if (namedHead != null) {
-            _iconMap = new HashMap<>();
-            _validKey = getSignalHead().getValidStateNames();
-            displayState(headState());
+            setIconMap(makeDefaultMap());
             getSignalHead().addPropertyChangeListener(this, namedHead.getName(), "SignalHead Icon");
         }
     }
@@ -116,7 +152,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      * bean are localized
      */
     private boolean isValidState(String key) {
-        if (key == null) {
+        if (key == null || _validKey == null) {
             return false;
         }
         if (key.equals(Bundle.getMessage("SignalHeadStateDark"))
@@ -126,33 +162,34 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             }
             return true;
         }
-        for (int i = 0; i < _validKey.length; i++) {
-            if (key.equals(_validKey[i])) {
-                if (log.isDebugEnabled()) {
-                    log.debug(key + " is a valid state. ");
-                }
-                return true;
-            }
+       for (String state : _validKey) {
+           if (state.equals(key)) {
+               if (log.isDebugEnabled()) {
+                   log.debug(key + " is a valid state. ");
+               }
+               return true;
+           }
         }
-        if (log.isDebugEnabled()) {
-            log.debug(key + " is NOT a valid state. ");
-        }
+        log.info("aspect {} for head {} is NOT a valid aspect.", key, getNameString());
+        
         return false;
     }
 
     /**
-     * Place icon by its localized bean state name.
+     * Place icon by its SignalHead aspect name key found in 
+     * the properties file jmri.NamedBeanBundle.properties
      *
-     * @param state the localized state
-     * @param icon  the icon to place
+     * @param name SignalHead aspect name
+     * @param icon the icon to display the ascpect
      */
-    public void setIcon(String state, NamedIcon icon) {
+    @Override
+    public void setStateIcon(String state, NamedIcon icon) {
         if (log.isDebugEnabled()) {
             log.debug("setIcon for " + state);
         }
-        if (isValidState(state)) {
-            _iconMap.put(state, icon);
-            displayState(headState());
+        if (isValidState(Bundle.getMessage(state))) {
+            super.setStateIcon(state, icon);
+//            displayState(headState());
         }
     }
 
@@ -161,11 +198,11 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      *
      * @return An appearance variable from a SignalHead, e.g. SignalHead.RED
      */
-    public int headState() {
+    public String headState() {
         if (getSignalHead() == null) {
-            return 0;
+            return Bundle.getMessage("SignalHeadStateDark");
         } else {
-            return getSignalHead().getAppearance();
+            return getSignalHead().getAppearanceName();
         }
     }
 
@@ -303,32 +340,17 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
                     f.setVisible(true);
                 }
             });
+            
+            super.showPopUp(popup);
             return true;
         }
         return false;
     }
 
-    /**
-     * ************* popup AbstractAction.actionPerformed method overrides
-     * ***********
-     */
-/*    @Override
-    protected void rotateOrthogonal() {
-        super.rotateOrthogonal();
+    @Override
+    public void displayState() {
         displayState(headState());
     }
-
-    @Override
-    public void setScale(double s) {
-        super.setScale(s);
-        displayState(headState());
-    }
-
-    @Override
-    public void rotate(int deg) {
-        super.rotate(deg);
-        displayState(headState());
-    }*/
 
     /**
      * Drive the current state of the display from the state of the underlying
@@ -341,45 +363,27 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      * <LI>Show the icon corresponding to one of the seven appearances.
      * </UL>
      */
-    @Override
-    public void displayState(int state) {
+    public void displayState(String state) {
         updateSize();
         if (getSignalHead() == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Display state " + state + ", disconnected");
             }
-        } else {
-            if (log.isDebugEnabled()) {
+        } else if (isIcon()) {
+            if (log.isDebugEnabled())
                 log.debug("Display state " + state + " for " + getNameString());
-            }
-            if (getSignalHead().getHeld()) {
-                if (isText()) {
-                    super.setText(Bundle.getMessage("Held"));
+            NamedIcon icon = getIcon(state);
+            if (icon != null) {
+                super.setIcon(icon);
+                if (!isText()) {
+                    setOpaque(false);
                 }
-                if (isIcon()) {
-                    super.setIcon(_iconMap.get(Bundle.getMessage("SignalHeadStateHeld")));
-                }
-                return;
-            } else if (getLitMode() && !getSignalHead().getLit()) {
-                if (isText()) {
-                    super.setText(Bundle.getMessage("Dark"));
-                }
-                if (isIcon()) {
-                    super.setIcon(_iconMap.get(Bundle.getMessage("SignalHeadStateDark")));
-                }
-                return;
             }
         }
         if (isText()) {
-            super.setText(getSignalHead().getAppearanceName(state));
+            setText(getText(state));
         }
-        if (isIcon()) {
-            NamedIcon icon = _iconMap.get(getSignalHead().getAppearanceName(state));
-            if (icon != null) {
-                super.setIcon(icon);
-            }
-        }
-        return;
+        updateSize();
     }
 
     SignalHeadItemPanel _itemPanel;
@@ -408,25 +412,44 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             }
         };
         // _iconMap keys with local names - Let SignalHeadItemPanel figure this out
-        // duplicate _iconMap map with unscaled and unrotated icons
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<Entry<String, NamedIcon>> it = _iconMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            NamedIcon oldIcon = entry.getValue();
+        Iterator<String> iter = getIconStateNames();
+        while (iter.hasNext()) {
+            String  state = iter.next();
+            NamedIcon oldIcon = getIcon(state);
             NamedIcon newIcon = new NamedIcon(oldIcon);
-            map.put(entry.getKey(), newIcon);
+            map.put(state, newIcon);
         }
         _itemPanel.init(updateAction, map);
         _itemPanel.setSelection(getSignalHead());
         initPaletteFrame(_paletteFrame, _itemPanel);
     }
 
+    protected void updateItem() {
+        if (!_itemPanel.oktoUpdate()) {
+            return;
+        }
+        setSignalHead(_itemPanel.getTableSelection().getSystemName());
+        setFamily(_itemPanel.getFamilyName());
+        HashMap<String, NamedIcon> iconMap = _itemPanel.getIconMap();
+        if (iconMap != null) {
+            Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Entry<String, NamedIcon> entry = it.next();
+                if (log.isDebugEnabled()) {
+                    log.debug("key= " + entry.getKey());
+                }
+                NamedIcon newIcon = new NamedIcon(entry.getValue());
+                setStateIcon(_nameMap.get(entry.getKey()), newIcon);
+            }
+        }   // otherwise retain current map
+        finishItemUpdate(_paletteFrame, _itemPanel);
+    }
+/*
     void updateItem() {
         if (!_itemPanel.oktoUpdate()) {
             return;
         }
-        _saveMap = _iconMap;  // setSignalHead() clears _iconMap.  we need a copy for setIcons()
         setSignalHead(_itemPanel.getTableSelection().getSystemName());
         setFamily(_itemPanel.getFamilyName());
         HashMap<String, NamedIcon> map1 = _itemPanel.getIconMap();
@@ -483,7 +506,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
     /**
      * replace the icons in _iconMap with those from map, but preserve the scale
      * and rotation.
-     */
+     *
     private void setIcons(Hashtable<String, NamedIcon> map) {
         HashMap<String, NamedIcon> tempMap = new HashMap<>();
         Iterator<Entry<String, NamedIcon>> it = map.entrySet().iterator();
@@ -631,7 +654,6 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             getSignalHead().removePropertyChangeListener(this);
         }
         namedHead = null;
-        _iconMap = null;
         super.dispose();
     }
 

@@ -1,18 +1,13 @@
 package jmri.jmrit.display;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JColorChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 import jmri.InstanceManager;
@@ -28,23 +23,16 @@ import org.slf4j.LoggerFactory;
  * An icon to display a status of a Sensor.
  *
  * @author Bob Jacobsen Copyright (C) 2001
- * @author Pete Cressman Copyright (C) 2010, 2011
+ * @author Pete Cressman Copyright (C) 2010, 2011, 2018
  */
 public class SensorIcon extends PositionableIcon implements java.beans.PropertyChangeListener {
 
-    static final public int UNKOWN_FONT_COLOR = 0x03;
-    static final public int UNKOWN_BACKGROUND_COLOR = 0x04;
-    static final public int ACTIVE_FONT_COLOR = 0x05;
-    static final public int ACTIVE_BACKGROUND_COLOR = 0x06;
-    static final public int INACTIVE_FONT_COLOR = 0x07;
-    static final public int INACTIVE_BACKGROUND_COLOR = 0x08;
-    static final public int INCONSISTENT_FONT_COLOR = 0x0A;
-    static final public int INCONSISTENT_BACKGROUND_COLOR = 0x0B;
+    // the associated Sensor object
+    private NamedBeanHandle<Sensor> namedSensor;
+    boolean _momentary = false;
 
-    protected HashMap<String, Integer> _name2stateMap;       // name to state
-    protected HashMap<Integer, String> _state2nameMap;       // state to name
-
-    String _overlayText;
+    //  Map state integer to state name found in jmri.NamedBeanBundle.properties to display
+    private HashMap<Integer, String> _state2nameMap;
 
     public SensorIcon(Editor editor) {
         super(editor);
@@ -59,7 +47,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         super(s, editor);
     }
 
-
     @Override
     public Positionable deepClone() {
         SensorIcon pos = new SensorIcon(_editor);
@@ -67,27 +54,14 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     }
 
     protected Positionable finishClone(SensorIcon pos) {
-        pos.setSensor(getNamedSensor().getName());
-        pos.makeIconMap();
+        NamedBeanHandle<Sensor> sensor = getNamedSensor();
+        if (sensor != null) {
+            pos.setSensor(sensor.getName());            
+        }
+        pos.makeStateNameMap();
         pos.setMomentary(getMomentary());
-        pos._overlayText = _overlayText;
-        pos.activeText = activeText;
-        pos.inactiveText = inactiveText;
-        pos.inconsistentText = inconsistentText;
-        pos.unknownText = unknownText;
-        pos.textColorInconsistent = textColorInconsistent;
-        pos.textColorUnknown = textColorUnknown;
-        pos.textColorInActive = textColorInActive;
-        pos.textColorActive = textColorActive;
-        pos.backgroundColorInActive = backgroundColorInActive;
-        pos.backgroundColorActive = backgroundColorActive;
-        pos.backgroundColorUnknown = backgroundColorUnknown;
-        pos.backgroundColorInconsistent = backgroundColorInconsistent;
         return super.finishClone(pos);
     }
-
-    // the associated Sensor object
-    private NamedBeanHandle<Sensor> namedSensor;
 
     /**
      * Attached a named sensor to this display item
@@ -119,72 +93,9 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
 
         namedSensor = s;
         if (namedSensor != null) {
-            if (_iconMap == null) {
-                makeIconMap();
-            }
             getSensor().addPropertyChangeListener(this, s.getName(), "SensorIcon on Panel " + _editor.getName());
             setName(namedSensor.getName());  // Swing name for e.g. tests
         }
-        setAttributes();
-    }
-
-    private void setAttributes() {
-        if (isText()) {
-            if (namedSensor != null) {
-                if (getSensor().getUserName() != null) {
-                    String userName = getSensor().getUserName();
-                    if (activeText == null) {
-                        activeText = userName;
-                        //textColorActive=Color.red;
-                    }
-                    if (inactiveText == null) {
-                        inactiveText = userName;
-                        //textColorInActive=Color.yellow;
-                    }
-                    if (inconsistentText == null) {
-                        inconsistentText = userName;
-                        //textColorUnknown=Color.black;
-                    }
-                    if (unknownText == null) {
-                        unknownText = userName;
-                        //textColorInconsistent=Color.blue;
-                    }
-                }
-            }
-            if (activeText == null) {
-                activeText = "<" + Bundle.getMessage("SensorStateActive").toLowerCase() + ">"; // initiate state label string
-                // created from Bundle as lower case, enclosed in < >
-            }
-            if (inactiveText == null) {
-                inactiveText = "<" + Bundle.getMessage("SensorStateInactive").toLowerCase() + ">";
-            }
-            if (inconsistentText == null) {
-                inconsistentText = "<" + Bundle.getMessage("BeanStateInconsistent").toLowerCase() + ">";
-            }
-            if (unknownText == null) {
-                unknownText = "<" + Bundle.getMessage("BeanStateUnknown").toLowerCase() + ">";
-            }
-            if (textColorActive == null) {
-                textColorActive = Color.red;
-            }
-            if (textColorInActive == null) {
-                textColorInActive = Color.yellow;
-            }
-            if (textColorUnknown == null) {
-                textColorUnknown = Color.blue;
-            }
-            if (textColorInconsistent == null) {
-                textColorInconsistent = Color.black;
-            }
-        } else {
-            setOpaque(false);
-        }
-        displayState(sensorState());
-        if (log.isDebugEnabled()) { // Avoid String building unless needed
-            log.debug("setSensor: namedSensor= {} isIcon= {}, isText= {}, activeText= {}",
-                    ((namedSensor == null) ? "null" : getNameString()), isIcon(), isText(), activeText);
-        }
-        repaint();
     }
 
     public Sensor getSensor() {
@@ -203,13 +114,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         return namedSensor;
     }
 
-    void makeIconMap() {
-        _iconMap = new HashMap<>();
-        _name2stateMap = new HashMap<>();
-        _name2stateMap.put("BeanStateUnknown", Sensor.UNKNOWN);
-        _name2stateMap.put("BeanStateInconsistent", Sensor.INCONSISTENT);
-        _name2stateMap.put("SensorStateActive", Sensor.ACTIVE);
-        _name2stateMap.put("SensorStateInactive", Sensor.INACTIVE);
+    private void makeStateNameMap() {
         _state2nameMap = new HashMap<>();
         _state2nameMap.put(Sensor.UNKNOWN, "BeanStateUnknown");
         _state2nameMap.put(Sensor.INCONSISTENT, "BeanStateInconsistent");
@@ -217,22 +122,38 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         _state2nameMap.put(Sensor.INACTIVE, "SensorStateInactive");
     }
 
+    @Override
+    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        makeStateNameMap();
+        HashMap<String, PositionableLabel> oldMap = getIconMap();
+        HashMap<String, PositionableLabel> map = new HashMap<>();
+        Iterator <String> iter = _state2nameMap.values().iterator();
+        while (iter.hasNext()) {
+            String state = iter.next();
+            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
+            if (oldMap != null) {
+                pos.setIcon(oldMap.get(state).getIcon());
+                pos.setIsIcon(true);
+            }
+            map.put(state, pos);
+        }
+        return map;
+    }
+
     /**
-     * Place icon by its bean state name key found in the properties file
-     * jmri.NamedBeanBundle.properties by its localized bean state name.
+     * Place icon by its bean state name key found in 
+     * the properties file jmri.NamedBeanBundle.properties
      *
-     * @param name the icon state name
-     * @param icon the icon to place
+     * @param name sensor state name
+     * @param icon the icon to display the state
      */
-    public void setIcon(String name, NamedIcon icon) {
+    @Override
+    public void setStateIcon(String name, NamedIcon icon) {
         if (log.isDebugEnabled()) {
             log.debug("setIcon for name \"" + name + "\"");
         }
-        if (_iconMap == null) {
-            makeIconMap();
-        }
-        _iconMap.put(name, icon);
-        displayState(sensorState());
+        super.setStateIcon(name, icon);
+//        displayState(sensorState());
     }
 
     /**
@@ -240,36 +161,23 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      *
      * @param state the state to get the icon for
      * @return the icon or null if state not found
-     */
-    @Override
-    public NamedIcon getIcon(String state) {
-        return _iconMap.get(state);
-    }
-
+     *
     public NamedIcon getIcon(int state) {
-        return _iconMap.get(_state2nameMap.get(state));
-    }
-
-    @Override
-    public String getFamily() {
-        return _iconFamily;
-    }
-
-    @Override
-    public void setFamily(String family) {
-        _iconFamily = family;
-    }
+        return getIcon(_state2nameMap.get(state));
+    }*/
 
     /**
      * Get current state of attached sensor
+     * state name key found in
+     * jmri.NamedBeanBundle.properties
      *
-     * @return A state variable from a Sensor, e.g. Sensor.ACTIVE
+     * @return A state variable name from a Sensor
      */
-    int sensorState() {
+    protected String sensorState() {
         if (namedSensor != null) {
-            return getSensor().getKnownState();
+            return  _state2nameMap.get(getSensor().getKnownState());
         } else {
-            return Sensor.UNKNOWN;
+            return _state2nameMap.get(Sensor.UNKNOWN);
         }
     }
 
@@ -279,7 +187,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         log.debug("property change: {}", e);
         if (e.getPropertyName().equals("KnownState")) {
             int now = ((Integer) e.getNewValue());
-            displayState(now);
+            displayState(_state2nameMap.get((now)));
             _editor.repaint();
         }
     }
@@ -308,70 +216,22 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     @Override
     public boolean showPopUp(JPopupMenu popup) {
         if (isEditable()) {
-            if (isIcon()) {
-                popup.add(new AbstractAction(Bundle.getMessage("ChangeToText")) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        changeLayoutSensorType();
-                    }
-                });
-            } else {
-                popup.add(new AbstractAction(Bundle.getMessage("ChangeToIcon")) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        changeLayoutSensorType();
-                    }
-                });
-            }
+            super.showPopUp(popup);
 
             popup.add(momentaryItem);
             momentaryItem.setSelected(getMomentary());
             momentaryItem.addActionListener((java.awt.event.ActionEvent e) -> {
                 setMomentary(momentaryItem.isSelected());
             });
-        } else if (getPopupUtility() != null) {
-            getPopupUtility().setAdditionalViewPopUpMenu(popup);
-        }
-        return true;
-    }
-
-    //////// popup AbstractAction.actionPerformed method overrides ////////
-    @Override
-    public boolean setTextEditMenu(JPopupMenu popup) {
-        log.debug("setTextEditMenu isIcon={}, isText={}", isIcon(), isText());
-        if (isIcon()) {
-            popup.add(CoordinateEdit.getTextEditAction(this, "OverlayText"));
         } else {
-            popup.add(new AbstractAction(Bundle.getMessage("SetSensorText")) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    String name = getNameString();
-                    sensorTextEdit(name);
-                }
-            });
-            if (isText() && !isIcon()) {
-                JMenu stateColor = new JMenu(Bundle.getMessage("StateColors"));
-                stateColor.add(stateMenu(Bundle.getMessage("BeanStateUnknown"), UNKOWN_FONT_COLOR)); //Unknown
-                stateColor.add(stateMenu(Bundle.getMessage("SensorStateActive"), ACTIVE_FONT_COLOR)); //Active
-                stateColor.add(stateMenu(Bundle.getMessage("SensorStateInactive"), INACTIVE_FONT_COLOR)); //Inactive
-                stateColor.add(stateMenu(Bundle.getMessage("BeanStateInconsistent"), INCONSISTENT_FONT_COLOR)); //Inconsistent
-                popup.add(stateColor);
-            }
+            setAdditionalViewPopUpMenu(popup);
         }
         return true;
     }
 
-    public void sensorTextEdit(String name) {
-        log.debug("make text edit menu");
-
-        SensorTextEdit f = new SensorTextEdit();
-        f.addHelpMenu("package.jmri.jmrit.display.SensorTextEdit", true);
-        try {
-            f.initComponents(this, name);
-        } catch (Exception ex) {
-            log.error("Exception: " + ex.toString());
-        }
-        f.setVisible(true);
+    @Override
+    public void displayState() {
+        displayState(sensorState());
     }
 
     /**
@@ -379,40 +239,29 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      *
      * @param state the sensor state
      */
-    @Override
-    public void displayState(int state) {
+    public void displayState(String state) {
         if (getNamedSensor() == null) {
             log.debug("Display state " + state + ", disconnected");
-        } else if (isIcon()) {
+//            super.setText(getText(_state2nameMap.get(Sensor.UNKNOWN)));
+//            super.setIcon(getIcon(_state2nameMap.get(Sensor.UNKNOWN)));
+            state = _state2nameMap.get(Sensor.UNKNOWN);
+//            return;
+       }
+        setDisplayState(state);
+        /*
+       if (isIcon()) {
             NamedIcon icon = getIcon(state);
             if (icon != null) {
                 super.setIcon(icon);
-            }
-        } else if (isText()) {
-            switch (state) {
-                case Sensor.UNKNOWN:
-                    setText(unknownText);
-                    getPopupUtility().setBackgroundColor(backgroundColorUnknown);
-                    setForeground(textColorUnknown);
-                    break;
-                case Sensor.ACTIVE:
-                    setText(activeText);
-                    getPopupUtility().setBackgroundColor(backgroundColorActive);
-                    setForeground(textColorActive);
-                    break;
-                case Sensor.INACTIVE:
-                    setText(inactiveText);
-                    getPopupUtility().setBackgroundColor(backgroundColorInActive);
-                    setForeground(textColorInActive);
-                    break;
-                default:
-                    setText(inconsistentText);
-                    getPopupUtility().setBackgroundColor(backgroundColorInconsistent);
-                    setForeground(textColorInconsistent);
-                    break;
+                if (!isText()) {
+                    setOpaque(false);
+                }
             }
         }
-        setOpaque(false);
+        if (isText()) {
+            String text = getText(state);
+            setText(text);
+        }*/
         updateSize();
     }
 
@@ -432,32 +281,31 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
 
     protected void editItem() {
         _paletteFrame = makePaletteFrame(java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameSensor")));
-        _itemPanel = new TableItemPanel(_paletteFrame, "Sensor", _iconFamily,
+        _itemPanel = new TableItemPanel(_paletteFrame, "Sensor", getFamily(),
                 PickListModel.sensorPickModelInstance(), _editor); // NOI18N
         ActionListener updateAction = (ActionEvent a) -> {
             updateItem();
         };
-        // duplicate _iconMap map with unscaled and unrotated icons
+        // duplicate _iconMap map
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<Entry<String, NamedIcon>> it = _iconMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            NamedIcon oldIcon = entry.getValue();
+        Iterator<String> iter = getIconStateNames();
+        while (iter.hasNext()) {
+            String  state = iter.next();
+            NamedIcon oldIcon = getIcon(state);
             NamedIcon newIcon = new NamedIcon(oldIcon);
-            map.put(entry.getKey(), newIcon);
+            map.put(state, newIcon);
         }
         _itemPanel.init(updateAction, map);
         _itemPanel.setSelection(getSensor());
         initPaletteFrame(_paletteFrame, _itemPanel);
     }
 
-    void updateItem() {
+    protected void updateItem() {
         if (!_itemPanel.oktoUpdate()) {
             return;
         }
-        HashMap<String, NamedIcon> oldMap = cloneMap(_iconMap, this);
         setSensor(_itemPanel.getTableSelection().getSystemName());
-        _iconFamily = _itemPanel.getFamilyName();
+        setFamily(_itemPanel.getFamilyName());
         HashMap<String, NamedIcon> iconMap = _itemPanel.getIconMap();
         if (iconMap != null) {
             Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
@@ -466,13 +314,13 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
                 if (log.isDebugEnabled()) {
                     log.debug("key= " + entry.getKey());
                 }
-                NamedIcon newIcon = entry.getValue();
-                setIcon(entry.getKey(), newIcon);
+                NamedIcon newIcon = new NamedIcon(entry.getValue());
+                setStateIcon(entry.getKey(), newIcon);
             }
         }   // otherwise retain current map
         finishItemUpdate(_paletteFrame, _itemPanel);
     }
-
+/*
     @Override
     public boolean setEditIconMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameSensor"));
@@ -493,7 +341,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         int i = 0;
         while (e.hasNext()) {
             String key = e.next();
-            _iconEditor.setIcon(i++, /*_state2nameMap.get(key)*/ key, _iconMap.get(key));
+            _iconEditor.setIcon(i++, /*_state2nameMap.get(key) key, _iconMap.get(key));
         }
         _iconEditor.makeIconPanel(false);
 
@@ -517,13 +365,13 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
                 log.debug("key= " + entry.getKey());
             }
             NamedIcon newIcon = entry.getValue();
-            setIcon(entry.getKey(), newIcon);
+            setStateIcon(entry.getKey(), newIcon);
         }
         _iconEditorFrame.dispose();
         _iconEditorFrame = null;
         _iconEditor = null;
         invalidate();
-    }
+    }*/
 
 /*    // Original text is used when changing between icon and text, this allows for a undo when reverting back.
     String originalText;
@@ -548,24 +396,12 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         updateSize();
     }*/
 
-    public void setOverlayText(String s) {
-        _overlayText = s;
-        setIsText(s !=null && s.length()>0);
-        displayState(sensorState());
-    }
-
-    public String getOverlayText() {
-        return _overlayText;
-    }
-
-    boolean momentary = false;
-
     public boolean getMomentary() {
-        return momentary;
+        return _momentary;
     }
 
     public void setMomentary(boolean m) {
-        momentary = m;
+        _momentary = m;
     }
 
     public boolean buttonLive() {
@@ -628,258 +464,8 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             getSensor().removePropertyChangeListener(this);
         }
         namedSensor = null;
-        _iconMap = null;
-        _name2stateMap = null;
         _state2nameMap = null;
-
         super.dispose();
-    }
-
-    // The code below here is from the layoutsensoricon.
-
-    Color textColorActive = Color.red;
-
-    public void setTextActive(Color color) {
-        textColorActive = color;
-        displayState(sensorState());
-    }
-
-    public Color getTextActive() {
-        return textColorActive;
-    }
-
-    Color textColorInActive = Color.yellow;
-
-    public void setTextInActive(Color color) {
-        textColorInActive = color;
-        displayState(sensorState());
-    }
-
-    public Color getTextInActive() {
-        return textColorInActive;
-    }
-
-    Color textColorUnknown = Color.blue;
-
-    public void setTextUnknown(Color color) {
-        textColorUnknown = color;
-        displayState(sensorState());
-    }
-
-    public Color getTextUnknown() {
-        return textColorUnknown;
-    }
-
-    Color textColorInconsistent = Color.black;
-
-    public void setTextInconsistent(Color color) {
-        textColorInconsistent = color;
-        displayState(sensorState());
-    }
-
-    public Color getTextInconsistent() {
-        return textColorInconsistent;
-    }
-
-    Color backgroundColorActive = null;
-
-    public void setBackgroundActive(Color color) {
-        backgroundColorActive = color;
-        displayState(sensorState());
-    }
-
-    public Color getBackgroundActive() {
-        return backgroundColorActive;
-    }
-
-    Color backgroundColorInActive = null;
-
-    public void setBackgroundInActive(Color color) {
-        backgroundColorInActive = color;
-        displayState(sensorState());
-    }
-
-    public Color getBackgroundInActive() {
-        return backgroundColorInActive;
-    }
-
-    Color backgroundColorUnknown = null;
-
-    public void setBackgroundUnknown(Color color) {
-        backgroundColorUnknown = color;
-        displayState(sensorState());
-    }
-
-    public Color getBackgroundUnknown() {
-        return backgroundColorUnknown;
-    }
-
-    Color backgroundColorInconsistent = null;
-
-    public void setBackgroundInconsistent(Color color) {
-        backgroundColorInconsistent = color;
-        displayState(sensorState());
-    }
-
-    public Color getBackgroundInconsistent() {
-        return backgroundColorInconsistent;
-    }
-
-    String activeText;
-
-    String inactiveText;
-
-    String inconsistentText;
-
-    String unknownText;
-
-    public String getActiveText() {
-        return activeText;
-    }
-
-    public void setActiveText(String i) {
-        activeText = i;
-        displayState(sensorState());
-    }
-
-    public String getInactiveText() {
-        return inactiveText;
-    }
-
-    public void setInactiveText(String i) {
-        inactiveText = i;
-        displayState(sensorState());
-    }
-
-    public String getInconsistentText() {
-        return inconsistentText;
-    }
-
-    public void setInconsistentText(String i) {
-        inconsistentText = i;
-        displayState(sensorState());
-    }
-
-    public String getUnknownText() {
-        return unknownText;
-    }
-
-    public void setUnknownText(String i) {
-        unknownText = i;
-        displayState(sensorState());
-    }
-
-    JMenu stateMenu(final String name, int state) {
-        JMenu menu = new JMenu(name);
-        JMenuItem colorMenu = new JMenuItem(Bundle.getMessage("FontColor"));
-        colorMenu.addActionListener((ActionEvent event) -> {
-            Color desiredColor = JColorChooser.showDialog(this,
-                                 Bundle.getMessage("FontColor"),
-                                 getColor(state));
-            if (desiredColor!=null ) {
-                 setColor(desiredColor,state);
-            }
-        });
-        menu.add(colorMenu);
-        colorMenu = new JMenuItem(Bundle.getMessage("FontBackgroundColor"));
-        colorMenu.addActionListener((ActionEvent event) -> {
-            Color desiredColor = JColorChooser.showDialog(this,
-                                 Bundle.getMessage("FontBackgroundColor"),
-                                 getColor(state+1));
-            if (desiredColor!=null ) {
-                 setColor(desiredColor,state+1);
-            }
-        });
-        menu.add(colorMenu);
-        return menu;
-    }
-
-    private void setColor(Color desiredColor, int state){
-        SensorPopupUtil util = (SensorPopupUtil) getPopupUtility();        
-        switch (state) {
-           case PositionablePopupUtil.FONT_COLOR:
-              util.setForeground(desiredColor);
-              break;
-           case PositionablePopupUtil.BACKGROUND_COLOR:
-              util.setBackgroundColor(desiredColor);
-              break;
-           case PositionablePopupUtil.BORDER_COLOR:
-              util.setBorderColor(desiredColor);
-              break;
-           case UNKOWN_FONT_COLOR:
-              setTextUnknown(desiredColor);
-              break;
-           case UNKOWN_BACKGROUND_COLOR:
-//              util.setHasBackground(desiredColor != null);
-              setBackgroundUnknown(desiredColor);
-              break;
-           case ACTIVE_FONT_COLOR:
-              setTextActive(desiredColor);
-              break;
-           case ACTIVE_BACKGROUND_COLOR:
-//              util.setHasBackground(desiredColor != null);
-              setBackgroundActive(desiredColor);
-              break;
-           case INACTIVE_FONT_COLOR:
-              setTextInActive(desiredColor);
-              break;
-           case INACTIVE_BACKGROUND_COLOR:
-//              util.setHasBackground(desiredColor != null);
-              setBackgroundInActive(desiredColor);
-              break;
-           case INCONSISTENT_FONT_COLOR:
-              setTextInconsistent(desiredColor);
-              break;
-           case INCONSISTENT_BACKGROUND_COLOR:
-//              util.setHasBackground(desiredColor != null);
-              setBackgroundInconsistent(desiredColor);
-              break;
-           default:
-              break;
-       }
-    }
-
-    private Color getColor(int state){
-        SensorPopupUtil util = (SensorPopupUtil) getPopupUtility();        
-        switch (state) {
-           case PositionablePopupUtil.FONT_COLOR:
-              return util.getForeground();
-           case PositionablePopupUtil.BACKGROUND_COLOR:
-              return util.getBackgroundColor();
-           case PositionablePopupUtil.BORDER_COLOR:
-              return util.getBorderColor();
-           case UNKOWN_FONT_COLOR:
-              return getTextUnknown();
-           case UNKOWN_BACKGROUND_COLOR:
-              return getBackgroundUnknown();
-           case ACTIVE_FONT_COLOR:
-              return getTextActive();
-           case ACTIVE_BACKGROUND_COLOR:
-              return getBackgroundActive();
-           case INACTIVE_FONT_COLOR:
-              return getTextInActive();
-           case INACTIVE_BACKGROUND_COLOR:
-              return getBackgroundInActive();
-           case INCONSISTENT_FONT_COLOR:
-              return getTextInconsistent();
-           case INCONSISTENT_BACKGROUND_COLOR:
-              return getBackgroundInconsistent();
-           default:
-              return null;
-       }
-    }
-
-    void changeLayoutSensorType() {
-        if (isIcon()) {
-            setIsIcon(false);
-            setIsText(true);
-            setIcon(null);
-        } else if (isText()) {
-            setIsIcon(true);
-            setIsText(false);
-            setText(null);
-        }
-        setAttributes();
     }
 
     int flashStateOn = -1;
@@ -912,10 +498,10 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             taskPerformer = (ActionEvent evt) -> {
                 if (flashon) {
                     flashon = false;
-                    displayState(flashStateOn);
+                    displayState(_state2nameMap.get(flashStateOn));
                 } else {
                     flashon = true;
-                    displayState(flashStateOff);
+                    displayState(_state2nameMap.get(flashStateOff));
                 }
             };
         }
@@ -928,212 +514,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             flashTimer.stop();
         }
         displayState(sensorState());
-    }
-
-    class SensorPopupUtil extends PositionablePopupUtil {
-
-        SensorPopupUtil(Positionable parent, javax.swing.JComponent textComp) {
-            super(parent, textComp);
-        }
-
-        @Override
-        public PositionablePopupUtil clone() {
-            SensorPopupUtil util = new SensorPopupUtil(_parent, _textComponent);
-            return finishClone(util);
-        }
-        public PositionablePopupUtil finishClone(SensorPopupUtil util) {
-            return super.finishClone(util);
-        }
-        
-        @Override
-        public int getMarginSize() {
-            if (isIcon() && !isText()) { // preserve text attributes
-                return 0;
-            }
-            return super.getMarginSize();
-        }
-        
-        @Override
-        public Color getBackgroundColor() {
-            if (isIcon() && !isText()) { // preserve text attributes) {
-                return null;
-            }
-            return super.getBackgroundColor();
-        }
-        
-       @Override
-        public int getBorderSize() {
-            if (isIcon() && !isText()) { // preserve text attributes) {
-                return 0;
-            }
-            return super.getBorderSize();
-        }
-        
-       @Override
-       public Color getBorderColor() {
-           if (isIcon() && !isText()) { // preserve text attributes) {
-               return null;
-           }
-           return super.getBorderColor();
-       }
-       
-        @Override
-        public void setTextJustificationMenu(JPopupMenu popup) {
-            if (isText()) {
-                super.setTextJustificationMenu(popup);
-            }
-        }
-
-        @Override
-        public void setTextOrientationMenu(JPopupMenu popup) {
-            if (isText()) {
-                super.setTextOrientationMenu(popup);
-            }
-        }
-
-        @Override
-        public void setFixedTextMenu(JPopupMenu popup) {
-            if (isText()) {
-                super.setFixedTextMenu(popup);
-            }
-        }
-
-        @Override
-        public void setTextMarginMenu(JPopupMenu popup) {
-            if (isText()) {
-                super.setTextMarginMenu(popup);
-            }
-        }
-
-        @Override
-        public void setTextBorderMenu(JPopupMenu popup) {
-            if (isText()) {
-                super.setTextBorderMenu(popup);
-            }
-        }
-
-        @Override
-        public void setTextFontMenu(JPopupMenu popup) {
-            if (isText()) {
-                super.setTextFontMenu(popup);
-            }
-        }
-
-        @Override
-        public void setBackgroundMenu(JPopupMenu popup) {
-            if (isIcon()) {
-                super.setBackgroundMenu(popup);
-            }         
-        }
-
-/*
-        @Override
-        protected ButtonGroup makeColorMenu(JMenu colorMenu, int type) {
-            ButtonGroup buttonGrp = super.makeColorMenu( colorMenu,  type);
-            if (type == UNKOWN_BACKGROUND_COLOR || type == ACTIVE_BACKGROUND_COLOR 
-                    || type == INACTIVE_BACKGROUND_COLOR || type == INCONSISTENT_BACKGROUND_COLOR) {
-                addColorMenuEntry(colorMenu, buttonGrp, Bundle.getMessage("Clear"), null, type);
-            }
-            return buttonGrp;
-        }
-
-        @Override
-        protected void addColorMenuEntry(JMenu menu, ButtonGroup colorButtonGroup,
-                final String name, final Color color, final int colorType) {
-            ActionListener a = new ActionListener() {
-                //final String desiredName = name;
-                final Color desiredColor = color;
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    switch (colorType) {
-                        case FONT_COLOR:
-                            setForeground(desiredColor);
-                            break;
-                        case BACKGROUND_COLOR:
-                            setBackgroundColor(desiredColor);
-                            break;
-                        case BORDER_COLOR:
-                            setBorderColor(desiredColor);
-                            break;
-                        case UNKOWN_FONT_COLOR:
-                            setTextUnknown(desiredColor);
-                            break;
-                        case UNKOWN_BACKGROUND_COLOR:
-//                            _self.setHasBackground(color!=null);
-                            setBackgroundUnknown(desiredColor);
-                            break;
-                        case ACTIVE_FONT_COLOR:
-                            setTextActive(desiredColor);
-                            break;
-                        case ACTIVE_BACKGROUND_COLOR:
-//                            _self.setHasBackground(color!=null);
-                            setBackgroundActive(desiredColor);
-                            break;
-                        case INACTIVE_FONT_COLOR:
-                            setTextInActive(desiredColor);
-                            break;
-                        case INACTIVE_BACKGROUND_COLOR:
-//                            _self.setHasBackground(color!=null);
-                            setBackgroundInActive(desiredColor);
-                            break;
-                        case INCONSISTENT_FONT_COLOR:
-                            setTextInconsistent(desiredColor);
-                            break;
-                        case INCONSISTENT_BACKGROUND_COLOR:
-//                            _self.setHasBackground(color!=null);
-                            setBackgroundInconsistent(desiredColor);
-                            break;
-                        default:
-                            break;
-                    }
-                    _parent.getEditor().setAttributes(_self, _parent);
-               }
-            };
-            JRadioButtonMenuItem r = new JRadioButtonMenuItem(name);
-            r.addActionListener(a);
-
-            switch (colorType) {
-                case FONT_COLOR:
-                    setColorButton(getForeground(), color, r);
-                    break;
-                case BACKGROUND_COLOR:
-                    setColorButton(getBackgroundColor(), color, r);                       
-                    break;
-                case BORDER_COLOR:
-                    setColorButton(getBorderColor(), color, r);
-                    break;
-                case UNKOWN_FONT_COLOR:
-                    setColorButton(getTextUnknown(), color, r);
-                    break;
-                case UNKOWN_BACKGROUND_COLOR:
-                    setColorButton(getBackgroundUnknown(), color, r);
-                    break;
-                case ACTIVE_FONT_COLOR:
-                    setColorButton(getTextActive(), color, r);
-                    break;
-                case ACTIVE_BACKGROUND_COLOR:
-                    setColorButton(getBackgroundActive(), color, r);
-                    break;
-                case INACTIVE_FONT_COLOR:
-                    setColorButton(getTextInActive(), color, r);
-                    break;
-                case INACTIVE_BACKGROUND_COLOR:
-                    setColorButton(getBackgroundInActive(), color, r);
-                    break;
-                case INCONSISTENT_FONT_COLOR:
-                    setColorButton(getTextInconsistent(), color, r);
-                    break;
-                case INCONSISTENT_BACKGROUND_COLOR:
-                    setColorButton(getBackgroundInconsistent(), color, r);
-                    break;
-                default:
-                    break;
-            }
-            colorButtonGroup.add(r);
-            menu.add(r);
-        }
->>>>>>> branch 'pc-PaintByCoodAlias' of https://github.com/petecressman/JMRI.git*/
     }
 
     private final static Logger log = LoggerFactory.getLogger(SensorIcon.class);
