@@ -714,7 +714,10 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
      * @param type type
      * @return map of families
      */
-    static protected HashMap<String, HashMap<String, NamedIcon>> getFamilyMaps(String type) {
+    static public HashMap<String, HashMap<String, NamedIcon>> getFamilyMaps(String type) {
+        if (_iconMaps == null) {
+            loadIcons(null);
+        }
         return _iconMaps.get(type);
     }
 

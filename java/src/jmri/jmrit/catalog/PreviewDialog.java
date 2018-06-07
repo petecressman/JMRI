@@ -28,10 +28,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import jmri.InstanceManager;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.util.swing.DrawSquares;
 import jmri.util.swing.ImagePanel;
-import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.PositionablePopupUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -360,7 +359,6 @@ public class PreviewDialog extends JDialog {
                         image.setName(name);
                         double scale = image.reduceTo(CatalogPanel.ICON_WIDTH,
                                 CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
-                        PositionablePopupUtil util = image.getPopupUtility();
                         JPanel p = new JPanel();
                         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
                         p.add(image);
@@ -428,7 +426,7 @@ public class PreviewDialog extends JDialog {
 
     private long availableMemory() {
         long total = 0;
-        ArrayList<byte[]> memoryTest = new ArrayList<byte[]>();
+        ArrayList<byte[]> memoryTest = new ArrayList<>();
         try {
             while (true) {
                 memoryTest.add(new byte[CHUNK]);
@@ -445,10 +443,12 @@ public class PreviewDialog extends JDialog {
         return total;
     }
 
+    @Override
     public void paintComponents(Graphics g) {
         super.paintComponents(g);
     }
     
+    @Override
     public void dispose() {
         if (_preview != null) {
             resetPanel();

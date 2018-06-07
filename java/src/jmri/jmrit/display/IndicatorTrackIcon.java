@@ -47,6 +47,7 @@ public class IndicatorTrackIcon extends PositionableIcon
         super(editor);
         _pathUtil = new IndicatorTrackPaths();
         _status = "ClearTrack";
+        setDisplayState("ClearTrack");
     }
 
     @Override
@@ -66,19 +67,14 @@ public class IndicatorTrackIcon extends PositionableIcon
     @Override
     protected HashMap<String, PositionableLabel> makeDefaultMap() {
         HashMap<String, PositionableLabel> map = new HashMap<>();
-        Iterator<String> iter = getIconStateNames();
-        if (iter == null) {
-            return map;
-        }
         HashMap<String, PositionableLabel> oldMap = getIconMap();
-        while (iter.hasNext()) {
-            String state = iter.next();
-            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
+        for (String status : IndicatorTurnoutIcon.STATUSNAME) {
+            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(status), getEditor());
             if (oldMap != null) {
-                pos.setIcon(oldMap.get(state).getIcon());
+                pos.setIcon(oldMap.get(status).getIcon());
                 pos.setIsIcon(true);
             }
-            map.put(state, pos);
+            map.put(status, pos);
         }
         return map;
     }

@@ -45,12 +45,9 @@ public class MemoryComboIcon extends PositionableJPanel
             _model = new ComboModel();
         }
         _comboBox = new JComboBox<>(_model);
-        _comboBox.addActionListener(this);
-        setDisplayLevel(Editor.LABELS);
-
-//        setLayout(new java.awt.GridBagLayout());
         add(_comboBox);
         setTextComponent(_comboBox);
+        _comboBox.addActionListener(this);
 
         _comboBox.addMouseListener(this);
         for (int i = 0; i < _comboBox.getComponentCount(); i++) {
@@ -58,6 +55,7 @@ public class MemoryComboIcon extends PositionableJPanel
             component.addMouseListener(this);
             component.addMouseMotionListener(this);
         }
+        setDisplayLevel(Editor.LABELS);
     }
 
     @Override
@@ -65,6 +63,11 @@ public class MemoryComboIcon extends PositionableJPanel
         return _comboBox;
     }
 
+    @Override
+    protected String getText() {
+        return _comboBox.getSelectedItem().toString();
+    }
+    
     class ComboModel extends DefaultComboBoxModel<String> {
 
         ComboModel() {

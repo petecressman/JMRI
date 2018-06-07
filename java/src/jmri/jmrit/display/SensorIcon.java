@@ -133,7 +133,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
             if (oldMap != null) {
                 pos.setIcon(oldMap.get(state).getIcon());
-                pos.setIsIcon(true);
             }
             map.put(state, pos);
         }
@@ -241,28 +240,13 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      */
     public void displayState(String state) {
         if (getNamedSensor() == null) {
-            log.debug("Display state " + state + ", disconnected");
-//            super.setText(getText(_state2nameMap.get(Sensor.UNKNOWN)));
-//            super.setIcon(getIcon(_state2nameMap.get(Sensor.UNKNOWN)));
-            state = _state2nameMap.get(Sensor.UNKNOWN);
-//            return;
-       }
-        setDisplayState(state);
-        /*
-       if (isIcon()) {
-            NamedIcon icon = getIcon(state);
-            if (icon != null) {
-                super.setIcon(icon);
-                if (!isText()) {
-                    setOpaque(false);
-                }
-            }
+            setDisconnectedText();
+        } else {
+            restoreConnectionDisplay();
         }
-        if (isText()) {
-            String text = getText(state);
-            setText(text);
-        }*/
-        updateSize();
+        setDisplayState(state);
+        setIcon(getIcon(state));
+        setText(getText(state));
     }
 
     TableItemPanel _itemPanel;

@@ -12,12 +12,10 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -78,6 +76,11 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     public static final int FWIDTH = 3;
     public static final int FHEIGHT = 4;
 
+    static final int FOREGROUND_BUTTON = 1;
+    static final int BACKGROUND_BUTTON = 2;
+    static final int TRANSPARENT_BUTTON = 3;
+    static final int BORDERCOLOR_BUTTON = 4;
+/*
     public static final int TEXT_FONT = 10;
     public static final int ACTIVE_FONT = 11;
     public static final int INACTIVE_FONT = 12;
@@ -94,7 +97,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     public static final int UNKNOWN_TRANSPARENT_COLOR = 33;
     public static final int INCONSISTENT_TRANSPARENT_COLOR = 34;
     public static final int BORDER_COLOR = 40;
-
+*/
     AJSpinner _borderSpin;
     AJSpinner _marginSpin;
     AJSpinner _widthSpin;
@@ -104,7 +107,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     ImagePanel _previewPanel;
     JPanel _samplePanel;
     private HashMap<String, PositionableLabel> _sample = null;    // collection of preview items
-    private AJRadioButton _selectedButton;
+    private int _selectedButton;
+    private String _selectedState;
     ButtonGroup _buttonGroup = new ButtonGroup();
     AJRadioButton _fontButton;
     AJRadioButton _borderButton;
@@ -140,7 +144,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         _samplePanel.setOpaque(false);
     }
 
-    static class AJComboBox extends JComboBox/*<Class<?>> - can't get this to work*/ {
+    @SuppressWarnings("unchecked")
+    static class AJComboBox extends JComboBox  {
         int _which;
 
         AJComboBox(Font[] items, int which) {
@@ -240,6 +245,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             if (color!=null) {
                 sample.setBackground(color);
                 sample.setOpaque(true);
+            } else {
+                sample.setOpaque(true);                
             }
             _componentMap.put("Text", (PositionableLabel)pos.deepClone());
             doPopupUtility("Text", p, sample, !(pos instanceof jmri.jmrit.display.MemoryIcon));
@@ -278,7 +285,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         _previewPanel.setImage(_backgrounds[0]);
         _previewPanel.revalidate();        // force redraw
         updateSamples();
-        setButtonSelected(_fontButton);
+        _fontButton.setSelected(true);
     }
 
     private void doPopupUtility(String state, PositionableLabel pos, PositionableLabel sample, boolean editText) {
@@ -291,7 +298,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         sample.setFont(sample.getFont().deriveFont(pos.getFont().getStyle()));
         sample.setFontSize(pos.getFont().getSize());
         sample.setFontStyle(pos.getFont().getStyle());
-        sample.updateSize();
+//        sample.updateSize();
 
         _sample.put(state, sample);
         this.add(makeTextPanel(state, sample, editText));
@@ -299,9 +306,10 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         _samplePanel.add(Box.createHorizontalStrut(STRUT));
     }
 
+    @SuppressWarnings("unchecked")
     protected void makeFontPanels(Positionable comp) {
         JPanel fontPanel = new JPanel();
-        
+
         Font defaultFont = comp.getFont();
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         String fontFamilyNames[] = ge.getAvailableFontFamilyNames();
@@ -424,9 +432,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             @Override
             public void actionPerformed(ActionEvent a) {
                 if (button.isSelected()) {
-                    
-                    PositionableJComponent pos = _componentMap.get(button._state);
-                    pos.setForeground(_chooser.getColor());
+                    _selectedButton = FOREGROUND_BUTTON;
+                    _selectedState = button._state;
                 }
             }
 
@@ -441,8 +448,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             @Override
             public void actionPerformed(ActionEvent a) {
                 if (button.isSelected()) {
-                    PositionableJComponent pos = _componentMap.get(button._state);
-                    pos.setBackgroundColor(_chooser.getColor());
+                    _selectedButton = BACKGROUND_BUTTON;
+                    _selectedState = button._state;
                 }
             }
 
@@ -457,8 +464,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             @Override
             public void actionPerformed(ActionEvent a) {
                 if (button.isSelected()) {
-                    PositionableJComponent pos = _componentMap.get(button._state);
-                    pos.setOpaque(false);
+                    _selectedButton = TRANSPARENT_BUTTON;
+                    _selectedState = button._state;
                 }
             }
 
@@ -473,8 +480,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             @Override
             public void actionPerformed(ActionEvent a) {
                 if (button.isSelected()) {
-                    PositionableJComponent pos = _componentMap.get(button._state);
-                    pos.setBorderColor(_chooser.getColor());
+                    _selectedButton = BORDERCOLOR_BUTTON;
+                    _selectedState = button._state;
                 }
             }
 
@@ -500,6 +507,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             sam.setBorderSize(pos.getBorderSize());
             sam.setBorderColor(pos.getBorderColor());
             sam.setBackgroundColor(pos.getBackgroundColor());
+            sam.setForeground(pos.getForeground());
             sam.updateSize();
         }
     }
@@ -569,40 +577,118 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        PositionableLabel pos = _componentMap.get(_selectedState);
+        if (pos == null) {  // initial default selections call before setup is complete
+            return;
+        }
         Object obj = e.getSource();
         if (obj instanceof AJSpinner) {
             int num = ((Number) ((AJSpinner) obj).getValue()).intValue();
-            PositionableLabel pos = _componentMap.get("Text");
             switch (((AJSpinner) obj)._which) {
                 case BORDER:
                     pos.setBorderSize(num);
-                    setButtonSelected(_borderButton);
+                    _borderButton.setSelected(true);
                     break;
                 case MARGIN:
                     pos.setMarginSize(num);
-                    setButtonSelected(_backgroundButton);
+                    _backgroundButton.setSelected(true);
                     break;
                 case FWIDTH:
                     pos.setFixedWidth(num);
-                    setButtonSelected(_backgroundButton);
+                    _backgroundButton.setSelected(true);
                     break;
                 case FHEIGHT:
                     pos.setFixedHeight(num);
-                    setButtonSelected(_backgroundButton);
+                    _backgroundButton.setSelected(true);
                     break;
                 default:
                     log.warn("Unexpected _which {}  in stateChanged", ((AJSpinner) obj)._which);
                     break;
             }
         } else {
-            Enumeration<AbstractButton> en = _buttonGroup.getElements();
-            while (en.hasMoreElements()) {
-                AbstractButton b = en.nextElement();
-                if (b.isSelected() ) {
-                    b.setSelected(true);
-                }
+            switch (_selectedButton) {
+                case FOREGROUND_BUTTON:
+                    pos.setForeground(_chooser.getColor());
+                    break;
+                case BACKGROUND_BUTTON:
+                    pos.setBackgroundColor(_chooser.getColor());
+                    break;
+                case TRANSPARENT_BUTTON:
+                    pos.setOpaque(false);
+                    break;
+                case BORDERCOLOR_BUTTON:
+                    pos.setBorderColor(_chooser.getColor());
+                    break;
+                default:
+                    log.warn("Unexpected color change for state {}, button# {}", _selectedState, _selectedButton);
+                    break;
             }
         }
+        updateSamples();
+    }
+
+    @Override
+    public void itemStateChanged(ItemEvent e) {
+        AJComboBox comboBox = (AJComboBox)e.getSource();
+        PositionableLabel pos = _componentMap.get("Text");
+        if (pos == null) {  // initial default selections call before setup is complete
+            return;
+        }
+        switch (comboBox._which) {
+            case SIZE:
+                String size = (String) comboBox.getSelectedItem();
+                pos.setFontSize(Float.valueOf(size));
+                _fontButton.setSelected(true);
+                break;
+            case STYLE:
+                int style = 0;
+                switch (comboBox.getSelectedIndex()) {
+                    case 0:
+                        style = Font.PLAIN;
+                        break;
+                    case 1:
+                        style = Font.BOLD;
+                        break;
+                    case 2:
+                        style = Font.ITALIC;
+                        break;
+                    case 3:
+                        style = (Font.BOLD | Font.ITALIC);
+                        break;
+                    default:
+                        log.warn("Unexpected index {}  in itemStateChanged", comboBox.getSelectedIndex());
+                        break;
+                }
+                pos.setFontStyle(style);
+                _fontButton.setSelected(true);
+                break;
+            case JUST:
+                int just = 0;
+                switch (comboBox.getSelectedIndex()) {
+                    case 0:
+                        just = PositionableJComponent.LEFT;
+                        break;
+                    case 1:
+                        just = PositionableJComponent.CENTRE;
+                        break;
+                    case 2:
+                        just = PositionableJComponent.RIGHT;
+                        break;
+                    default:
+                        log.warn("Unexpected index {}  in itemStateChanged", comboBox.getSelectedIndex());
+                        break;
+                }
+                pos.setJustification(just);
+                break;
+            case FONT:
+                Font font = (Font) comboBox.getSelectedItem();
+                pos.setFont(font);
+                _fontButton.setSelected(true);
+                break;
+            default:
+                log.warn("Unexpected _which {}  in itemStateChanged", comboBox._which);
+                break;
+            }
         updateSamples();
     }
 
@@ -656,83 +742,16 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             pos.setBorderSize(p.getBorderSize());
             pos.setBorderColor(p.getBorderColor());
             if (p.isOpaque()) {
-                pos.setBackgroundColor(p.getBackground());                
+                pos.setBackgroundColor(p.getBackground());
+                pos.setOpaque(true);
             } else {
                 pos.setBackgroundColor(null);                
+                pos.setOpaque(false);
             }
             pos.setForeground(p.getForeground());
         }
     }
     
-
-    @Override
-    public void itemStateChanged(ItemEvent e) {
-        AJComboBox comboBox = (AJComboBox)e.getSource();
-        PositionableLabel pos = _componentMap.get("Text");
-        switch (comboBox._which) {
-            case SIZE:
-                String size = (String) comboBox.getSelectedItem();
-                pos.setFontSize(Float.valueOf(size));
-                setButtonSelected(_fontButton);
-                break;
-            case STYLE:
-                int style = 0;
-                switch (comboBox.getSelectedIndex()) {
-                    case 0:
-                        style = Font.PLAIN;
-                        break;
-                    case 1:
-                        style = Font.BOLD;
-                        break;
-                    case 2:
-                        style = Font.ITALIC;
-                        break;
-                    case 3:
-                        style = (Font.BOLD | Font.ITALIC);
-                        break;
-                    default:
-                        log.warn("Unexpected index {}  in itemStateChanged", comboBox.getSelectedIndex());
-                        break;
-                }
-                pos.setFontStyle(style);
-                setButtonSelected(_fontButton);
-                break;
-            case JUST:
-                int just = 0;
-                switch (comboBox.getSelectedIndex()) {
-                    case 0:
-                        just = PositionableJComponent.LEFT;
-                        break;
-                    case 1:
-                        just = PositionableJComponent.CENTRE;
-                        break;
-                    case 2:
-                        just = PositionableJComponent.RIGHT;
-                        break;
-                    default:
-                        log.warn("Unexpected index {}  in itemStateChanged", comboBox.getSelectedIndex());
-                        break;
-                }
-                pos.setJustification(just);
-                break;
-            case FONT:
-                Font font = (Font) comboBox.getSelectedItem();
-                pos.setFont(font);
-                setButtonSelected(_fontButton);
-                break;
-            default:
-                log.warn("Unexpected _which {}  in itemStateChanged", comboBox._which);
-                break;
-            }
-        updateSamples();
-    }
-
-    private void setButtonSelected(AJRadioButton button) {
-        if (button != null) {
-            _selectedButton = button;
-            button.setSelected(true);
-        }
-    }
 
     // initialize logging
     private final static org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DecoratorPanel.class);

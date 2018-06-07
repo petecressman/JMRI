@@ -36,8 +36,6 @@ public class SignalMastIconXml extends PositionableIconXml {
         element.setAttribute("signalmast", "" + p.getNamedSignalMast().getName());
         element.setAttribute("clickmode", "" + p.getClickMode());
         element.setAttribute("litmode", "" + p.getLitMode());
-        element.setAttribute("degrees", String.valueOf(p.getDegrees()));
-        element.setAttribute("scale", String.valueOf(p.getScale()));
         element.setAttribute("imageset", p.useIconSet());
         element.setAttribute("class", "jmri.jmrit.display.configurexml.SignalMastIconXml");
         return element;
@@ -55,7 +53,6 @@ public class SignalMastIconXml extends PositionableIconXml {
         Editor ed = (Editor) o;
         SignalMastIcon l = new SignalMastIcon(ed);
         if (!loadPositionableIcon(element, l)) {
-            return;
         }
         
         String name;

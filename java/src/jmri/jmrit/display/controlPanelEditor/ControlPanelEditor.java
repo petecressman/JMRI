@@ -1493,7 +1493,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         }
         _selectionGroup = selectionGroup;  // group is now disconnected
         _pastePending = true;
-        log.debug("Exit copyItem: _selectionGroup.size()={}", _selectionGroup.size());
+        if (log.isDebugEnabled())
+            log.debug("Exit copyItem: _selectionGroup.size()={}", _selectionGroup.size());
     }
 
     void pasteItems() {
@@ -1586,7 +1587,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
      */
     @Override
     protected void showPopUp(PositionableJComponent p, MouseEvent event) {
-        if (p.isVisible()) {
+        if (log.isDebugEnabled())
+            log.debug("showPopUp comp {}", p.getNameString());
+        if (!p.isVisible()) {
             return;
         }
         JPopupMenu popup = new JPopupMenu();

@@ -97,6 +97,10 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
         NamedIcon icon = new NamedIcon(ic, this);
         _iconMap.put(name, icon);
     }
+    
+    protected NamedIcon getIcon(String status ) {
+        return _iconMap.get(status);
+    }
 
     // Called from EditPortalDirection frame in CircuitBuilder
     public void setArrowOrientatuon(boolean set) {

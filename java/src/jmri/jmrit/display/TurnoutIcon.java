@@ -40,6 +40,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
 
     public TurnoutIcon(Editor editor) {
         super(editor);
+        makeStateNameMap();
         setIsIcon(true);
     }
 
@@ -119,10 +120,11 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         Iterator <String> iter = _state2nameMap.values().iterator();
         while (iter.hasNext()) {
             String state = iter.next();
-            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
-            if (oldMap != null) {
-                pos.setIcon(oldMap.get(state).getIcon());
-                pos.setIsIcon(true);
+            PositionableLabel pos;
+            if (oldMap != null && oldMap.get(state) != null) {
+                pos = oldMap.get(state);
+            } else {
+                pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
             }
             map.put(state, pos);
         }
@@ -157,11 +159,15 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
      * @return A state name from a Turnout, e.g. Turnout.CLOSED
      */
     protected String turnoutState() {
+        String state;
         if (namedTurnout != null) {
-            return _state2nameMap.get(getTurnout().getKnownState());
+            state = _state2nameMap.get(getTurnout().getKnownState());
         } else {
-            return _state2nameMap.get(Turnout.UNKNOWN);
+            state = _state2nameMap.get(Turnout.UNKNOWN);
         }
+        if (log.isDebugEnabled()) 
+            log.debug("turnout= {}, state= {}", namedTurnout, state);
+        return state;
     }
 
     // update icon as state of turnout changes
@@ -340,27 +346,13 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
      */
     public void displayState(String state) {
         if (getNamedTurnout() == null) {
-            log.debug("Display state " + state + ", disconnected");
-//            super.setText(getText(_state2nameMap.get(Turnout.UNKNOWN)));
-//            super.setIcon(getIcon(_state2nameMap.get(Turnout.UNKNOWN)));
-            state = _state2nameMap.get(Turnout.UNKNOWN);
-//            return;
+            setDisconnectedText();
+        } else {
+            restoreConnectionDisplay();
        }
-        setDisplayState(state);
-/*       if (isIcon()) {
-            NamedIcon icon = getIcon(state);
-            if (icon != null) {
-                super.setIcon(icon);
-                if (!isText()) {
-                    setOpaque(false);
-                }
-            }
-        }
-        if (isText()) {
-            String text = getText(state);
-            setText(text);
-        }*/
-        updateSize();
+       setDisplayState(state);
+       setIcon(getIcon(state));
+       setText(getText(state));
     }
 
     TableItemPanel _itemPanel;

@@ -36,6 +36,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         // super ctor call to make sure this is an icon label
         super(editor);
         setIsIcon(true);
+        setDisplayState("$dark");
     }
 
     private NamedBeanHandle<SignalMast> namedMast;
@@ -65,7 +66,11 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
     @Override
     protected HashMap<String, PositionableLabel> makeDefaultMap() {
         HashMap<String, PositionableLabel> map = new HashMap<>();
-        java.util.Enumeration<String> e = getSignalMast().getAppearanceMap().getAspects();
+        SignalMast m = getSignalMast();
+        if (m == null) {    // new map made when Mast is installed
+            return map;
+        }
+        java.util.Enumeration<String> e = m.getAppearanceMap().getAspects();
         while (e.hasMoreElements()) {
             String aspect = e.nextElement();
             loadIcon(map, aspect);
@@ -85,7 +90,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         NamedIcon icon  = getAspectIcon(aspect);
         PositionableLabel pos = new PositionableLabel(aspect, getEditor());
         pos.setIcon(icon);
-        pos.setIsIcon(icon != null);
+        pos.setText(aspect);
         map.put(aspect, pos);
     }
 
@@ -529,14 +534,13 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
      * @param state the state to display
      */
     public void displayState(String state) {
-        updateSize();
-        if (log.isDebugEnabled()) { // Avoid signal lookup unless needed
-            if (getSignalMast() == null) {
-                log.debug("Display state " + state + ", disconnected");
-            } else {
-                log.debug("Display state " + state + " for " + getSignalMast().getSystemName());
-            }
+        if (getSignalMast() == null) {
+            setDisconnectedText();
+        } else {
+            restoreConnectionDisplay();
         }
+        log.debug("Display state= {}", state);
+        /*
         if (isText()) {
             if (getSignalMast().getHeld()) {
                 super.setText(Bundle.getMessage("Held"));
@@ -559,7 +563,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
                     /*We have no appearance to set, therefore we will exit at this point.
                      This can be considered normal if we are requesting an appearance
                      that is not support or configured, such as dark or held */
-                    return;
+/*                    return;
                 }
                 if (!s.contains("preference:")) {
                     s = s.substring(s.indexOf("resources"));
@@ -570,7 +574,10 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
             }
         } else {
             setIcon(null);
-        }
+        }*/
+        setDisplayState(state);
+        setIcon(getIcon(state));
+        setText(getText(state));
         return;
     }
 

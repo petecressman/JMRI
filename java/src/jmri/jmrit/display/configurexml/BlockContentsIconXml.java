@@ -37,14 +37,12 @@ public class BlockContentsIconXml extends PositionableLabelXml {
         // include attributes
         element.setAttribute("blockcontents", p.getNamedBlock().getName());
         storeCommonAttributes(p, element);
-        storeTextInfo(p, element);
+        storeFontInfo(p, element);
 
         //If the fixed width option is not set and the justification is not left
         //Then we need to replace the x, y values with the original ones.
-        if (p.getPopupUtility().getFixedWidth() == 0 && p.getPopupUtility().getJustification() != 0) {
-            element.setAttribute("x", "" + p.getOriginalX());
-            element.setAttribute("y", "" + p.getOriginalY());
-        }
+        element.setAttribute("x", "" + p.getOriginalX());
+        element.setAttribute("y", "" + p.getOriginalY());
         element.setAttribute("selectable", (p.isSelectable() ? "yes" : "no"));
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.BlockContentsIconXml");
@@ -105,7 +103,7 @@ public class BlockContentsIconXml extends PositionableLabelXml {
             name = attr.getValue();
         }
 
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
 
         Block m = jmri.InstanceManager.getDefault(jmri.BlockManager.class).getBlock(name);
         if (m != null) {

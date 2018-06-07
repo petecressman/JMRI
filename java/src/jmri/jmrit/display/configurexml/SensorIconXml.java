@@ -149,14 +149,7 @@ public class SensorIconXml extends PositionableIconXml {
     public void load(Element element, Object o) {
         Editor ed = (Editor) o;
         SensorIcon l = new SensorIcon(ed);
-        if (!loadPositionableIcon(element, l)) {
-            return;
-        }
-        
-        if (!l.isIconMapOK()) {
-            loadPre50(element, l);
-        }
-        
+
         String name;
         Attribute attr = element.getAttribute("sensor");
         if (attr == null) {
@@ -165,6 +158,9 @@ public class SensorIconXml extends PositionableIconXml {
             return;
         } else {
             name = attr.getValue();
+        }
+        if (!loadPositionableIcon(element, l)) {
+            loadPre50(element, l, name);
         }
         Attribute a = element.getAttribute("momentary");
         if ((a != null) && a.getValue().equals("true")) {
@@ -183,7 +179,7 @@ public class SensorIconXml extends PositionableIconXml {
     /*
      * pre release 5.0 or something like that
      */
-    private void loadPre50(Element element, SensorIcon l) {
+    private void loadPre50(Element element, SensorIcon l, String name) {
         boolean isIcon = true;
         if (element.getAttribute("icon") != null) {
             String yesno = element.getAttribute("icon").getValue();
@@ -207,13 +203,12 @@ public class SensorIconXml extends PositionableIconXml {
 
         try {
             int rotation = element.getAttribute("rotate").getIntValue();
-            doRotationConversion(rotation, l);
+            PositionableLabelXml.doRotationConversion(rotation, l);
         } catch (org.jdom2.DataConversionException e) {
         } catch (NullPointerException e) {  // considered normal if the attributes are not present
         }
 
         Editor ed = l.getEditor();
-        String name = element.getAttribute("sensor").getValue();
         loadSensorIcon("active", "SensorStateActive", l, element, name, ed);      
         loadSensorIcon("inactive", "SensorStateInactive", l, element, name, ed);
         loadSensorIcon("unknown", "BeanStateUnknown", l, element, name, ed);
@@ -239,7 +234,7 @@ public class SensorIconXml extends PositionableIconXml {
     private NamedIcon loadSensorIcon(String key, String state, SensorIcon l, Element element, String name, Editor ed) {
         String msg = "SensorIcon \"" + name + "\": icon \"" + state + "\" ";
         // loadIcon gets icon as an element
-        NamedIcon icon = loadIcon(l, key, element, msg, ed);
+        NamedIcon icon = PositionableLabelXml.loadIcon(l, key, element, msg, ed);
         if (icon == null) {
             // old config files may define icons as attributes
             String iconName;

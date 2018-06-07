@@ -1,10 +1,7 @@
 package jmri.jmrit.display.configurexml;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import jmri.NamedBeanHandle;
 import jmri.Sensor;
 import jmri.jmrit.catalog.NamedIcon;
@@ -21,7 +18,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright: Copyright (c) 2010
  */
-public class IndicatorTrackIconXml extends PositionableLabelXml {
+public class IndicatorTrackIconXml extends PositionableIconXml {
 
     public IndicatorTrackIconXml() {
     }
@@ -36,11 +33,10 @@ public class IndicatorTrackIconXml extends PositionableLabelXml {
     public Element store(Object o) {
 
         IndicatorTrackIcon p = (IndicatorTrackIcon) o;
-        if (!p.isActive()) {
-            return null;  // if flagged as inactive, don't store
-        }
         Element element = new Element("indicatortrackicon");
-        storeCommonAttributes(p, element);
+        if (!storePositionableIcon(element, p)) {
+            return null;
+        }
 
         NamedBeanHandle<OBlock> b = p.getNamedOccBlock();
         if (b != null) {
@@ -61,21 +57,7 @@ public class IndicatorTrackIconXml extends PositionableLabelXml {
         if (p.showTrain()) {
             show = "yes";
         }
-        
         elem.addContent(show);
-        element.addContent(elem);
-
-        HashMap<String, NamedIcon> iconMap = p.getIconMap();
-        Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
-        elem = new Element("iconmap");
-        String family = p.getFamily();
-        if (family != null) {
-            elem.setAttribute("family", family);
-        }
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            elem.addContent(storeIcon(entry.getKey(), entry.getValue()));
-        }
         element.addContent(elem);
 
         elem = new Element("paths");
@@ -91,7 +73,6 @@ public class IndicatorTrackIconXml extends PositionableLabelXml {
         }
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.IndicatorTrackIconXml");
-
         return element;
     }
 
@@ -115,31 +96,13 @@ public class IndicatorTrackIconXml extends PositionableLabelXml {
     @Override
     public void load(Element element, Object o) {
         // create the objects
-        Editor p = (Editor) o;
+        Editor ed = (Editor) o;
 
-        IndicatorTrackIcon l = new IndicatorTrackIcon(p);
-
-        Element elem = element.getChild("iconmap");
-        if (elem != null) {
-            List<Element> status = elem.getChildren();
-            if (status.size() > 0) {
-                for (int i = 0; i < status.size(); i++) {
-                    String msg = "IndicatorTrack \"" + l.getNameString() + "\" icon \"" + status.get(i).getName() + "\" ";
-                    NamedIcon icon = loadIcon(l, status.get(i).getName(), elem,
-                            msg, p);
-                    if (icon != null) {
-                        l.setIcon(status.get(i).getName(), icon);
-                    } else {
-                        log.info(msg + " removed for url= " + status.get(i).getName());
-                        return;
-                    }
-                }
-            }
-            Attribute attr = elem.getAttribute("family");
-            if (attr != null) {
-                l.setFamily(attr.getValue());
-            }
+        IndicatorTrackIcon l = new IndicatorTrackIcon(ed);
+        if (!loadPositionableIcon(element, l)) {
+            loadPre50(element, l);
         }
+
         Element name = element.getChild("occupancyblock");
         if (name != null) {
             l.setOccBlock(name.getText());
@@ -158,9 +121,9 @@ public class IndicatorTrackIconXml extends PositionableLabelXml {
             }
         }
 
-        elem = element.getChild("paths");
+        Element elem = element.getChild("paths");
         if (elem != null) {
-            ArrayList<String> paths = new ArrayList<String>();
+            ArrayList<String> paths = new ArrayList<>();
             List<Element> pth = elem.getChildren();
             for (int i = 0; i < pth.size(); i++) {
                 paths.add(pth.get(i).getText());
@@ -168,11 +131,49 @@ public class IndicatorTrackIconXml extends PositionableLabelXml {
             l.setPaths(paths);
         }
 
-        l.displayState(l.getStatus());
-        l.updateSize();
-        p.putItem(l);
+//        l.displayState(l.getStatus());
+//        l.updateSize();
+        ed.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.TURNOUTS, element);
+    }
+
+    /*
+     * pre release 5.0 or something like that
+     */
+    private void loadPre50(Element element, IndicatorTrackIcon l) {
+
+        try {
+            int rotation = element.getAttribute("rotate").getIntValue();
+            doRotationConversion(rotation, l);
+        } catch (org.jdom2.DataConversionException e) {
+        } catch (NullPointerException e) {  // considered normal if the attributes are not present
+        }
+
+        Editor ed = l.getEditor();
+        String name = l.getNameString();
+
+        Element elem = element.getChild("iconmap");
+        if (elem != null) {
+            List<Element> status = elem.getChildren();
+            if (status.size() > 0) {
+                for (int i = 0; i < status.size(); i++) {
+                    String msg = "IndicatorTrack \"" + name + "\" icon \"" + status.get(i).getName() + "\" ";
+                    NamedIcon icon = loadIcon(l, status.get(i).getName(), elem,
+                            msg, ed);
+                    if (icon != null) {
+                        l.setStateIcon(status.get(i).getName(), icon);
+                    } else {
+                        log.info(msg + " removed for url= " + status.get(i).getName());
+                        return;
+                    }
+                }
+            }
+            Attribute attr = elem.getAttribute("family");
+            if (attr != null) {
+                l.setFamily(attr.getValue());
+            }
+        }
     }
 
     private final static Logger log = LoggerFactory.getLogger(IndicatorTrackIconXml.class);

@@ -55,14 +55,6 @@ public class SignalHeadIconXml extends PositionableIconXml {
         Editor ed = (Editor) o;
         SignalHeadIcon l = new SignalHeadIcon(ed);
 
-        if (!loadPositionableIcon(element, l)) {
-            return;
-        }
-        
-        if (!l.isIconMapOK()) {
-            loadPre50(element, l);
-        }
-        
         String name;
         Attribute attr = element.getAttribute("signalhead");
         if (attr == null) {
@@ -71,6 +63,10 @@ public class SignalHeadIconXml extends PositionableIconXml {
             return;
         } else {
             name = attr.getValue();
+        }
+
+        if (!loadPositionableIcon(element, l)) {
+            loadPre50(element, l, name);
         }
 
         SignalHead sh = jmri.InstanceManager.getDefault(jmri.SignalHeadManager.class).getSignalHead(name);
@@ -108,7 +104,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
     /*
      * pre release 5.0 or something like that
      */
-    private void loadPre50(Element element, SignalHeadIcon l) {
+    private void loadPre50(Element element, SignalHeadIcon l, String name) {
         // map previous stored 'English' names to names found in the file jmri.NamedBeanBundle.properties
         java.util.ResourceBundle rbean = java.util.ResourceBundle.getBundle("jmri.NamedBeanBundle");
         HashMap<String, String> nameMap = new HashMap<>();
@@ -125,13 +121,12 @@ public class SignalHeadIconXml extends PositionableIconXml {
 
         try {
             int rotation = element.getAttribute("rotate").getIntValue();
-            doRotationConversion(rotation, l);
+            PositionableLabelXml.doRotationConversion(rotation, l);
         } catch (org.jdom2.DataConversionException e) {
         } catch (NullPointerException e) {  // considered normal if the attributes are not present
         }
 
         Editor ed = l.getEditor();
-        String name = element.getAttribute("sensor").getValue();
 
         List<Element> aspects = element.getChildren();
         if (aspects.size() > 0) {
@@ -144,7 +139,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
             }
             for (int i = 0; i < aspects.size(); i++) {
                 String aspect = aspects.get(i).getName();
-                NamedIcon icon = loadIcon(l, aspect, elem, "SignalHead \"" + name + "\": icon \"" + aspect + "\" ", ed);
+                NamedIcon icon = PositionableLabelXml.loadIcon(l, aspect, elem, "SignalHead \"" + name + "\": icon \"" + aspect + "\" ", ed);
                 if (icon != null) {
                     l.setStateIcon(nameMap.get(aspect), icon);
                 } else {
@@ -173,7 +168,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
     private void loadSignalIcon(String key, String aspect, SignalHeadIcon l,
             Element element, String name, Editor ed) {
         String msg = "SignalHead \"" + name + "\": icon \"" + key + "\" ";
-        NamedIcon icon = loadIcon(l, key, element, msg, ed);
+        NamedIcon icon = PositionableLabelXml.loadIcon(l, key, element, msg, ed);
         if (icon == null) {
             if (element.getAttribute(key) != null) {
                 String iconName = element.getAttribute(key).getValue();

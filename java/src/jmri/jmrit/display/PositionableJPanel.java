@@ -35,6 +35,10 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
         return _textComponent;
     }
     
+    protected String getText() {
+        return null;
+    }
+    
     @Override
     public Positionable deepClone() {
         PositionableJPanel pos = new PositionableJPanel(_editor);
@@ -173,7 +177,9 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
 
     @Override
     public void paintComponent(Graphics g) {
-        if (_textComponent instanceof JTextField && _popupUtil!=null) {
+//        g = getTransfomGraphics(g);
+
+        if (_textComponent instanceof JTextField) {
             int justification = getJustification();
             switch (justification) {
                 case PositionableJComponent.LEFT:

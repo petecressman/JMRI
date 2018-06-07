@@ -398,7 +398,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
      * Use general rotation code for orthogonal rotations.
      * @param rotation
      * @param l
-     */
+     *
     protected void doRotationConversion(int rotation, PositionableJComponent l) {
         switch(rotation) {
             case 1:
@@ -414,7 +414,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
                 l.setDegrees(0);
                 break;
         }        
-    }
+    }*/
 
     private final static Logger log = LoggerFactory.getLogger(PositionableJComponentXml.class);
 }

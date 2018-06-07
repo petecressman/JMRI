@@ -37,10 +37,8 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     public MemoryInputIcon(int nCols, Editor editor) {
         super(editor);
         _nCols = nCols;
-        setDisplayLevel(Editor.LABELS);
 
-        setLayout(new java.awt.GridBagLayout());
-        add(_textBox, new java.awt.GridBagConstraints());
+        add(_textBox);
         setTextComponent(_textBox);
 
         _textBox.addKeyListener(new KeyAdapter() {
@@ -55,8 +53,15 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _textBox.setColumns(_nCols);
         _textBox.addMouseMotionListener(this);
         _textBox.addMouseListener(this);
+
+        setDisplayLevel(Editor.LABELS);
     }
 
+    @Override
+    protected String getText() {
+        return _textBox.getText();
+    }
+    
     @Override
     public Positionable deepClone() {
         MemoryInputIcon pos = new MemoryInputIcon(_nCols, _editor);

@@ -57,7 +57,6 @@ public class PositionableJComponent extends JComponent implements Positionable {
     private boolean _hidden = false;
     private int _displayLevel;
     
-    protected PositionablePopupUtil _popupUtil;
     protected JFrame _iconEditorFrame;
     protected IconAdder _iconEditor;
 
@@ -100,22 +99,22 @@ public class PositionableJComponent extends JComponent implements Positionable {
     }
 
     protected Positionable finishClone(PositionableJComponent pos) {
-        pos.setScale(_scale);
-        pos.setDegrees(_degree);
-        pos.setFlip(_flip);
+        pos._scale = _scale;
+        pos._degree = _degree;
+        pos._flip = _flip;
         pos.setLocation(getX(), getY());
-        pos.setDisplayLevel(_displayLevel);
-        pos.setControlling(_controlling);
-        pos.setHidden(_hidden);
-        pos.setPositionable(_positionable);
-        pos.setShowToolTip(_showTooltip);
-        pos.setToolTip(_tooltip);
-        pos.setEditable(_editable);
+        pos._displayLevel = _displayLevel;
+        pos._controlling = _controlling;
+        pos._hidden = _hidden;
+        pos._positionable = _positionable;
+        pos._showTooltip = _showTooltip;
+        pos._tooltip = _tooltip;
+        pos._editable = _editable;
 
         pos.setOpaque(isOpaque());
-        pos.setBorderSize(_borderSize);
-        pos.setBorderColor(_borderColor);
-        pos.setMarginSize(_marginSize);
+        pos._borderSize = _borderSize;
+        pos._borderColor = _borderColor;
+        pos._marginSize = _marginSize;
         pos.setBackgroundColor(_backgroundColor);
         pos.setBackground(getBackground());
         pos.setForeground(getForeground());
@@ -349,6 +348,15 @@ public class PositionableJComponent extends JComponent implements Positionable {
         }
         updateSize();
     }
+    
+    @Override
+    public Font getFont() {
+        Font f = super.getFont();
+        if (f == null) {
+            f = new Font(Font.DIALOG, Font.PLAIN, 12);
+        }
+        return f;
+    }
 
     @Override
     public void setFontStyle(int styleValue) {
@@ -358,7 +366,8 @@ public class PositionableJComponent extends JComponent implements Positionable {
 
     @Override
     public void setFontSize(float newSize) {
-        setFont(getFont().deriveFont(newSize));
+        Font f = getFont();
+        setFont(f.deriveFont(newSize));
         updateSize();
     }
 
@@ -494,7 +503,7 @@ public class PositionableJComponent extends JComponent implements Positionable {
         //fontMenu.setMnemonic('n'); // set mnemonic to n
 
         // get the current font family name
-        String defaultFontFamilyName = this.getFont().getFamily();
+        String defaultFontFamilyName = getFont().getFamily();
 
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         String fontFamilyNames[] = ge.getAvailableFontFamilyNames();
@@ -1003,8 +1012,8 @@ public class PositionableJComponent extends JComponent implements Positionable {
             _editor.getTargetPanel().repaint();
         }
         setBorder();
-//        System.out.println("updateSize: displayWidth="+displayWidth+" displayHeight="+displayHeight+
-//                " NameString="+" \""+getNameString()+"\""+" Name="+" \""+getName()+"\"");
+        System.out.println("updateSize: displayWidth="+displayWidth+" displayHeight="+displayHeight+
+                " NameString="+" \""+getNameString()+"\"");
         repaint();
     }
     
@@ -1067,7 +1076,39 @@ public class PositionableJComponent extends JComponent implements Positionable {
             super.setBorder(new javax.swing.border.CompoundBorder(borderOutline, borderMargin));            
         }
     }
-    
+
+/*    protected Graphics getTransfomGraphics(Graphics g) {
+        Graphics2D g2d = (Graphics2D)g.create();
+        g2d.transform(getTransform());
+
+        // set antialiasing hint for macOS and Windows
+        // note: antialiasing has performance problems on constrained systems
+        // like the Raspberry Pi, assuming Linux variants are constrained
+        if (SystemType.isMacOSX() || SystemType.isWindows()) {
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                    RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+            // Turned off due to poor performance, see Issue #3850 and PR #3855 for background
+            // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+            //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        }
+
+        java.awt.Color backgroundColor = getBackgroundColor();
+        if (backgroundColor!=null) {
+            setOpaque(true);
+            setBackground(backgroundColor);
+            g2d.setColor(backgroundColor);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+        } else {
+            setOpaque(false);
+        }
+        super.paintBorder(g2d);
+        return g2d;
+    }*/
+
     @Override
     public void paint(Graphics g) {
         Graphics2D g2d = (Graphics2D)g.create();

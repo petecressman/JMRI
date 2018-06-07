@@ -53,7 +53,7 @@ public class PositionableLabel extends PositionableJComponent {
         if (debug) {
             log.debug("PositionableLabel ctor (text) " + s);
         }
-        updateSize();
+//        updateSize();
     }
 
     public PositionableLabel(NamedIcon s, Editor editor) {
@@ -64,7 +64,7 @@ public class PositionableLabel extends PositionableJComponent {
         if (debug) {
             log.debug("PositionableLabel ctor (icon) {}", s != null ? s.getName() : null);
        }
-        updateSize();
+//        updateSize();
      }
 
     /**
@@ -87,7 +87,8 @@ public class PositionableLabel extends PositionableJComponent {
      * Set whether icon should be displayed
      * @param b if true, display icon
      */
-    public final void setIsIcon(boolean b) {
+    public void setIsIcon(boolean b) {
+        log.debug("setIsIcon = {}", b);
         _icon = b;
     }
 
@@ -95,7 +96,8 @@ public class PositionableLabel extends PositionableJComponent {
      * Set whether text should be displayed
      * @param b if true, display text
      */
-    public final void setIsText(boolean b) {
+    public void setIsText(boolean b) {
+        log.debug("setIsText = {}", b);
         _text = b;
     }
     
@@ -148,7 +150,6 @@ public class PositionableLabel extends PositionableJComponent {
         pos._control = _control;
         if (_namedIcon != null) {
             pos._namedIcon = new NamedIcon(_namedIcon);
-            pos.setIcon(pos._namedIcon);
         }
         return super.finishClone(pos);
     }
@@ -160,8 +161,8 @@ public class PositionableLabel extends PositionableJComponent {
     public int getWidth() {
         int width = Math.max(getIconWidth(), getTextWidth());
         width += (getBorderSize() + getMarginSize()) * 2;            
-        if (log.isDebugEnabled()) {
-            log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
+        if (log.isTraceEnabled()) {
+            log.trace("width= " + width + " preferred width= " + getPreferredSize().width);
         }
         return Math.max(width, MIN_SIZE); // don't let item disappear
     }
@@ -170,8 +171,8 @@ public class PositionableLabel extends PositionableJComponent {
     public int getHeight() {
         int height = Math.max(getIconHeight(), getTextHeight());
         height += (getBorderSize() + getMarginSize()) * 2;
-        if (log.isDebugEnabled()) {
-            log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
+        if (log.isTraceEnabled()) {
+            log.trace("height= " + height + " preferred height= " + getPreferredSize().height);
         }
         return Math.max(height, MIN_SIZE);    // don't let item disappear
     }
@@ -374,7 +375,7 @@ public class PositionableLabel extends PositionableJComponent {
         _iconItemPanel = null;
         invalidate();
     }
-/* future use to replace editor.setTextAttributes
+/* future use to replace editor.setTextAttributes  maybe???
     public boolean setEditTextMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("TextAttributes"), Bundle.getMessage("Text"));
         popup.add(new AbstractAction(txt) {
@@ -442,13 +443,18 @@ public class PositionableLabel extends PositionableJComponent {
         }
         return false;
     }
-
+/*
     protected void paintIcon(Graphics g) {
         
     }
 
+    protected void paintText(Graphics g) {
+        
+    }*/
+
     @Override
     public void paintComponent(Graphics g) {
+       
         int iconWidth = getIconWidth();
         int iconHeight = getIconHeight();
         int textWidth = getTextWidth();

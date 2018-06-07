@@ -172,6 +172,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
 
         // get object class and determine editor being used
         Editor editor = (Editor) o;
+
         if (element.getAttribute("icon") != null) {
             NamedIcon icon;
             String name = element.getAttribute("icon").getValue();
@@ -221,7 +222,6 @@ public class PositionableLabelXml extends PositionableJComponentXml {
             if (l == null) {
                 l = new PositionableLabel(element.getAttribute("text").getValue(), editor);
             }
-//            loadTextInfo(l, element);
 
         } else if (l == null) {
             log.error("PositionableLabel is null!");
@@ -242,7 +242,9 @@ public class PositionableLabelXml extends PositionableJComponentXml {
             editor.loadFailed();
             return;
         }
-        editor.putItem(l);
+
+       loadFontInfo(l, element);
+       editor.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.LABELS, element);
     }
@@ -473,7 +475,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
         }
     }*/
 
-    public NamedIcon loadIcon(PositionableLabel l, String attrName, Element element,
+    static public NamedIcon loadIcon(PositionableLabel l, String attrName, Element element,
             String name, Editor ed) {
         NamedIcon icon = getNamedIcon(attrName, element, name, ed);
         if (icon != null) {
@@ -521,10 +523,10 @@ public class PositionableLabelXml extends PositionableJComponentXml {
 
     /**
      * Use general rotation code for orthogonal rotations.
-     * @param rotation
-     * @param l
+     * @param rotation orthogonal rotations
+     * @param l positionable item
      */
-    protected void doRotationConversion(int rotation, PositionableLabel l) {
+    static protected void doRotationConversion(int rotation, PositionableLabel l) {
         switch(rotation) {
             case 1:
                 l.setDegrees(90);
@@ -541,7 +543,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
         }        
     }
 
-    protected NamedIcon getNamedIcon(String childName, Element element,
+    static protected NamedIcon getNamedIcon(String childName, Element element,
             String name, Editor ed) {
         NamedIcon icon = null;
         Element elem = element.getChild(childName);

@@ -56,7 +56,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         log.debug("IndicatorTurnoutIcon ctor: isIcon()= " + isIcon() + ", isText()= " + isText());
         _pathUtil = new IndicatorTrackPaths();
         _status = "ClearTrack";
-
+        setDisplayState("ClearTrack");
     }
 /*
     void initMaps() {
@@ -75,7 +75,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     protected HashMap<String, PositionableLabel> makeDefaultMap() {
         HashMap<String, PositionableLabel> map = new HashMap<> ();
         for (String status : STATUSNAME) {
-            PositionableIcon pos = new PositionableIcon(Bundle.getMessage(status), getEditor());
+            PositionableIcon pos = new TurnoutIcon(getEditor());
             pos.setIconMap(pos. makeDefaultMap());  // each status needs state icons and text
             map.put(status, pos);
         }
@@ -316,21 +316,19 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     @Override
     public void displayState(String state) {
         if (getNamedTurnout() == null) {
-            log.debug("Display state " + state + ", disconnected");
-            PositionableIcon statusMap = (PositionableIcon)getStateData("ErrorTrack");
-            super.setText(statusMap.getText(_state2nameMap.get(Turnout.UNKNOWN)));
-            super.setIcon(statusMap.getIcon(_state2nameMap.get(Turnout.UNKNOWN)));
-            return;
-       }
-       PositionableIcon statusMap = (PositionableIcon)getStateData(_status);
-       if (isIcon()) {
-            NamedIcon icon = statusMap.getIcon(state);
-            if (icon != null) {
-                super.setIcon(icon);
-                if (!isText()) {
-                    setOpaque(false);
-                }
-            }
+            setDisconnectedText();
+        } else {
+            restoreConnectionDisplay();
+        }
+        PositionableIcon statusMap = (PositionableIcon)getStateData(_status);
+        if (isIcon()) {
+             NamedIcon icon = statusMap.getIcon(state);
+             if (icon != null) {
+                 super.setIcon(icon);
+                 if (!isText()) {
+                     setOpaque(false);
+                 }
+             }
         }
         if (isText()) {
             String text = statusMap.getText(state);

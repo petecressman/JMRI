@@ -28,7 +28,10 @@ public class PositionableIcon extends PositionableLabel {
     private HashMap<String, PositionableLabel> _iconMap;
     private String _iconFamily;
     private String _displayState;
+    private boolean _iconDisplay;
+    private boolean _textDisplay;
 
+    protected static String _redX = "resources/icons/misc/X-red.gif";
 
     public PositionableIcon(Editor editor) {
         super(editor);
@@ -69,6 +72,32 @@ public class PositionableIcon extends PositionableLabel {
         _displayState  = state;
     }
 
+    /**
+     * Set whether icon should be displayed
+     * @param b if true, display icon
+     */
+    @Override
+    public final void setIsIcon(boolean b) {
+        _iconDisplay = b;
+        super.setIsIcon(b);
+        for(PositionableLabel p : _iconMap.values()) {
+            p.setIsIcon(b);
+        }
+    }
+
+    /**
+     * Set whether text should be displayed
+     * @param b if true, display text
+     */
+    @Override
+    public final void setIsText(boolean b) {
+        _textDisplay = b;
+        super.setIsText(b);
+        for(PositionableLabel p : _iconMap.values()) {
+            p.setIsText(b);
+        }
+    }
+    
     /**
      * NamedBean icon items should return a map with the default localized text
      * names for their states.
@@ -314,6 +343,23 @@ public class PositionableIcon extends PositionableLabel {
         }
     }
 
+    /**
+     * Show bean disconnected.  This may be a temporary condition so
+     * save the intended display items in case connection is restored.
+     */
+    protected void setDisconnectedText() {
+        log.debug("Display state disconnected");
+        setText(Bundle.getMessage("disconnected"));
+        setIcon(new NamedIcon(_redX, _redX));
+        super.setIsText(true);
+        super.setIsIcon(true);
+    }
+
+    protected void restoreConnectionDisplay() {
+        super.setIsText(_textDisplay);
+        super.setIsIcon(_iconDisplay);
+    }
+
     @Override
     public void displayState() {
     }
@@ -339,8 +385,15 @@ public class PositionableIcon extends PositionableLabel {
 
     @Override
     public void paintComponent(Graphics g) {
+
+        if (log.isDebugEnabled()) log.debug("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
         PositionableLabel pos = _iconMap.get(_displayState);
-        pos.paintComponent(g);
+        if (isIcon() && isText()) { // overlaid
+            super.paintComponent(g);
+        } else {
+            pos.paintComponent(g);
+        }
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableIcon.class);

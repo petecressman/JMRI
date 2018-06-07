@@ -31,7 +31,7 @@ public class PositionableIconXml extends PositionableLabelXml {
      * @return Element containing the complete info
      */
     public boolean storePositionableIcon(Element element, PositionableIcon p) {
-         if (!p.isActive()) {
+        if (!p.isActive()) {
             return false;  // if flagged as inactive, don't store
         }
         // can be both for text overlaid icon
@@ -83,6 +83,7 @@ public class PositionableIconXml extends PositionableLabelXml {
      *
      * @param element Top level PositionableIcon Element to unpack.
      * @param p PositionableIcon of element
+     * @return false if state map not found
      */
     public boolean loadPositionableIcon(Element element, PositionableIcon p) {
 
@@ -91,6 +92,28 @@ public class PositionableIconXml extends PositionableLabelXml {
             log.error("No editor to place PositionableIcon {}", p.getNameString());
             return false;
         }
+        loadFontInfo(p, element);
+
+        Element elem =element.getChild("states");
+        if (elem == null) {
+            log.error("No state elements found for PositionableIcon {}", p.getNameString());
+            return false;
+        }
+        List<Element> stateList = elem.getChildren("state");
+        if (log.isDebugEnabled()) {
+            log.debug("Found {} OBlock objects", stateList.size());
+        }
+        if (stateList == null || stateList.size() < 4) {
+            log.error("Not enough state elements found for PositionableIcon {}", p.getNameString());
+            return false;
+        }
+        boolean loaded = true;
+        for (Element state : stateList) {
+            if (!loadStateData(state, p)) {
+                loaded = false;
+            }
+        }
+
         try {
             p.setIsText(element.getAttribute("isText").getBooleanValue());
         } catch (DataConversionException ex) {
@@ -114,52 +137,29 @@ public class PositionableIconXml extends PositionableLabelXml {
             String name = element.getAttribute("icon").getValue();
             p.setIcon(NamedIcon.getIconByName(name));
         }
-        loadFontInfo(p, element);
 
-        Element elem =element.getChild("states");
-        if (elem == null) {
-            return false;
-        }
-        List<Element> stateList = elem.getChildren("state");
-        if (log.isDebugEnabled()) {
-            log.debug("Found {} OBlock objects", stateList.size());
-        }
-        if (stateList.size() < 4) {
-            return false;
-        }
-        for (Element state : stateList) {
-            loadStateData(state, p);
-        }
+        return loaded;
+    }
 
-        ed.putItem(p);
-        // load individual item's option settings after editor has set its global settings
-        loadCommonAttributes(p, Editor.SENSORS, element);
-        return true;
-    }
-    
-    private NamedIcon loadIcon(Element element) {
-        return null;
-    }
-    
-    public void loadStateData(Element element, PositionableIcon pi) {
+    public boolean loadStateData(Element element, PositionableIcon pi) {
         
         Attribute attr = element.getAttribute("stateKey");
         if (attr == null) {
             log.error("No stateKey for element: {}", element.getName());
-            return;
+            return false;
         }
         String state = attr.getValue();
         
         Element elem = element.getChild("stateAttributes");
         if (elem == null) {
-            log.error("No \"stateAttributes\" child in element: {}", element.getName());
-            return;
+            log.error("No \"stateAttributes\" child for state {} in element: {}", state, element.getName());
+            return false;
         }
 
         PositionableLabel p = pi.getStateData(state);
         if (p == null) {
-            log.error("No state data for state {} in element: {}", state, element.getName());
-            return;
+            log.error("No state class for state {} in element: {}", state, element.getName());
+            return false;
         }
         
         if (elem.getAttribute("text") != null) {
@@ -172,6 +172,8 @@ public class PositionableIconXml extends PositionableLabelXml {
         }
         loadFontInfo(p, elem);
         loadCommonAttributes(p, Editor.SENSORS, elem);
+        
+        return true;
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableIconXml.class);

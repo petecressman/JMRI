@@ -35,9 +35,8 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
 
     public MemorySpinnerIcon(Editor editor) {
         super(editor);
-        setDisplayLevel(Editor.LABELS);
 
-        setLayout(new java.awt.GridBagLayout());
+//        setLayout(new java.awt.GridBagLayout());
         add(spinner, new java.awt.GridBagConstraints());
         setTextComponent(spinner);
 
@@ -45,8 +44,15 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
         javax.swing.JTextField textBox = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
         textBox.addMouseMotionListener(this);
         textBox.addMouseListener(this);
+
+        setDisplayLevel(Editor.LABELS);
     }
 
+    @Override
+    protected String getText() {
+        return spinner.getValue().toString();
+    }
+    
     @Override
     public Positionable deepClone() {
         MemorySpinnerIcon pos = new MemorySpinnerIcon(_editor);
