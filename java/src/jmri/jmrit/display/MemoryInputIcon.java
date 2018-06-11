@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryInputIcon extends PositionableJPanel implements java.beans.PropertyChangeListener {
 
-    JTextField _textBox = new JTextField();
+    JTextField _textBox;
     int _nCols;
 
     // the associated Memory object
@@ -37,10 +37,12 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     public MemoryInputIcon(int nCols, Editor editor) {
         super(editor);
         _nCols = nCols;
+        setDisplayLevel(Editor.LABELS);
+    }
 
-        add(_textBox);
-        setTextComponent(_textBox);
-
+    @Override
+    protected JComponent getContainerComponent() {
+        _textBox = new JTextField();
         _textBox.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -53,12 +55,16 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _textBox.setColumns(_nCols);
         _textBox.addMouseMotionListener(this);
         _textBox.addMouseListener(this);
-
-        setDisplayLevel(Editor.LABELS);
+        return _textBox;
     }
 
     @Override
-    protected String getText() {
+    protected JTextField getTextField() {
+        return _textBox;
+    }
+
+    @Override
+    public String getText() {
         return _textBox.getText();
     }
     
@@ -71,11 +77,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     protected Positionable finishClone(MemoryInputIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
-    }
-
-    @Override
-    public JComponent getTextComponent() {
-        return _textBox;
     }
 
     @Override
@@ -138,6 +139,11 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         return namedMemory.getBean();
     }
 
+    @Override
+    public jmri.NamedBean getNamedBean() {
+        return getMemory();
+    }
+
     public int getNumColumns() {
         return _nCols;
     }
@@ -177,7 +183,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     }
 
     @Override
-    public boolean setEditIconMenu(javax.swing.JPopupMenu popup) {
+    public boolean setIconEditMenu(javax.swing.JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameMemory"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

@@ -100,12 +100,12 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             if (oldMap != null && oldMap.get(key) != null) {
                 pos = oldMap.get(key);
             } else {
-                pos = new PositionableLabel(key, getEditor());
+                pos = new PositionableLabel(getEditor());
                 if (icons != null) {
                     pos.setIcon(icons.get(key));
-                    log.warn("Family {} did not find icons", getFamily());
                 } else {
                     setIcon(new NamedIcon(_redX, _redX));
+                    log.warn("Family \"{}\" did not find icons", getFamily());
                 }
                 pos.setText(state);
             }
@@ -153,6 +153,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         if (namedHead != null) {
             setIconMap(makeDefaultMap());
             getSignalHead().addPropertyChangeListener(this, namedHead.getName(), "SignalHead Icon");
+            displayState(headState());
         }
     }
 
@@ -265,128 +266,6 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         return namedHead.getName();
     }
 
-    ButtonGroup litButtonGroup = null;
-
-    /**
-     * Pop-up just displays the name
-     */
-    @Override
-    public boolean showPopUp(JPopupMenu popup) {
-        if (isEditable()) {
-            // add menu to select action on click
-            JMenu clickMenu = new JMenu(Bundle.getMessage("WhenClicked"));
-            ButtonGroup clickButtonGroup = new ButtonGroup();
-            JRadioButtonMenuItem r;
-            r = new JRadioButtonMenuItem(Bundle.getMessage("ChangeAspect"));
-            r.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setClickMode(3);
-                }
-            });
-            clickButtonGroup.add(r);
-            if (clickMode == 3) {
-                r.setSelected(true);
-            } else {
-                r.setSelected(false);
-            }
-            clickMenu.add(r);
-            r = new JRadioButtonMenuItem(Bundle.getMessage("Cycle3Aspects"));
-            r.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setClickMode(0);
-                }
-            });
-            clickButtonGroup.add(r);
-            if (clickMode == 0) {
-                r.setSelected(true);
-            } else {
-                r.setSelected(false);
-            }
-            clickMenu.add(r);
-            r = new JRadioButtonMenuItem(Bundle.getMessage("AlternateLit"));
-            r.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setClickMode(1);
-                }
-            });
-            clickButtonGroup.add(r);
-            if (clickMode == 1) {
-                r.setSelected(true);
-            } else {
-                r.setSelected(false);
-            }
-            clickMenu.add(r);
-            r = new JRadioButtonMenuItem(Bundle.getMessage("AlternateHeld"));
-            r.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setClickMode(2);
-                }
-            });
-            clickButtonGroup.add(r);
-            if (clickMode == 2) {
-                r.setSelected(true);
-            } else {
-                r.setSelected(false);
-            }
-            clickMenu.add(r);
-            popup.add(clickMenu);
-
-            // add menu to select handling of lit parameter
-            JMenu litMenu = new JMenu(Bundle.getMessage("WhenNotLit"));
-            litButtonGroup = new ButtonGroup();
-            r = new JRadioButtonMenuItem(Bundle.getMessage("ShowAppearance"));
-            r.setIconTextGap(10);
-            r.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setLitMode(false);
-                }
-            });
-            litButtonGroup.add(r);
-            if (!litMode) {
-                r.setSelected(true);
-            } else {
-                r.setSelected(false);
-            }
-            litMenu.add(r);
-            r = new JRadioButtonMenuItem(Bundle.getMessage("ShowDarkIcon"));
-            r.setIconTextGap(10);
-            r.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    setLitMode(true);
-                }
-            });
-            litButtonGroup.add(r);
-            if (litMode) {
-                r.setSelected(true);
-            } else {
-                r.setSelected(false);
-            }
-            litMenu.add(r);
-            popup.add(litMenu);
-
-            popup.add(new AbstractAction(Bundle.getMessage("EditLogic")) {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    jmri.jmrit.blockboss.BlockBossFrame f = new jmri.jmrit.blockboss.BlockBossFrame();
-                    String name = getNameString();
-                    f.setTitle(java.text.MessageFormat.format(Bundle.getMessage("SignalLogic"), name));
-                    f.setSignal(getSignalHead());
-                    f.setVisible(true);
-                }
-            });
-            
-            super.showPopUp(popup);
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public void displayState() {
         displayState(headState());
@@ -403,7 +282,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      * <LI>Show the icon corresponding to one of the seven appearances.
      * </UL>
      */
-    public void displayState(String state) {
+    private void displayState(String state) {
         updateSize();
         if (getSignalHead() == null) {
             setDisconnectedText();
@@ -412,14 +291,18 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         }
         String s = _nameMap.get(state);
         setDisplayState(s);
-        setIcon(getIcon(s));
-        setText(getText(s));
+        if (isText() && isIcon()) {  // Overlaid text
+            setIcon(getIcon(state));
+        }
     }
 
+    //////////////////////////////// Popup Menu methods //////////////////////////////////////
+
     SignalHeadItemPanel _itemPanel;
+    ButtonGroup litButtonGroup = null;
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameSignalHead"));
         popup.add(new AbstractAction(txt) {
             @Override
@@ -427,6 +310,115 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
                 editItem();
             }
         });
+
+        // add menu to select action on click
+        JMenu clickMenu = new JMenu(Bundle.getMessage("WhenClicked"));
+        ButtonGroup clickButtonGroup = new ButtonGroup();
+        JRadioButtonMenuItem r;
+        r = new JRadioButtonMenuItem(Bundle.getMessage("ChangeAspect"));
+        r.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setClickMode(3);
+            }
+        });
+        clickButtonGroup.add(r);
+        if (clickMode == 3) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        clickMenu.add(r);
+        r = new JRadioButtonMenuItem(Bundle.getMessage("Cycle3Aspects"));
+        r.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setClickMode(0);
+            }
+        });
+        clickButtonGroup.add(r);
+        if (clickMode == 0) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        clickMenu.add(r);
+        r = new JRadioButtonMenuItem(Bundle.getMessage("AlternateLit"));
+        r.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setClickMode(1);
+            }
+        });
+        clickButtonGroup.add(r);
+        if (clickMode == 1) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        clickMenu.add(r);
+        r = new JRadioButtonMenuItem(Bundle.getMessage("AlternateHeld"));
+        r.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setClickMode(2);
+            }
+        });
+        clickButtonGroup.add(r);
+        if (clickMode == 2) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        clickMenu.add(r);
+        popup.add(clickMenu);
+
+        // add menu to select handling of lit parameter
+        JMenu litMenu = new JMenu(Bundle.getMessage("WhenNotLit"));
+        litButtonGroup = new ButtonGroup();
+        r = new JRadioButtonMenuItem(Bundle.getMessage("ShowAppearance"));
+        r.setIconTextGap(10);
+        r.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setLitMode(false);
+            }
+        });
+        litButtonGroup.add(r);
+        if (!litMode) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        litMenu.add(r);
+        r = new JRadioButtonMenuItem(Bundle.getMessage("ShowDarkIcon"));
+        r.setIconTextGap(10);
+        r.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setLitMode(true);
+            }
+        });
+        litButtonGroup.add(r);
+        if (litMode) {
+            r.setSelected(true);
+        } else {
+            r.setSelected(false);
+        }
+        litMenu.add(r);
+        popup.add(litMenu);
+
+        popup.add(new AbstractAction(Bundle.getMessage("EditLogic")) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jmri.jmrit.blockboss.BlockBossFrame f = new jmri.jmrit.blockboss.BlockBossFrame();
+                String name = getNameString();
+                f.setTitle(java.text.MessageFormat.format(Bundle.getMessage("SignalLogic"), name));
+                f.setSignal(getSignalHead());
+                f.setVisible(true);
+            }
+        });
+        
         return true;
     }
 

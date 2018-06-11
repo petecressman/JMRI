@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import jmri.jmrit.catalog.NamedIcon;
@@ -21,7 +23,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (c) 2002
  */
-public class PositionableLabel extends PositionableJComponent {
+public class PositionableLabel extends Positionable {
 
     private boolean debug = false;
     private String _textString;
@@ -30,7 +32,6 @@ public class PositionableLabel extends PositionableJComponent {
     protected NamedIcon _namedIcon;
     private boolean _icon = false;
     private boolean _text = false;
-    protected boolean _control;
 
     static final public int MIN_SIZE = 10;
 
@@ -46,7 +47,6 @@ public class PositionableLabel extends PositionableJComponent {
      */
     public PositionableLabel(String s, Editor editor) {
         super(editor);
-        _control = false;
         _text = true;
         _textString = s;
         debug = log.isDebugEnabled();
@@ -147,7 +147,6 @@ public class PositionableLabel extends PositionableJComponent {
         pos._text = _text;
         pos._icon = _icon;
         pos._textString = _textString;
-        pos._control = _control;
         if (_namedIcon != null) {
             pos._namedIcon = new NamedIcon(_namedIcon);
         }
@@ -247,16 +246,10 @@ public class PositionableLabel extends PositionableJComponent {
 
     ///////////////////////////// popup methods ////////////////////////////
 
-/*    @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
-        return setEditIconMenu(popup);
-    }*/
-
     /**
      * ********** Methods for Item Popups in Panel editor ************************
      */
 
-    @Override
     public boolean setEditIconMenu(JPopupMenu popup) {
         if (_icon && !_text) {
             String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("Icon"));
@@ -334,11 +327,11 @@ public class PositionableLabel extends PositionableJComponent {
         invalidate();
     }
 
-    @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
         if (!_icon) {
             return false;
         }
+        
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("Icon"));
         popup.add(new AbstractAction(txt) {
 
@@ -409,48 +402,49 @@ public class PositionableLabel extends PositionableJComponent {
         invalidate();
     }*/
 
-    /**
-     * Rotate degrees return true if popup is set.
-     */
-    @Override
-    public boolean setRotateMenu(JPopupMenu popup) {
-        if (getDisplayLevel() > Editor.BKG) {
-            popup.add(CoordinateEdit.getRotateEditAction(this));
-            return true;
-        }
+    public boolean setDisplayModeMenu(JPopupMenu popup) {
+        JMenu edit = new JMenu(Bundle.getMessage("DisplayMode"));
+        final JCheckBoxMenuItem cbi = new JCheckBoxMenuItem(Bundle.getMessage("Icons"));
+        cbi.addActionListener((ActionEvent e) -> {
+            setIsIcon(cbi.isSelected());
+            setIsText(!cbi.isSelected());
+        });
+        cbi.setSelected(_icon);
+        edit.add(cbi);
+        final JCheckBoxMenuItem cbt = new JCheckBoxMenuItem(Bundle.getMessage("Texts"));
+        cbt.addActionListener((ActionEvent e) -> {
+            setIsIcon(!cbt.isSelected());
+            setIsText(cbt.isSelected());
+        });
+        cbt.setSelected(_text);
+        edit.add(cbt);
+        final JCheckBoxMenuItem cb = new JCheckBoxMenuItem(Bundle.getMessage("OverlayText"));
+        cb.addActionListener((ActionEvent e) -> {
+            setIsIcon(cb.isSelected());
+            setIsText(cb.isSelected());
+        });
+        cb.setSelected(_icon);
+        edit.add(cb);
+        return true;
+    }
+    
+    public boolean setDisableControlMenu(JPopupMenu popup) {
         return false;
     }
 
-    /**
-     * Scale percentage form display.
-     *
-     * @return true if popup is set
-     */
-    @Override
-    public boolean setScaleMenu(JPopupMenu popup) {
-        if (isIcon() && getDisplayLevel() > Editor.BKG) {
-            popup.add(CoordinateEdit.getScaleEditAction(this));
-            return true;
-        }
-        return false;
+    public JCheckBoxMenuItem displayMode() {
+        JCheckBoxMenuItem cb = new JCheckBoxMenuItem();
+        return cb;
     }
 
-    @Override
     public boolean setTextEditMenu(JPopupMenu popup) {
-        if (isText()) {
-            popup.add(CoordinateEdit.getTextEditAction(this, "EditText"));
-            return true;
+        if (isIcon()) {
+            popup.add(CoordinateEdit.getTextEditAction(this, "OverlayText"));
+        } else {
+            popup.add(CoordinateEdit.getTextEditAction(this, "EditText"));                
         }
-        return false;
+        return true;
     }
-/*
-    protected void paintIcon(Graphics g) {
-        
-    }
-
-    protected void paintText(Graphics g) {
-        
-    }*/
 
     @Override
     public void paintComponent(Graphics g) {
@@ -472,11 +466,6 @@ public class PositionableLabel extends PositionableJComponent {
             }
             g.setClip(hOffSet, vOffSet, iconWidth, iconHeight);
             _namedIcon.paintIcon(this, g, hOffSet, vOffSet);
-//            g2d.setColor(java.awt.Color.red);
-//            g2d.drawRect(0, 0, getWidth(), getHeight());
-//            g2d.setColor(Color.green);
-//            java.awt.Rectangle r = g2d.getClipBounds();
-//            g2d.drawRect(r.x, r.y, r.width, r.height);
         }
 
         if (_text && _textString!=null && _textString.length()>0) {

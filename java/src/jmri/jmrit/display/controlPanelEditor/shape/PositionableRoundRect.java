@@ -52,7 +52,7 @@ public class PositionableRoundRect extends PositionableRectangle {
     }
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("roundRect"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

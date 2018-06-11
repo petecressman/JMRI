@@ -95,6 +95,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         if (namedSensor != null) {
             getSensor().addPropertyChangeListener(this, s.getName(), "SensorIcon on Panel " + _editor.getName());
             setName(namedSensor.getName());  // Swing name for e.g. tests
+            displayState(sensorState());
         }
     }
 
@@ -130,9 +131,12 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         Iterator <String> iter = _state2nameMap.values().iterator();
         while (iter.hasNext()) {
             String state = iter.next();
-            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
+            PositionableLabel pos;
             if (oldMap != null) {
-                pos.setIcon(oldMap.get(state).getIcon());
+                pos = oldMap.get(state);
+            } else {
+                pos = new PositionableLabel(getEditor());
+                pos.setText(Bundle.getMessage(state));
             }
             map.put(state, pos);
         }
@@ -204,8 +208,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         return name;
     }
 
-    JCheckBoxMenuItem momentaryItem = new JCheckBoxMenuItem(Bundle.getMessage("Momentary"));
-
     /**
      * Pop-up just displays the sensor name.
      *
@@ -214,17 +216,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      */
     @Override
     public boolean showPopUp(JPopupMenu popup) {
-        if (isEditable()) {
-            super.showPopUp(popup);
-
-            popup.add(momentaryItem);
-            momentaryItem.setSelected(getMomentary());
-            momentaryItem.addActionListener((java.awt.event.ActionEvent e) -> {
-                setMomentary(momentaryItem.isSelected());
-            });
-        } else {
-            setAdditionalViewPopUpMenu(popup);
-        }
+        setAdditionalViewPopUpMenu(popup);
         return true;
     }
 
@@ -238,27 +230,36 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      *
      * @param state the sensor state
      */
-    public void displayState(String state) {
+    private void displayState(String state) {
         if (getNamedSensor() == null) {
             setDisconnectedText();
         } else {
             restoreConnectionDisplay();
         }
         setDisplayState(state);
-        setIcon(getIcon(state));
-        setText(getText(state));
+        if (isText() && isIcon()) {  // Overlaid text
+            setIcon(getIcon(state));
+        }
     }
 
     TableItemPanel _itemPanel;
+    JCheckBoxMenuItem momentaryItem = new JCheckBoxMenuItem(Bundle.getMessage("Momentary"));
+
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameSensor"));
         popup.add(new AbstractAction(txt) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 editItem();
             }
+        });
+
+        popup.add(momentaryItem);
+        momentaryItem.setSelected(getMomentary());
+        momentaryItem.addActionListener((java.awt.event.ActionEvent e) -> {
+            setMomentary(momentaryItem.isSelected());
         });
         return true;
     }
@@ -355,29 +356,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         _iconEditorFrame = null;
         _iconEditor = null;
         invalidate();
-    }*/
-
-/*    // Original text is used when changing between icon and text, this allows for a undo when reverting back.
-    String originalText;
-
-    public void setOriginalText(String s) {
-        originalText = s;
-        displayState(sensorState());
-    }
-
-    public String getOriginalText() {
-        return originalText;
-    }
-
-    @Override
-    public void setText(String s) {
-        setOpaque(false);
-        if (super._rotateText && !_icon) {
-            return;
-        }
-        _text = (s != null && s.length() > 0);
-        super.setText(s);
-        updateSize();
     }*/
 
     public boolean getMomentary() {

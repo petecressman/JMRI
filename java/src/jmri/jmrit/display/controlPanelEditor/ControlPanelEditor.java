@@ -57,10 +57,8 @@ import jmri.jmrit.display.IndicatorTrack;
 import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.LocoIcon;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableJPanel;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.SensorIcon;
 import jmri.jmrit.display.ToolTip;
 import jmri.jmrit.display.controlPanelEditor.shape.ShapeDrawer;
 import jmri.jmrit.display.palette.ItemPalette;
@@ -281,7 +279,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
         addItem = new JMenuItem(Bundle.getMessage("Zoom", "..."));
         _zoomMenu.add(addItem);
-        PositionableJComponent z = new PositionableJComponent(this);
+        Positionable z = new Positionable(this);
         z.setScale(getPaintScale());
         addItem.addActionListener(CoordinateEdit.getZoomEditAction(z));
 
@@ -409,7 +407,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         });
 
         JMenuItem editItem = new JMenuItem(Bundle.getMessage("renamePanelMenu", "..."));
-        PositionableJComponent z = new PositionableJComponent(this);
+        Positionable z = new Positionable(this);
         z.setScale(getPaintScale());
         editItem.addActionListener(CoordinateEdit.getNameEditAction(z));
         _fileMenu.add(editItem);
@@ -1104,13 +1102,13 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         return selection;
     }
 
-    private PositionableJComponent getCopySelection(MouseEvent event) {
+    private Positionable getCopySelection(MouseEvent event) {
         if (_selectionGroup == null) {
             return null;
         }
         for (Positionable p : _selectionGroup) {
             if (pointOnItem(p, event)) {
-                return (PositionableJComponent)p;
+                return p;
             }
         }
         return null;
@@ -1227,7 +1225,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             log.debug("mouseReleased at ({},{}) dragging={}, pastePending={}, selectRect is{} null",
                     event.getX(), event.getY(), _dragging, _pastePending, (_selectRect == null ? "" : " not"));
         }
-        PositionableJComponent selection = (PositionableJComponent)getCurrentSelection(event);
+        Positionable selection = getCurrentSelection(event);
 
         if ((event.isPopupTrigger() || event.isMetaDown() || event.isAltDown()) /*&& !_dragging*/) {
             if (selection != null) {
@@ -1301,7 +1299,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         setToolTip(null); // ends tooltip if displayed
         log.debug("mouseClicked at ({},{})", event.getX(), event.getY());
 
-        PositionableJComponent selection = (PositionableJComponent)getCurrentSelection(event);
+        Positionable selection = getCurrentSelection(event);
         if (_shapeDrawer.doMouseClicked(event, this)) {
             return;
         }
@@ -1586,7 +1584,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
      * only to specific Positionable types.
      */
     @Override
-    protected void showPopUp(PositionableJComponent p, MouseEvent event) {
+    protected void showPopUp(Positionable p, MouseEvent event) {
         if (log.isDebugEnabled())
             log.debug("showPopUp comp {}", p.getNameString());
         if (!p.isVisible()) {
@@ -1611,48 +1609,48 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
             // items with defaults or using overrides
             boolean popupSet = false;
-//            popupSet |= p.setRotateOrthogonalMenu(popup);
+            popupSet |= p.setRotateOrthogonalMenu(popup);
             popupSet |= p.setRotateMenu(popup);
             popupSet |= p.setScaleMenu(popup);
             if (popupSet) {
                 popup.addSeparator();
                 popupSet = false;
             }
-            popupSet = p.setEditItemMenu(popup);
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
-            }
+            p.setFixedTextMenu(popup);
+            p.setTextMarginMenu(popup);
+            p.setTextBorderMenu(popup);
+            p.setTextFontMenu(popup);
+            p.setBackgroundMenu(popup);
+            p.setTextJustificationMenu(popup);
+            p.setTextOrientationMenu(popup);
+            p.copyItem(popup);
+            popup.addSeparator();
+            p.propertyUtil(popup);
+            
+            popup.addSeparator();
             if (p instanceof PositionableLabel) {
-                PositionableLabel pl = (PositionableLabel) p;
-                /*                if (pl.isIcon() && "javax.swing.JLabel".equals(pl.getClass().getSuperclass().getName()) ) {
-                    popupSet |= setTextAttributes(pl, popup);       // only for plain icons
-                }   Add backgrounds & text over icons later */
-                if (!pl.isIcon()) {
-                    popupSet |= p.setTextEditMenu(popup);
-                    popupSet |= setTextAttributes(p, popup);
-//                    popupSet |= pl.setEditTextMenu(popup);
-                } else if (p instanceof SensorIcon) {
-                    popup.add(CoordinateEdit.getTextEditAction(p, "OverlayText"));
-                    if (pl.isText()) {
-                        popupSet |= setTextAttributes(p, popup);
-//                        popupSet |= pl.setEditTextMenu(popup);
-                    }
-                }
-            } else if (p instanceof PositionableJPanel) {
+                PositionableLabel pl = (PositionableLabel)p;
+                popupSet = pl.setDisplayModeMenu(popup);
+                popupSet |= pl.setDisableControlMenu(popup);
+                popupSet |= pl.setTextEditMenu(popup);
                 popupSet |= setTextAttributes(p, popup);
+                popupSet |= pl.setEditIconMenu(popup);
+                popupSet |= pl.setIconEditMenu(popup);
+            } else {
+                popupSet = setTextAttributes(p, popup);
             }
+            if (p instanceof PositionableJPanel) {
+                popupSet = ((PositionableJPanel)p).setIconEditMenu(popup);
+            }
+            if (popupSet) {
+                popupSet = false;
+                popup.addSeparator();
+            }
+
+            p.setAdditionalEditPopUpMenu(popup);
             if (p instanceof LinkingObject) {
                 ((LinkingObject) p).setLinkMenu(popup);
             }
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
-            }
-            p.setDisableControlMenu(popup);
-            p.setAdditionalEditPopUpMenu(popup);
-            // for Positionables with unique settings
-            p.showPopUp(popup);
 
             if (p.doViemMenu()) {
                 setShowToolTipMenu(p, popup);

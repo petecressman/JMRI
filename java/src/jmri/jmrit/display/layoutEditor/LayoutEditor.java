@@ -127,7 +127,6 @@ import jmri.jmrit.display.LocoIcon;
 import jmri.jmrit.display.MultiSensorIcon;
 import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ReporterIcon;
 import jmri.jmrit.display.SensorIcon;
@@ -5000,8 +4999,8 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
 
                         if (selectedObject != null) {
                             selectedPointType = LayoutTrack.LAYOUT_POS_JCOMP;
-                            startDelta.setLocation((((PositionableJComponent) selectedObject).getX() - dLoc.getX()),
-                                    (((PositionableJComponent) selectedObject).getY() - dLoc.getY()));
+                            startDelta.setLocation((((Positionable) selectedObject).getX() - dLoc.getX()),
+                                    (((Positionable) selectedObject).getY() - dLoc.getY()));
                         } else {
                             selectedObject = checkMultiSensorPopUps(dLoc);
 
@@ -5693,7 +5692,7 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
      * Select the menu items to display for the Positionable's popup
      */
     @Override
-    protected void showPopUp(@Nonnull PositionableJComponent p, @Nonnull MouseEvent event) {
+    protected void showPopUp(@Nonnull Positionable p, @Nonnull MouseEvent event) {
         if (!((JComponent) p).isVisible()) {
             return; //component must be showing on the screen to determine its location
         }
@@ -5734,8 +5733,12 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                     popup.addSeparator();
                     popupSet = false;
                 }
-                popupSet = p.setEditIconMenu(popup);
-                popupSet = p.setTextEditMenu(popup);
+                if (p instanceof PositionableLabel) {
+                    PositionableLabel pl = (PositionableLabel)p;
+                    popupSet = pl.setEditIconMenu(popup);
+                    popupSet = pl.setTextEditMenu(popup);                    
+                    pl.setDisableControlMenu(popup);
+                }
 
                 p.setFixedTextMenu(popup);
                 p.setTextMarginMenu(popup);
@@ -5753,7 +5756,6 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                     popup.addSeparator();
                     popupSet = false;
                 }
-                p.setDisableControlMenu(popup);
                 setShowAlignmentMenu(popup);
 
                 //for Positionables with unique settings
@@ -6734,7 +6736,7 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                         }
 
                         case LayoutTrack.LAYOUT_POS_JCOMP: {
-                            PositionableJComponent c = (PositionableJComponent) selectedObject;
+                            Positionable c = (Positionable) selectedObject;
 
                             if (c.isPositionable()) {
                                 c.setLocation((int) currentPoint.getX(), (int) currentPoint.getY());
@@ -7425,11 +7427,6 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
             redrawPanel();
         }
         return found;
-    }
-
-    @Override
-    public boolean removeFromContents(@Nonnull Positionable l) {
-        return remove(l);
     }
 
     private String findBeanUsage(@Nonnull NamedBean sm) {

@@ -23,7 +23,6 @@ import jmri.SensorManager;
 import jmri.jmrit.display.CoordinateEdit;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.util.SystemType;
 import org.slf4j.Logger;
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright (c) 2012
  */
-public abstract class PositionableShape extends PositionableJComponent implements PropertyChangeListener {
+public abstract class PositionableShape extends Positionable implements PropertyChangeListener {
 
     private Shape _shape;
     protected Color _lineColor = Color.black;

@@ -164,7 +164,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             sensor.addPropertyChangeListener(this, namedOccSensor.getName(), "Indicator Turnout Icon");
             _status = _pathUtil.getStatus(sensor.getKnownState());
             if (_iconMaps != null) {
-                displayState(turnoutState());
+                displayState(_status, turnoutState());
             }
         }
     }
@@ -213,7 +213,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             block.addPropertyChangeListener(this, namedOccBlock.getName(), "Indicator Turnout Icon");
             setStatus(block, block.getState());
             if (_iconMaps != null) {
-                displayState(turnoutState());
+                displayState(_status, turnoutState());
             }
             setToolTip(new ToolTip(block.getDescription(), 0, 0));
         }
@@ -308,33 +308,29 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         return _status;
     }
 
+    @Override
+    public void displayState() {
+        displayState(_status, turnoutState());
+    }
 
     /**
      * Drive the current state of the display from the state of the turnout and
      * status of track.
      */
-    @Override
-    public void displayState(String state) {
+    private void displayState(String status, String state) {
         if (getNamedTurnout() == null) {
             setDisconnectedText();
         } else {
             restoreConnectionDisplay();
         }
-        PositionableIcon statusMap = (PositionableIcon)getStateData(_status);
-        if (isIcon()) {
-             NamedIcon icon = statusMap.getIcon(state);
-             if (icon != null) {
-                 super.setIcon(icon);
-                 if (!isText()) {
-                     setOpaque(false);
-                 }
-             }
+        setDisplayState(status);
+        TurnoutIcon turnoutIcon = (TurnoutIcon)getStateData(_status);
+        turnoutIcon.displayState(state);
+        if (isText() && isIcon()) {  // Overlaid text
+            setIcon(turnoutIcon.getIcon(status));
+        } else {
+            turnoutIcon.setIcon(turnoutIcon.getStateData(state).getIcon());
         }
-        if (isText()) {
-            String text = statusMap.getText(state);
-            setText(text);
-        }
-        updateSize();
     }
 
     @Override
@@ -377,7 +373,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
                 }
             }
         }
-        displayState(turnoutState());
+        displayState(_status, turnoutState());
     }
 
     private void setStatus(OBlock block, int state) {
@@ -461,7 +457,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             }
         }   // otherwise retain current map
         finishItemUpdate(_paletteFrame, _TOPanel);
-        displayState(turnoutState());
+        displayState(_status, turnoutState());
     }
 
     @Override
@@ -475,6 +471,21 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         namedOccSensor = null;
         super.dispose();
     }
+/*
+    @Override
+    public void paintComponent(Graphics g) {
+
+        TurnoutIcon turnoutIcon = (TurnoutIcon)getStateData(_status);
+        
+        if (log.isDebugEnabled()) log.debug("Paint {} - {}, displayStatus= {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                getNameString(), _status, turnoutState(), (_iconMaps==null ? "null" : _iconMaps.size()));
+
+        if (isIcon() && isText()) { // overlaid
+            super.paintComponent(g);
+        } else {
+            turnoutIcon.paintComponent(g);
+        }
+    }*/
 
     private final static Logger log = LoggerFactory.getLogger(IndicatorTurnoutIcon.class);
 }

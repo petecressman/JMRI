@@ -872,7 +872,9 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         _controlLayout = state;
         if (_globalSetsLocal) {
             for (Positionable _content : _contents) {
-                _content.setControlling(state);
+                if (_content instanceof PositionableIcon) {
+                    ((PositionableIcon)_content).setControlling(state);
+                }
             }
         }
     }
@@ -1713,7 +1715,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     protected void addToTarget(Positionable l) {
-        JComponent c = (JComponent) l;
+        JComponent c = l;
         c.invalidate();
         _targetPanel.remove(c);
         _targetPanel.add(c, Integer.valueOf(l.getDisplayLevel()));
@@ -2610,7 +2612,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
      * ******************* cleanup ************************
      */
     protected void removeFromTarget(Positionable l) {
-        _targetPanel.remove((Component) l);
+        _targetPanel.remove(l);
         _highlightcomponent = null;
         Point p = l.getLocation();
         int w = l.getWidth();
@@ -2726,7 +2728,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             return;
         }
         for (Positionable p : _contents) {
-            PositionableJComponent pos = (PositionableJComponent) p;
+            Positionable pos = p;
             if (pos.getNamedBean() == nb) {
                 switch (menu) {
                     case VIEWPOPUPONLY:
@@ -2996,7 +2998,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             sp.setPreferredSize(dim);
             setContentPane(sp);
             pack();
-            setLocationRelativeTo((Component) _pos);
+            setLocationRelativeTo(_pos);
         }
 
         protected JPanel makeDoneButtonPanel() {
@@ -3030,73 +3032,36 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     /**
      * Set attributes of a Positionable list
      *
-     * @param pos    the item whose attributes should be copied
+     * @param pMaster    the item whose attributes should be copied
      *
      */
     protected void setSelectionsAttributes(Positionable pMaster) {
         if (_selectionGroup == null || !_selectionGroup.contains(pMaster)) {
             return;
         }
-        if (pMaster instanceof PositionableIcon) {
-            PositionableIcon pm = (PositionableIcon)pMaster;
-            Iterator<Map.Entry<String, PositionableLabel>> it = pm.getIconMap().entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, PositionableLabel> entry = it.next();
-                String state = entry.getKey();
-                PositionableLabel p = entry.getValue();
-                for (Positionable pSlave : _selectionGroup) {
-                    if (pSlave instanceof PositionableIcon) {
-                        PositionableIcon ps = (PositionableIcon)pSlave;
-                        PositionableLabel pi = ps.getStateData(state);
-                        pi.setText(p.getText());
-                        pi.setFont(p.getFont());
-                        pi.setFontSize(p.getFont().getSize());
-                        pi.setFontStyle(p.getFont().getStyle());
-                        pi.setJustification(p.getJustification());
-                        pi.setFixedWidth(p.getFixedWidth());
-                        pi.setFixedHeight(p.getFixedHeight());
-                        pi.setMarginSize(p.getMarginSize());
-                        pi.setBorderSize(p.getBorderSize());
-                        pi.setBorderColor(p.getBorderColor());
-                        pi.setBackgroundColor(p.getBackgroundColor());
-                        pi.setForeground(p.getForeground());
-                    } else {
-                        if (pSlave instanceof PositionableLabel &&
-                                !(pSlave instanceof jmri.jmrit.display.MemoryIcon)) {
-                            ((PositionableLabel) pSlave).setText(p.getText());
-                        }
-                        pSlave.setFont(p.getFont());
-                        pSlave.setFontSize(p.getFont().getSize());
-                        pSlave.setFontStyle(p.getFont().getStyle());
-                        pSlave.setJustification(p.getJustification());
-                        pSlave.setFixedWidth(p.getFixedWidth());
-                        pSlave.setFixedHeight(p.getFixedHeight());
-                        pSlave.setMarginSize(p.getMarginSize());
-                        pSlave.setBorderSize(p.getBorderSize());
-                        pSlave.setBorderColor(p.getBorderColor());
-                        pSlave.setBackgroundColor(p.getBackground());                
-                        pSlave.setForeground(p.getForeground());
+        for (Positionable p : _selectionGroup) {
+            if (p instanceof IndicatorTrack) {
+                PositionableIcon pi = (PositionableIcon)p;
+                if (pMaster instanceof IndicatorTrack) {
+                    PositionableIcon pmi = (PositionableIcon)pMaster;
+                    for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                        pmi.getStateData(entry.getKey()).setAttributesOf(entry.getValue());
                     }
+                } else { 
+                    pMaster.setAttributesOf(p);
                 }
-            } 
-        } else {
-            for (Positionable pSlave : _selectionGroup) {
-                if (pSlave instanceof PositionableLabel &&(pSlave instanceof jmri.jmrit.display.MemoryIcon)
-                && pMaster instanceof PositionableLabel &&(pMaster instanceof jmri.jmrit.display.MemoryIcon)) {
-                    ((PositionableLabel)pSlave).setText(((PositionableLabel)pMaster).getText());
+            } else if (p instanceof PositionableIcon) {
+                PositionableIcon pi = (PositionableIcon)p;
+                if (pMaster instanceof PositionableIcon) {
+                    PositionableIcon pmi = (PositionableIcon)pMaster;
+                    for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                        pmi.getStateData(entry.getKey()).setAttributesOf(entry.getValue());
+                    }
+                } else { 
+                    pMaster.setAttributesOf(p);
                 }
-                pSlave.setFont(pMaster.getFont());
-                pSlave.setFontSize(pMaster.getFont().getSize());
-                pSlave.setFontStyle(pMaster.getFont().getStyle());
-                pSlave.setJustification(pMaster.getJustification());
-                pSlave.setFixedWidth(pMaster.getFixedWidth());
-                pSlave.setFixedHeight(pMaster.getFixedHeight());
-                pSlave.setMarginSize(pMaster.getMarginSize());
-                pSlave.setBorderSize(pMaster.getBorderSize());
-                pSlave.setBorderColor(pMaster.getBorderColor());
-                pSlave.setBackgroundColor(pMaster.getBackground());                
-                pSlave.setForeground(pMaster.getForeground());
             }
+            pMaster.setAttributesOf(p);
         }
     }
 
@@ -3358,7 +3323,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
      * @param p     the item containing or requiring the context menu
      * @param event the event triggering the menu
      */
-    abstract protected void showPopUp(PositionableJComponent p, MouseEvent event);
+    abstract protected void showPopUp(Positionable p, MouseEvent event);
 
     /**
      * After construction, initialize all the widgets to their saved config

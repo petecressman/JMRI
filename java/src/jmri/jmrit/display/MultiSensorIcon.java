@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import jmri.InstanceManager;
 import jmri.NamedBean;
@@ -30,12 +31,13 @@ import org.slf4j.LoggerFactory;
 public class MultiSensorIcon extends PositionableLabel implements java.beans.PropertyChangeListener {
 
     String _iconFamily;
+    private boolean _controlling;
 
     public MultiSensorIcon(Editor editor) {
         // super ctor call to make sure this is an icon label
         super(new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
                 "resources/icons/smallschematics/tracksegments/circuit-error.gif"), editor);
-        _control = true;
+        _controlling = true;
         displayState();
     }
 
@@ -180,6 +182,10 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
         return name.toString();
     }
 
+    public void setControlling(boolean enabled) {
+        _controlling = enabled;
+    }
+
     /**
      * ****** popup AbstractAction.actionPerformed method overrides ********
      */
@@ -222,7 +228,14 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     }*/
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
+        JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
+        disableItem.setSelected(!_controlling);
+        popup.add(disableItem);
+        disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
+            setControlling(!disableItem.isSelected());
+        });
+        
         String txt = Bundle.getMessage("EditItem", Bundle.getMessage("MultiSensor"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override
@@ -480,7 +493,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     }
 
     boolean buttonLive() {
-        return _editor.getFlag(Editor.OPTION_CONTROLS, isControlling());
+        return _editor.getFlag(Editor.OPTION_CONTROLS, _controlling);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class PositionableRectangle extends PositionableShape {
     }
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("Rectangle"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

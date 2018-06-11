@@ -305,7 +305,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
         setRemoveMenu(popup);
         return true;
     }
-
+/*
     @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         return false;
@@ -319,7 +319,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
     @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
         return false;
-    }
+    }*/
 
     private final static Logger log = LoggerFactory.getLogger(PortalIcon.class);
 }

@@ -69,10 +69,12 @@ public class IndicatorTrackIcon extends PositionableIcon
         HashMap<String, PositionableLabel> map = new HashMap<>();
         HashMap<String, PositionableLabel> oldMap = getIconMap();
         for (String status : IndicatorTurnoutIcon.STATUSNAME) {
-            PositionableLabel pos = new PositionableLabel(Bundle.getMessage(status), getEditor());
+            PositionableLabel pos;
             if (oldMap != null) {
-                pos.setIcon(oldMap.get(status).getIcon());
-                pos.setIsIcon(true);
+                pos = oldMap.get(status);
+            } else {
+                pos = new PositionableLabel(getEditor());
+                pos.setText(Bundle.getMessage(status));
             }
             map.put(status, pos);
         }
@@ -286,20 +288,33 @@ public class IndicatorTrackIcon extends PositionableIcon
 
     /**
      * Pop-up displays unique attributes
-     */
+     *
     @Override
     public boolean showPopUp(JPopupMenu popup) {
         return false;
+    }*/
+
+    @Override
+    public boolean setDisableControlMenu(JPopupMenu popup) {
+        return false;
+    }
+
+    @Override
+    public void displayState() {
+        displayState(_status);
     }
 
     /*
      * Drive the current state of the display from the status.
      */
-    public void displayState(String status) {
+    private void displayState(String status) {
         if (log.isDebugEnabled()) {
             log.debug(getNameString() + " displayStatus " + status);
         }
         setDisplayState(status);
+        if (isText() && isIcon()) {  // Overlaid text
+            setIcon(getIcon(status));
+        }
 /*        if (isIcon()) {
             NamedIcon icon = getIcon(status);
             if (icon != null) {
@@ -313,11 +328,11 @@ public class IndicatorTrackIcon extends PositionableIcon
             String text = getText(status);
             setText(text);
         }*/
-        updateSize();
+//        updateSize();
     }
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("IndicatorTrack"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

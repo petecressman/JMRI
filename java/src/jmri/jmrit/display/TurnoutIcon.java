@@ -124,7 +124,8 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             if (oldMap != null && oldMap.get(state) != null) {
                 pos = oldMap.get(state);
             } else {
-                pos = new PositionableLabel(Bundle.getMessage(state), getEditor());
+                pos = new PositionableLabel(getEditor());
+                pos.setText(Bundle.getMessage(state));
             }
             map.put(state, pos);
         }
@@ -147,13 +148,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     }
 
     /**
-     * Get icon by its localized bean state name.
-     *
-    public NamedIcon getIcon(int state) {
-        return getIcon(_state2nameMap.get(state));
-    }*/
-
-    /**
      * Get current state of attached turnout
      *
      * @return A state name from a Turnout, e.g. Turnout.CLOSED
@@ -168,6 +162,27 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         if (log.isDebugEnabled()) 
             log.debug("turnout= {}, state= {}", namedTurnout, state);
         return state;
+    }
+
+    @Override
+    public void displayState() {
+        displayState(turnoutState());
+    }
+
+    /**
+     * Drive the current state of the display from the state of the turnout.
+     * @param state bean state name
+     */
+    protected void displayState(String state) {
+        if (getNamedTurnout() == null) {
+            setDisconnectedText();
+        } else {
+            restoreConnectionDisplay();
+       }
+       setDisplayState(state);
+       if (isText() && isIcon()) {  // Overlaid text
+           setIcon(getIcon(state));
+       }
     }
 
     // update icon as state of turnout changes
@@ -251,36 +266,11 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     JCheckBoxMenuItem directControlItem = new JCheckBoxMenuItem(Bundle.getMessage("DirectControl"));
 
     /**
-     * Pop-up displays unique attributes of turnouts
+     * Pop-up displays non editing popups
      */
     @Override
     public boolean showPopUp(JPopupMenu popup) {
-        if (isEditable()) {
-            // add tristate option if turnout has feedback
-            if (namedTurnout != null && getTurnout().getFeedbackMode() != Turnout.DIRECT) {
-                addTristateEntry(popup);
-            }
-
-            popup.add(momentaryItem);
-            momentaryItem.setSelected(getMomentary());
-            momentaryItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    setMomentary(momentaryItem.isSelected());
-                }
-            });
-
-            popup.add(directControlItem);
-            directControlItem.setSelected(getDirectControl());
-            directControlItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    setDirectControl(directControlItem.isSelected());
-                }
-            });
-        } else if (getDirectControl()) {
-            getTurnout().setCommandedState(jmri.Turnout.THROWN);
-        }
+        getTurnout().setCommandedState(jmri.Turnout.THROWN);
         return true;
     }
 
@@ -335,35 +325,36 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         displayState(turnoutState());
     }*/
 
-    @Override
-    public void displayState() {
-        displayState(turnoutState());
-    }
-
-    /**
-     * Drive the current state of the display from the state of the turnout.
-     * @param state bean state name
-     */
-    public void displayState(String state) {
-        if (getNamedTurnout() == null) {
-            setDisconnectedText();
-        } else {
-            restoreConnectionDisplay();
-       }
-       setDisplayState(state);
-       setIcon(getIcon(state));
-       setText(getText(state));
-    }
-
     TableItemPanel _itemPanel;
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameTurnout"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 editItem();
+            }
+        });
+        if (namedTurnout != null && getTurnout().getFeedbackMode() != Turnout.DIRECT) {
+            addTristateEntry(popup);
+        }
+
+        popup.add(momentaryItem);
+        momentaryItem.setSelected(getMomentary());
+        momentaryItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setMomentary(momentaryItem.isSelected());
+            }
+        });
+
+        popup.add(directControlItem);
+        directControlItem.setSelected(getDirectControl());
+        directControlItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                setDirectControl(directControlItem.isSelected());
             }
         });
         return true;

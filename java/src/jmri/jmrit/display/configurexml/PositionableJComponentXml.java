@@ -7,7 +7,6 @@ import jmri.InstanceManager;
 import jmri.configurexml.AbstractXmlAdapter;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.ToolTip;
 import org.jdom2.Attribute;
 import org.jdom2.DataConversionException;
@@ -16,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handle configuration for display.PositionableJComponent objects
+ * Handle configuration for display.Positionable objects
  *
  * @author PeteCressman Copyright: Copyright (c) 2018
  */
@@ -26,19 +25,19 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
     }
 
     /**
-     * Default implementation for storing the contents of a PositionableJComponent
+     * Default implementation for storing the contents of a Positionable
      *
-     * @param o Object to store, of type PositionableJComponent
+     * @param o Object to store, of type Positionable
      * @return Element containing the complete info
      */
     @Override
     public Element store(Object o) {
-        PositionableJComponent p = (PositionableJComponent) o;
+        Positionable p = (Positionable) o;
 
         if (!p.isActive()) {
             return null;  // if flagged as inactive, don't store
         }
-        Element element = new Element("PositionableJComponent");
+        Element element = new Element("Positionable");
         storeCommonAttributes(p, element);
         storeFontInfo(p, element);
         element.setAttribute("class", "jmri.jmrit.display.configurexml.PositionableJComponentXml");
@@ -49,7 +48,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
      * Store the text formatting information.
      * <p>
      * This is always stored, even if the icon isn't in text mode, because some
-     * uses (subclasses) of PositionableJComponent flip back and forth between icon
+     * uses (subclasses) of Positionable flip back and forth between icon
      * and text, and want to remember their formatting.
      *
      * @param p       the icon to store
@@ -121,7 +120,6 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         element.setAttribute("x", "" + p.getX());
         element.setAttribute("y", "" + p.getY());
         element.setAttribute("level", String.valueOf(p.getDisplayLevel()));
-        element.setAttribute("forcecontroloff", !p.isControlling() ? "true" : "false");
         element.setAttribute("hidden", p.isHidden() ? "yes" : "no");
         element.setAttribute("positionable", p.isPositionable() ? "true" : "false");
         element.setAttribute("showtooltip", p.showToolTip() ? "true" : "false");
@@ -145,7 +143,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
     }
 
     /**
-     * Create a PositionableJComponent, then add to a target JLayeredPane
+     * Create a Positionable, then add to a target JLayeredPane
      *
      * @param element Top level Element to unpack.
      * @param o       Editor as an Object
@@ -154,7 +152,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
     public void load(Element element, Object o) {
         // create the objects
         Editor editor = (Editor) o;
-        PositionableJComponent l = new PositionableJComponent(editor);;
+        Positionable l = new Positionable(editor);
         loadFontInfo(l, element);
 
         if (log.isDebugEnabled()) {
@@ -176,7 +174,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         loadCommonAttributes(l, Editor.LABELS, element);
     }
 
-    protected void loadFontInfo(PositionableJComponent l, Element element) {
+    protected void loadFontInfo(Positionable l, Element element) {
         if (log.isDebugEnabled()) {
             log.debug("loadTextInfo");
         }
@@ -279,13 +277,13 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
 
         a = element.getAttribute("justification");
         if (a == null) {
-            l.setJustification(PositionableJComponent.LEFT);
+            l.setJustification(Positionable.LEFT);
         } else if (a.equals("left") ) {
-            l.setJustification(PositionableJComponent.LEFT);
+            l.setJustification(Positionable.LEFT);
         } else if (a.equals("centre") ) {
-            l.setJustification(PositionableJComponent.LEFT);
+            l.setJustification(Positionable.LEFT);
         } else if (a.equals("right") ) {
-            l.setJustification(PositionableJComponent.LEFT);
+            l.setJustification(Positionable.LEFT);
         }
         a = element.getAttribute("orientation");
         if (a != null) {
@@ -312,11 +310,14 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
     }
 
     public void loadCommonAttributes(Positionable l, int defaultLevel, Element element) {
-        try {
-            l.setControlling(!element.getAttribute("forcecontroloff").getBooleanValue());
-        } catch (DataConversionException e1) {
-            log.warn("unable to convert positionable label forcecontroloff attribute");
-        } catch (Exception e) {
+        if (l instanceof jmri.jmrit.display.PositionableIcon &&
+                element.getAttribute("forcecontroloff") != null) {    // pre 5.0 or something
+            try {
+                ((jmri.jmrit.display.PositionableIcon)l).setControlling(!element.getAttribute("forcecontroloff").getBooleanValue());
+            } catch (DataConversionException e1) {
+                log.warn("unable to convert positionable label forcecontroloff attribute");
+            } catch (Exception e) {
+            }
         }
 
         // find coordinates
@@ -373,10 +374,10 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         }
 
         Attribute a = element.getAttribute("degrees");
-        if (a != null && l instanceof PositionableJComponent) {
+        if (a != null && l instanceof Positionable) {
             try {
                 int deg = a.getIntValue();
-                ((PositionableJComponent) l).setDegrees(deg);
+                l.setDegrees(deg);
             } catch (org.jdom2.DataConversionException dce) {
             }
         }

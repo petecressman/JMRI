@@ -34,17 +34,9 @@ public class PositionableIconXml extends PositionableLabelXml {
         if (!p.isActive()) {
             return false;  // if flagged as inactive, don't store
         }
-        // can be both for text overlaid icon
-        element.setAttribute("isText", p.isText() ? "yes" : "no");
-        element.setAttribute("isIcon", p.isIcon() ? "yes" : "no");
-
-        if (p.getText() != null) {
-            element.setAttribute("text", p.getText());
-        }
-        if (p.getIcon() != null) {
-            element.addContent(storeIcon("icon", p.getIcon()));
-        }       
-        storeCommonAttributes(p, element);
+        element.setAttribute("forcecontroloff", !p.isControlling() ? "true" : "false");
+        
+        storeCommonLabelAttributes(p, element);
         storeFontInfo(p, element);
 
         if (p.getFamily() != null) {
@@ -71,7 +63,7 @@ public class PositionableIconXml extends PositionableLabelXml {
         if (p.getIcon() != null) {
             elem.addContent(storeIcon(key, p.getIcon()));
         }       
-        storeCommonAttributes(p, elem);
+        storeCommonLabelAttributes(p, elem);
         storeFontInfo(p, elem);
 
         element.addContent(elem);
@@ -91,6 +83,14 @@ public class PositionableIconXml extends PositionableLabelXml {
         if (ed == null) {
             log.error("No editor to place PositionableIcon {}", p.getNameString());
             return false;
+        }
+        if (element.getAttribute("forcecontroloff") != null) {
+            try {
+                p.setControlling(!element.getAttribute("forcecontroloff").getBooleanValue());
+            } catch (DataConversionException e1) {
+                log.warn("unable to convert positionable label forcecontroloff attribute");
+            } catch (Exception e) {
+            }
         }
         loadFontInfo(p, element);
 

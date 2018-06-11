@@ -45,7 +45,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         resetDefaultIcon();
         _namedIcon = defaultIcon;
         //By default all memory is left justified
-        setJustification(PositionableJComponent.LEFT);
+        setJustification(Positionable.LEFT);
         this.setTransferHandler(new TransferHandler());
     }
 
@@ -53,7 +53,7 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         super(s, editor);
         setDisplayLevel(Editor.LABELS);
         defaultIcon = s;
-        setJustification(PositionableJComponent.LEFT);
+        setJustification(Positionable.LEFT);
         log.debug("MemoryIcon ctor= " + MemoryIcon.class.getName());
         this.setTransferHandler(new TransferHandler());
     }
@@ -180,9 +180,9 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             if (e.getPropertyName().equals("IsForward")) {
                 Boolean boo = (Boolean) e.getNewValue();
                 if (boo) {
-                    setFlip(PositionableJComponent.NOFLIP);
+                    setFlip(Positionable.NOFLIP);
                 } else {
-                    setFlip(PositionableJComponent.HORIZONTALFLIP);
+                    setFlip(Positionable.HORIZONTALFLIP);
                 }
             }
         }
@@ -421,13 +421,13 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
         if (getFixedWidth() == 0) {
             //setSize(getWidth(), getHeight());
             switch (getJustification()) {
-                case PositionableJComponent.LEFT:
+                case Positionable.LEFT:
                     super.setLocation(getOriginalX(), getOriginalY());
                     break;
-                case PositionableJComponent.RIGHT:
+                case Positionable.RIGHT:
                     super.setLocation(getOriginalX() - getWidth(), getOriginalY());
                     break;
-                case PositionableJComponent.CENTRE:
+                case Positionable.CENTRE:
                     super.setLocation(getOriginalX() - (getWidth() / 2), getOriginalY());
                     break;
                 default:
@@ -450,13 +450,13 @@ public class MemoryIcon extends PositionableLabel implements java.beans.Property
             reduceTo(getWidth(), getHeight(), 0.2);
 
             if (flipRosterIcon) {
-                setFlip(PositionableJComponent.HORIZONTALFLIP);
+                setFlip(Positionable.HORIZONTALFLIP);
             }
             jmri.InstanceManager.throttleManagerInstance().attachListener(re.getDccLocoAddress(), this);
             Object isForward = jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(re.getDccLocoAddress(), "IsForward");
             if (isForward != null) {
                 if (!(Boolean) isForward) {
-                    setFlip(PositionableJComponent.HORIZONTALFLIP);
+                    setFlip(Positionable.HORIZONTALFLIP);
                 }
             }
             return null;

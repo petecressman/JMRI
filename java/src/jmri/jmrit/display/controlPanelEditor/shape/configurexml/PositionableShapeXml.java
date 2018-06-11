@@ -3,8 +3,8 @@ package jmri.jmrit.display.controlPanelEditor.shape.configurexml;
 import java.awt.Color;
 import jmri.NamedBeanHandle;
 import jmri.Sensor;
-import jmri.configurexml.AbstractXmlAdapter;
 import jmri.jmrit.display.ToolTip;
+import jmri.jmrit.display.configurexml.PositionableJComponentXml;
 import jmri.jmrit.display.controlPanelEditor.shape.PositionableShape;
 import org.jdom2.Attribute;
 import org.jdom2.DataConversionException;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright (c) 2012
  */
-public abstract class PositionableShapeXml extends AbstractXmlAdapter {
+public abstract class PositionableShapeXml extends PositionableJComponentXml {
 
     public PositionableShapeXml() {
     }
@@ -49,23 +49,9 @@ public abstract class PositionableShapeXml extends AbstractXmlAdapter {
      * @param element Element in which contents are stored
      */
     public void storeCommonAttributes(PositionableShape p, Element element) {
-        element.setAttribute("x", "" + p.getX());
-        element.setAttribute("y", "" + p.getY());
-        element.setAttribute("level", String.valueOf(p.getDisplayLevel()));
-        element.setAttribute("forcecontroloff", !p.isControlling() ? "true" : "false");
-        element.setAttribute("hidden", p.isHidden() ? "yes" : "no");
-        element.setAttribute("positionable", p.isPositionable() ? "true" : "false");
-        element.setAttribute("showtooltip", p.showToolTip() ? "true" : "false");
-        element.setAttribute("editable", p.isEditable() ? "true" : "false");
-        ToolTip tip = p.getToolTip();
-        String txt = tip.getText();
-        if (txt != null) {
-            Element elem = new Element("toolTip").addContent(txt);
-            element.addContent(elem);
-        }
-        if (p.getDegrees() != 0) {
-            element.setAttribute("degrees", "" + p.getDegrees());
-        }
+        
+        storeCommonAttributes(p, element);
+        storeFontInfo(p, element);
 
         Element elem = storeColor("lineColor", p.getLineColor());
         if (elem != null) {

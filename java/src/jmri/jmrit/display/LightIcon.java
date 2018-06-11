@@ -19,13 +19,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (c) 2002
  */
-public class LightIcon extends PositionableLabel implements java.beans.PropertyChangeListener {
+public class LightIcon extends PositionableIcon implements java.beans.PropertyChangeListener {
 
     public LightIcon(Editor editor) {
         // super ctor call to make sure this is an icon label
         super(new NamedIcon("resources/icons/smallschematics/lights/cross-on.png",
                 "resources/icons/smallschematics/lights/cross-off.png"), editor);
-        _control = true;
         displayState(lightState());
     }
 

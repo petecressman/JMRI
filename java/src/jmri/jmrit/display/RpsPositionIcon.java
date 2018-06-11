@@ -25,7 +25,6 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
         // super ctor call to make sure this is an icon label
         super(new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
                 "resources/icons/smallschematics/tracksegments/circuit-error.gif"), editor);
-        _control = true;
         displayState();
 
         // blow up default font
@@ -174,6 +173,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
      * Drive the current state of the display from whether a valid measurement
      * has been received
      */
+    @Override
     public void displayState() {
 
         if (state) {

@@ -1,10 +1,7 @@
 package jmri.jmrit.display;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -16,39 +13,40 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Bob Jacobsen copyright (C) 2009
  */
-public class PositionableJPanel extends PositionableJComponent implements MouseListener, MouseMotionListener {
+abstract public class PositionableJPanel extends Positionable implements MouseListener, MouseMotionListener {
     
-    private JComponent _textComponent;
+    private final JTextField _textComponent;
+    private final JComponent _bodyComponent;
     
     public PositionableJPanel(Editor editor) {
         super(editor);
-        setLayout(new FlowLayout());
-    }
-    
-    protected void setTextComponent(JComponent t) {
-        _textComponent = t;
-        Dimension dim = t.getPreferredSize();
-        super.setFixedSize(dim.width, dim.height);
-    }
+        setLayout(new java.awt.GridBagLayout());
+        _bodyComponent = getContainerComponent();
+        add(_bodyComponent, new java.awt.GridBagConstraints());
+//        invalidate();
 
-    protected JComponent getTextComponent() {
-        return _textComponent;
+        _textComponent = getTextField();
+
+//        Dimension dim = getPreferredSize();
+//        super.setFixedSize(dim.width, dim.height);
     }
     
-    protected String getText() {
-        return null;
-    }
-    
+    abstract protected JTextField getTextField();
+    abstract protected JComponent getContainerComponent();
+    abstract public String getText();
+    abstract public boolean setIconEditMenu(javax.swing.JPopupMenu popup);
+
+    /**
+     * Provides a generic method to return the bean associated with the
+     * Positionable
+     */
     @Override
-    public Positionable deepClone() {
-        PositionableJPanel pos = new PositionableJPanel(_editor);
-        return finishClone(pos);
-    }
+    abstract public jmri.NamedBean getNamedBean();
 
-    protected Positionable finishClone(PositionableJPanel pos) {
-        return super.finishClone(pos);
+    public JComponent getContainer() {
+        return _bodyComponent;
     }
-
+    
     @Override
     public void mousePressed(MouseEvent e) {
         _editor.mousePressed(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
@@ -103,7 +101,7 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
 
     @Override
     public int getWidth() {
-        int width = _textComponent.getPreferredSize().width;;
+        int width = _bodyComponent.getPreferredSize().width;;
         width += (getBorderSize() + getMarginSize()) * 2;            
         if (log.isDebugEnabled()) {
             log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
@@ -113,7 +111,7 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
 
     @Override
     public int getHeight() {
-        int height = _textComponent.getPreferredSize().height;
+        int height = _bodyComponent.getPreferredSize().height;
         height += (getBorderSize() + getMarginSize()) * 2;
         if (log.isDebugEnabled()) {
             log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
@@ -124,20 +122,20 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
     @Override
     public void setForeground(Color c) {
         super.setForeground(c);
-        _textComponent.setForeground(c);
+        _bodyComponent.setForeground(c);
     }
 
     @Override
     public Color getForeground() {
-        return _textComponent.getForeground();
+        return _bodyComponent.getForeground();
     }
 
     @Override
     public void setFont(Font font) {
-        Font oldFont = _textComponent.getFont();
+        Font oldFont = _bodyComponent.getFont();
         Font newFont = new Font(font.getFamily(), oldFont.getStyle(), oldFont.getSize());
         if (!oldFont.equals(newFont)) {
-            _textComponent.setFont(newFont);
+            _bodyComponent.setFont(newFont);
             super.setFont(newFont);
             updateSize();
         }
@@ -145,12 +143,18 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
 
     @Override
     public Font getFont() {
-        return _textComponent.getFont();
+        return _bodyComponent.getFont();
     }
 
     /*
      ****************** Fixed width & height *************** 
-     */
+     *
+    @Override
+    public void setFixedSize(int w, int h) {
+        _bodyComponent.setPreferredSize(new Dimension(w, h));
+        super.setFixedSize(w, h);
+    }
+
     @Override
     public int getFixedWidth() {
         return getPreferredSize().width;
@@ -159,7 +163,7 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
     @Override
     public void setFixedWidth(int w) {
         Dimension dim = getPreferredSize();
-        setPreferredSize(new Dimension(w, dim.height));
+        _bodyComponent.setPreferredSize(new Dimension(w, dim.height));
         super.setFixedWidth(w);
     }
 
@@ -171,29 +175,35 @@ public class PositionableJPanel extends PositionableJComponent implements MouseL
     @Override
     public void setFixedHeight(int h) {
         Dimension dim = getPreferredSize();
-        setPreferredSize(new Dimension(dim.width, h));
+        _bodyComponent.setPreferredSize(new Dimension(dim.width, h));
         super.setFixedHeight(h);
     }
 
     @Override
+    public void setJustification(int just) {
+        log.debug("setJustification: justification={}", just);
+        int justification = getJustification();
+        switch (justification) {
+            case PositionableJComponent.LEFT:
+                _textComponent.setHorizontalAlignment(JTextField.LEFT);
+                break;
+            case PositionableJComponent.RIGHT:
+                _textComponent.setHorizontalAlignment(JTextField.RIGHT);
+                break;
+            default:
+                _textComponent.setHorizontalAlignment(JTextField.CENTER);
+        }
+        super.setJustification(just);
+    }
+
+/*    @Override
     public void paintComponent(Graphics g) {
 //        g = getTransfomGraphics(g);
 
         if (_textComponent instanceof JTextField) {
-            int justification = getJustification();
-            switch (justification) {
-                case PositionableJComponent.LEFT:
-                    ((JTextField) _textComponent).setHorizontalAlignment(JTextField.LEFT);
-                    break;
-                case PositionableJComponent.RIGHT:
-                    ((JTextField) _textComponent).setHorizontalAlignment(JTextField.RIGHT);
-                    break;
-                default:
-                    ((JTextField) _textComponent).setHorizontalAlignment(JTextField.CENTER);
-            }
         }
         super.paintComponent(g); 
-    }
+    }*/
     
     private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class.getName());
 }

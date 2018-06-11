@@ -7,6 +7,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -44,9 +45,13 @@ public class MemoryComboIcon extends PositionableJPanel
         } else {
             _model = new ComboModel();
         }
-        _comboBox = new JComboBox<>(_model);
-        add(_comboBox);
-        setTextComponent(_comboBox);
+        _comboBox.setModel(_model);
+        setDisplayLevel(Editor.LABELS);
+    }
+
+    @Override
+    protected JComponent getContainerComponent() {
+        _comboBox = new JComboBox<>();
         _comboBox.addActionListener(this);
 
         _comboBox.addMouseListener(this);
@@ -55,16 +60,16 @@ public class MemoryComboIcon extends PositionableJPanel
             component.addMouseListener(this);
             component.addMouseMotionListener(this);
         }
-        setDisplayLevel(Editor.LABELS);
-    }
-
-    @Override
-    public JComboBox<String> getTextComponent() {
         return _comboBox;
     }
 
     @Override
-    protected String getText() {
+    protected JTextField getTextField() {
+        return null;
+    }
+
+    @Override
+    public String getText() {
         return _comboBox.getSelectedItem().toString();
     }
     
@@ -204,7 +209,7 @@ public class MemoryComboIcon extends PositionableJPanel
     }
 
     @Override
-    public boolean setEditIconMenu(javax.swing.JPopupMenu popup) {
+    public boolean setIconEditMenu(javax.swing.JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameMemory"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

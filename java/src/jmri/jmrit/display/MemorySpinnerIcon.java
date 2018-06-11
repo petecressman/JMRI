@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -26,30 +28,34 @@ import org.slf4j.LoggerFactory;
  */
 public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListener, PropertyChangeListener {
 
-    int _min = 0;
-    int _max = 100;
-    JSpinner spinner = new JSpinner(new SpinnerNumberModel(0, _min, _max, 1));
+    static int _min = 0;
+    static int _max = 100;
+    JSpinner spinner;
     // the associated Memory object
-    //Memory memory = null;    
     private NamedBeanHandle<Memory> namedMemory;
 
     public MemorySpinnerIcon(Editor editor) {
         super(editor);
-
-//        setLayout(new java.awt.GridBagLayout());
-        add(spinner, new java.awt.GridBagConstraints());
-        setTextComponent(spinner);
-
-        spinner.addChangeListener(this);
-        javax.swing.JTextField textBox = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
-        textBox.addMouseMotionListener(this);
-        textBox.addMouseListener(this);
-
         setDisplayLevel(Editor.LABELS);
     }
 
     @Override
-    protected String getText() {
+    protected JComponent getContainerComponent() {
+        spinner = new JSpinner(new SpinnerNumberModel(0, _min, _max, 1));
+        spinner.addChangeListener(this);
+        return spinner;
+    }
+
+    @Override
+    protected JTextField getTextField() {
+        JTextField textBox = ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
+        textBox.addMouseMotionListener(this);
+        textBox.addMouseListener(this);
+        return textBox;
+    }
+
+    @Override
+    public String getText() {
         return spinner.getValue().toString();
     }
     
@@ -62,11 +68,6 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
     protected Positionable finishClone(MemorySpinnerIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
-    }
-
-    @Override
-    public javax.swing.JComponent getTextComponent() {
-        return ((JSpinner.DefaultEditor) spinner.getEditor()).getTextField();
     }
 
     @Override
@@ -140,6 +141,11 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
     }
 
     @Override
+    public jmri.NamedBean getNamedBean() {
+        return getMemory();
+    }
+
+    @Override
     public void stateChanged(ChangeEvent e) {
         spinnerUpdated();
     }
@@ -163,7 +169,7 @@ public class MemorySpinnerIcon extends PositionableJPanel implements ChangeListe
      boolean selectable = false;
      */
     @Override
-    public boolean setEditIconMenu(javax.swing.JPopupMenu popup) {
+    public boolean setIconEditMenu(javax.swing.JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameMemory"));
         popup.add(new AbstractAction(txt) {
             @Override

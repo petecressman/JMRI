@@ -46,11 +46,11 @@ import org.slf4j.LoggerFactory;
 public class PositionablePropertiesUtil {
 
     Frame mFrame = null;
-    protected PositionableJComponent _parent;
+    protected Positionable _parent;
     JPanel detailpanel = new JPanel();
     JTabbedPane propertiesPanel;
 
-    PositionablePropertiesUtil(PositionableJComponent p) {
+    PositionablePropertiesUtil(Positionable p) {
         _parent = p;
     }
 

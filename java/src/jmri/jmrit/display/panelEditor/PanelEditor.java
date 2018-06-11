@@ -45,9 +45,10 @@ import jmri.configurexml.XmlAdapter;
 import jmri.jmrit.catalog.CatalogPanel;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ToolTip;
 import jmri.util.JmriJFrame;
 import org.jdom2.Element;
@@ -631,8 +632,8 @@ public class PanelEditor extends Editor implements ItemListener {
      * only to specific Positionable types.
      */
     @Override
-    protected void showPopUp(PositionableJComponent p, MouseEvent event) {
-        if (p.isVisible()) {
+    protected void showPopUp(Positionable p, MouseEvent event) {
+        if (!p.isVisible()) {
             return;     // component must be showing on the screen to determine its location
         }
         JPopupMenu popup = new JPopupMenu();
@@ -659,12 +660,6 @@ public class PanelEditor extends Editor implements ItemListener {
                 popup.addSeparator();
                 popupSet = false;
             }
-            popupSet = p.setEditIconMenu(popup);
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
-            }
-            popupSet = p.setTextEditMenu(popup);
             p.setFixedTextMenu(popup);
             p.setTextMarginMenu(popup);
             p.setTextBorderMenu(popup);
@@ -675,16 +670,28 @@ public class PanelEditor extends Editor implements ItemListener {
             p.copyItem(popup);
             popup.addSeparator();
             p.propertyUtil(popup);
-            p.setAdditionalEditPopUpMenu(popup);
-            popupSet = true;
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
+            
+            popup.addSeparator();
+            if (p instanceof PositionableLabel) {
+                PositionableLabel pl = (PositionableLabel)p;
+                popupSet = pl.setDisplayModeMenu(popup);
+                popupSet |= pl.setDisableControlMenu(popup);
+                popupSet |= pl.setTextEditMenu(popup);
+                popupSet |= setTextAttributes(p, popup);
+                popupSet |= pl.setEditIconMenu(popup);
+                popupSet |= pl.setIconEditMenu(popup);
+            } else {
+                popupSet = setTextAttributes(p, popup);
             }
-            p.setDisableControlMenu(popup);
+            if (popupSet) {
+                popupSet = false;
+                popup.addSeparator();
+            }
 
-            // for Positionables with unique item settings
-            p.showPopUp(popup);
+            p.setAdditionalEditPopUpMenu(popup);
+            if (p instanceof LinkingObject) {
+                ((LinkingObject) p).setLinkMenu(popup);
+            }
 
             setRemoveMenu(p, popup);
         } else {
@@ -730,7 +737,7 @@ public class PanelEditor extends Editor implements ItemListener {
                         //Will show the copy option only
                         showMultiSelectPopUp(event, _currentSelection);
                     } else {
-                        showPopUp((PositionableJComponent)_currentSelection, event);
+                        showPopUp(_currentSelection, event);
                     }
                 }
             } else if (!event.isControlDown()) {
@@ -816,7 +823,7 @@ public class PanelEditor extends Editor implements ItemListener {
                 showMultiSelectPopUp(event, _currentSelection);
 
             } else {
-                showPopUp((PositionableJComponent)_currentSelection, event);
+                showPopUp(_currentSelection, event);
             }
         } else {
             if (_currentSelection != null && !_dragging && !event.isControlDown()) {
@@ -956,7 +963,7 @@ public class PanelEditor extends Editor implements ItemListener {
             if (_selectionGroup != null) {
                 showMultiSelectPopUp(event, _currentSelection);
             } else {
-                showPopUp((PositionableJComponent)_currentSelection, event);
+                showPopUp(_currentSelection, event);
             }
             // _selectionGroup = null; // Show popup only works for a single item
 
@@ -1159,7 +1166,7 @@ public class PanelEditor extends Editor implements ItemListener {
             ArrayList<Positionable> _copyOfMultiItemCopyGroup = new ArrayList<>(_multiItemCopyGroup);
             Collections.copy(_copyOfMultiItemCopyGroup, _multiItemCopyGroup);
             for (Positionable comp : _copyOfMultiItemCopyGroup) {
-                copied = (JComponent) comp;
+                copied = comp;
                 xOrig = copied.getX();
                 yOrig = copied.getY();
                 x = xOrig + xoffset;

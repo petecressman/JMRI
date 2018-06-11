@@ -648,20 +648,12 @@ public class CoordinateEdit extends JmriJFrame {
             public void actionPerformed(ActionEvent e) {
                 PositionableLabel pp = (PositionableLabel) pl;
                 String t = xTextField.getText();
-                if (pp.isIcon()) {
-                    if (pp instanceof SensorIcon) {
-                       ((SensorIcon)pp).setText(t); 
-                       pp.updateSize();
-                       dispose();
-                    } else {
-                        if (t != null && t.length() > 0) {
-                            pp.setText(t);                                                                            
-                            pp.updateSize();
-                            dispose();
-                        } else {
-                            xTextField.setText("Item may disappear with null text!");
-                        }
-                    }
+                if (t != null && t.length() > 0) {
+                    pp.setText(t);                                                                            
+                    pp.updateSize();
+                    dispose();
+                } else {
+                    xTextField.setText("Item may disappear with null text!");
                 }
             }
         });

@@ -32,7 +32,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
             return null;  // if flagged as inactive, don't store
         }
         Element element = new Element("positionablelabel");
-        storeCommonAttributes(p, element);
+        storeCommonLabelAttributes(p, element);
         storeFontInfo(p, element);
 
         if (p.isText()) {
@@ -122,27 +122,21 @@ public class PositionableLabelXml extends PositionableJComponentXml {
      *
      * @param p       the icon to store
      * @param element the XML representation of the icon
-     *
-    public void storeCommonAttributes(Positionable p, Element element) {
+     */
+    public void storeCommonLabelAttributes(PositionableLabel p, Element element) {
 
-        element.setAttribute("x", "" + p.getX());
-        element.setAttribute("y", "" + p.getY());
-        element.setAttribute("level", String.valueOf(p.getDisplayLevel()));
-        element.setAttribute("forcecontroloff", !p.isControlling() ? "true" : "false");
-        element.setAttribute("hidden", p.isHidden() ? "yes" : "no");
-        element.setAttribute("positionable", p.isPositionable() ? "true" : "false");
-        element.setAttribute("showtooltip", p.showToolTip() ? "true" : "false");
-        element.setAttribute("editable", p.isEditable() ? "true" : "false");
-        ToolTip tip = p.getToolTip();
-        String txt = tip.getText();
-        if (txt != null) {
-            Element elem = new Element("tooltip").addContent(txt); // was written as "toolTip" 3.5.1 and before
-            element.addContent(elem);
+        // can be both for text overlaid icon
+        element.setAttribute("isText", p.isText() ? "yes" : "no");
+        element.setAttribute("isIcon", p.isIcon() ? "yes" : "no");
+
+        if (p.getText() != null) {
+            element.setAttribute("text", p.getText());
         }
-        if (p.getDegrees() != 0) {
-            element.setAttribute("degrees", "" + p.getDegrees());
-        }
-    }*/
+        if (p.getIcon() != null) {
+            element.addContent(storeIcon("icon", p.getIcon()));
+        }       
+        storeCommonAttributes(p, element);
+    }
 
     public Element storeIcon(String elemName, NamedIcon icon) {
         if (icon == null) {

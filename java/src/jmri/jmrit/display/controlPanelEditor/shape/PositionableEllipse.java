@@ -38,7 +38,7 @@ public class PositionableEllipse extends PositionableRectangle {
         return super.finishClone(pos);
     }*/
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("Ellipse"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

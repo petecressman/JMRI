@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import javax.annotation.Nonnull;
-import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JColorChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -18,24 +18,32 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The common ancestor of Namedbeans having multiple states and displays
- * each state as either an icon or a decorated text string.
+ * each state as either an icon or a text string.
  * Gather common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
-  *
+ * Also used for items that use display modes to show status, e.g. IndicatorTrack.
+ * IndicatorTrack currently is the only descendant that is not a controlling widget.
+ * <p>
+ * Flags, _iconDisplay and _textDisplay, determine the display mode.
+ * When both are true, display mode is icon overlaid with text.
+ * In text display mode, text and decoration can be individually edited.
+ * In Overlay mode, the text is a common (decorated) label for all states.
+ *
  * @author PeteCressman Copyright (C) 2011, 2018
  */
 public class PositionableIcon extends PositionableLabel {
 
     private HashMap<String, PositionableLabel> _iconMap;
     private String _iconFamily;
-    private String _displayState;
-    private boolean _iconDisplay;
-    private boolean _textDisplay;
+    private String _displayState;       // current state or status of the bean/item
+    private boolean _iconDisplay;       // Icons display mode 
+    private boolean _textDisplay;       // Text display mode
+    private boolean _controlling;
 
     protected static String _redX = "resources/icons/misc/X-red.gif";
 
     public PositionableIcon(Editor editor) {
         super(editor);
-        _control = true;
+        _controlling = true;
         _iconMap = makeDefaultMap();
         _displayState = Bundle.getMessage("BeanStateUnknown");
     }
@@ -61,6 +69,7 @@ public class PositionableIcon extends PositionableLabel {
         pos._iconFamily = _iconFamily;
         pos._displayState = _displayState;
         pos._iconMap = cloneMap(_iconMap, pos);
+        pos._controlling = _controlling;
         return super.finishClone(pos);
     }
 
@@ -70,6 +79,23 @@ public class PositionableIcon extends PositionableLabel {
      */
     protected void setDisplayState(String state) {
         _displayState  = state;
+    }
+
+    /**
+     * Show bean disconnected.  This may be a temporary condition so
+     * save the intended display mode for when case connection is restored.
+     */
+    protected void setDisconnectedText() {
+        log.debug("Display state disconnected");
+        setText(Bundle.getMessage("disconnected"));
+        setIcon(new NamedIcon(_redX, _redX));
+        super.setIsText(true);
+        super.setIsIcon(true);
+    }
+
+    protected void restoreConnectionDisplay() {
+        super.setIsText(_textDisplay);
+        super.setIsIcon(_iconDisplay);
     }
 
     /**
@@ -250,61 +276,63 @@ public class PositionableIcon extends PositionableLabel {
         _iconFamily = family;
     }
 
-    //////// popup AbstractAction.actionPerformed method overrides ////////
-    /**
-     * @param popup the menu to display
-     * @return always true
-     */
+    public void setControlling(boolean enabled) {
+        _controlling = enabled;
+    }
+
+    public boolean isControlling() {
+        return _controlling;
+    }
+
+    //////// popup Menu method overrides ////////
+
     @Override
-    public boolean showPopUp(JPopupMenu popup) {
-        if (isEditable()) {
-            if (isIcon()) {
-                popup.add(new AbstractAction(Bundle.getMessage("ChangeToText")) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        changeLayoutSensorType();
-                    }
-                });
-            } else {
-                popup.add(new AbstractAction(Bundle.getMessage("ChangeToIcon")) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        changeLayoutSensorType();
-                    }
-                });
-            }
-        } else {
-            setAdditionalViewPopUpMenu(popup);
-        }
+    public boolean setDisableControlMenu(JPopupMenu popup) {
+        JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
+        disableItem.setSelected(!_controlling);
+        popup.add(disableItem);
+        disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
+            setControlling(!disableItem.isSelected());
+        });
         return true;
     }
 
+    /**
+     * @param popup the menu to display
+     * @return true when text is to be displayed
+     */
     @Override
     public boolean setTextEditMenu(JPopupMenu popup) {
         log.debug("setTextEditMenu isIcon={}, isText={}", isIcon(), isText());
-        if (isIcon()) {
-            popup.add(CoordinateEdit.getTextEditAction(this, "OverlayText"));
-        } else if (isText()) {
-            JMenu stateText = new JMenu(Bundle.getMessage("SetSensorText"));
-            Iterator<String> iter = getIconStateNames();
-            while (iter.hasNext()) {
-                stateText.add(CoordinateEdit.getTextEditAction(_iconMap.get(iter.next()), "OverlayText"));  //temp
+        if (isText()) {
+            if (!isIcon()) {
+                JMenu stateText = new JMenu(Bundle.getMessage("SetSensorText"));
+                Iterator<String> iter = getIconStateNames();
+                while (iter.hasNext()) {
+                    String state = iter.next();
+                    stateText.add(CoordinateEdit.getTextEditAction(_iconMap.get(state), state));
+                }
+                popup.add(stateText);
+                
+                JMenu stateColor = new JMenu(Bundle.getMessage("StateColors"));
+                iter = getIconStateNames();
+                while (iter.hasNext()) {
+                    stateColor.add(stateColorMenu(iter.next()));
+                }
+                popup.add(stateColor);
+            } else {
+                popup.add(CoordinateEdit.getTextEditAction(this, "OverlayText"));
             }
-            
-            JMenu stateColor = new JMenu(Bundle.getMessage("StateColors"));
-            iter = getIconStateNames();
-            while (iter.hasNext()) {
-                stateColor.add(stateColorMenu(iter.next()));
-            }
+            return true;
         }
-        return true;
+        return false;
     }
 
-    /// TODO!!!
+    /* TODO ???  compare to 4.x to see if above is good enough
     private JMenu stateTextMenu(final String state) {
         JMenu menu = new JMenu(Bundle.getMessage(state));
         return menu;
-    }
+    }*/
 
     private JMenu stateColorMenu(final String state) {
         JMenu menu = new JMenu(Bundle.getMessage(state));
@@ -329,39 +357,6 @@ public class PositionableIcon extends PositionableLabel {
         });
         menu.add(colorMenu);
         return menu;
-    }
-
-    void changeLayoutSensorType() {
-        if (isIcon()) {
-            setIsIcon(false);
-            setIsText(true);
-            setIcon(null);
-        } else if (isText()) {
-            setIsIcon(true);
-            setIsText(false);
-            setText(null);
-        }
-    }
-
-    /**
-     * Show bean disconnected.  This may be a temporary condition so
-     * save the intended display items in case connection is restored.
-     */
-    protected void setDisconnectedText() {
-        log.debug("Display state disconnected");
-        setText(Bundle.getMessage("disconnected"));
-        setIcon(new NamedIcon(_redX, _redX));
-        super.setIsText(true);
-        super.setIsIcon(true);
-    }
-
-    protected void restoreConnectionDisplay() {
-        super.setIsText(_textDisplay);
-        super.setIsIcon(_iconDisplay);
-    }
-
-    @Override
-    public void displayState() {
     }
 
     @Override
@@ -392,7 +387,12 @@ public class PositionableIcon extends PositionableLabel {
         if (isIcon() && isText()) { // overlaid
             super.paintComponent(g);
         } else {
-            pos.paintComponent(g);
+            if (pos == null) {
+                log.error("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
+            } else {
+                pos.paintComponent(g);
+            }
         }
     }
 

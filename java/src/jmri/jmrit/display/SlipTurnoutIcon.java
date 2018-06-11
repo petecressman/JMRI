@@ -40,13 +40,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author Kevin Dickerson Copyright (c) 2010
  */
-public class SlipTurnoutIcon extends PositionableLabel implements java.beans.PropertyChangeListener {
+public class SlipTurnoutIcon extends PositionableIcon implements java.beans.PropertyChangeListener {
 
     public SlipTurnoutIcon(Editor editor) {
         // super ctor call to make sure this is an icon label
         super(new NamedIcon("resources/icons/smallschematics/tracksegments/os-slip-lower-west-upper-east.gif",
                 "resources/icons/smallschematics/tracksegments/os-slip-lower-west-upper-east.gif"), editor);
-        _control = true;
         displayState(turnoutState());
     }
 

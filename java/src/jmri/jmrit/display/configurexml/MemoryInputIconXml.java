@@ -86,9 +86,6 @@ public class MemoryInputIconXml extends PositionableLabelXml {
         p.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.MEMORIES, element);
-        
-        javax.swing.JComponent textField = l.getTextComponent();
-        textField.setBackground(l.getBackgroundColor());            
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemoryInputIconXml.class);

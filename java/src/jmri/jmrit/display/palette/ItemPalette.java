@@ -224,8 +224,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
             // long t = System.currentTimeMillis();
             new jmri.jmrit.catalog.configurexml.DefaultCatalogTreeManagerXml().readCatalogTrees();
             _iconMaps = new HashMap<>();
-            _indicatorTOMaps
-                    = new HashMap<>();
+            _indicatorTOMaps = new HashMap<>();
 
             if (!loadSavedIcons(ed)) {
                 loadDefaultIcons(ed);

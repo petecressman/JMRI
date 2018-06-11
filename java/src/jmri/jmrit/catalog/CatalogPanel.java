@@ -1054,7 +1054,7 @@ public class CatalogPanel extends JPanel {
                 }
                 image.setIcon(icon);
 
-                image.setJustification(jmri.jmrit.display.PositionableJComponent.CENTRE);
+                image.setJustification(jmri.jmrit.display.Positionable.CENTRE);
                 image.addMouseListener(new IconListener());
                 add(image, BorderLayout.NORTH);
                 
