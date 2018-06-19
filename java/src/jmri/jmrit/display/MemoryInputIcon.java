@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryInputIcon extends PositionableJPanel implements java.beans.PropertyChangeListener {
 
-    JTextField _textBox = new JTextField();
+    JTextField _textBox;
     int _nCols;
 
     // the associated Memory object
@@ -38,9 +38,11 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         super(editor);
         _nCols = nCols;
         setDisplayLevel(Editor.LABELS);
+    }
 
-        setLayout(new java.awt.GridBagLayout());
-        add(_textBox, new java.awt.GridBagConstraints());
+    @Override
+    protected JComponent getContainerComponent() {
+        _textBox = new JTextField();
         _textBox.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -53,9 +55,19 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         _textBox.setColumns(_nCols);
         _textBox.addMouseMotionListener(this);
         _textBox.addMouseListener(this);
-        setPopupUtility(new PositionablePopupUtil(this, _textBox));
+        return _textBox;
     }
 
+    @Override
+    protected JTextField getTextField() {
+        return _textBox;
+    }
+
+    @Override
+    public String getText() {
+        return _textBox.getText();
+    }
+    
     @Override
     public Positionable deepClone() {
         MemoryInputIcon pos = new MemoryInputIcon(_nCols, _editor);
@@ -65,11 +77,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     protected Positionable finishClone(MemoryInputIcon pos) {
         pos.setMemory(namedMemory.getName());
         return super.finishClone(pos);
-    }
-
-    @Override
-    public JComponent getTextComponent() {
-        return _textBox;
     }
 
     @Override
@@ -132,6 +139,11 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
         return namedMemory.getBean();
     }
 
+    @Override
+    public jmri.NamedBean getNamedBean() {
+        return getMemory();
+    }
+
     public int getNumColumns() {
         return _nCols;
     }
@@ -171,7 +183,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     }
 
     @Override
-    public boolean setEditIconMenu(javax.swing.JPopupMenu popup) {
+    public boolean setIconEditMenu(javax.swing.JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameMemory"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override
@@ -187,7 +199,6 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
      */
     SpinnerNumberModel _spinModel = new SpinnerNumberModel(3, 1, 100, 1);
 
-    @Override
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JSpinner spinner = new JSpinner(_spinModel);
@@ -234,6 +245,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     /**
      * Drive the current state of the display from the state of the Memory.
      */
+    @Override
     public void displayState() {
         log.debug("displayState");
         if (namedMemory == null) {  // leave alone if not connected yet
@@ -248,7 +260,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
     }
 
     @Override
-    void cleanup() {
+    public void dispose() {
         if (namedMemory != null) {
             getMemory().removePropertyChangeListener(this);
         }
@@ -257,6 +269,7 @@ public class MemoryInputIcon extends PositionableJPanel implements java.beans.Pr
             _textBox.removeMouseListener(this);
         }
         namedMemory = null;
+        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemoryInputIcon.class);

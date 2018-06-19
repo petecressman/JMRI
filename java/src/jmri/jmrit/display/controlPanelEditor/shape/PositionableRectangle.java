@@ -14,6 +14,7 @@ public class PositionableRectangle extends PositionableShape {
 
     public PositionableRectangle(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Rectangle"));
     }
 
     public PositionableRectangle(Editor editor, Shape shape) {
@@ -21,7 +22,7 @@ public class PositionableRectangle extends PositionableShape {
     }
 
     @Override
-    protected Shape makeShape() {
+    public Shape makeShape() {
         return new Rectangle2D.Double(0, 0, _width, _height);
     }
 
@@ -39,7 +40,7 @@ public class PositionableRectangle extends PositionableShape {
     }
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("Rectangle"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

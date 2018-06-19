@@ -145,8 +145,8 @@ class IndicatorTrackPaths {
         _loco.setCornerRadius(height);
         _loco.setDisplayLevel(Editor.MARKERS);
         _loco.updateSize();
-        pt.x = pt.x + (size.width - _loco.maxWidth()) / 2;
-        pt.y = pt.y + (size.height - _loco.maxHeight()) / 2;
+        pt.x = pt.x + (size.width - _loco.getWidth()) / 2;
+        pt.y = pt.y + (size.height - _loco.getHeight()) / 2;
         _loco.setLocation(pt);
         ed.putItem(_loco);
     }

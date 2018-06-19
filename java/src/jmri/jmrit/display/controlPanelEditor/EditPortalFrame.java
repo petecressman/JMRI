@@ -31,6 +31,7 @@ import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.IndicatorTrack;
 import jmri.jmrit.display.Positionable;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.logix.OBlock;
 import jmri.jmrit.logix.OBlockManager;
 import jmri.jmrit.logix.Portal;
@@ -568,7 +569,7 @@ public class EditPortalFrame extends jmri.util.JmriJFrame implements ListSelecti
         for (int i = 0; i < list.size(); i++) {
             Positionable comp = list.get(i);
             if (CircuitBuilder.isTrack(comp)) {
-                rect = list.get(i).getBounds(rect);
+                rect = list.get(i).getContentBounds(rect);
                 if (iconRect.intersects(rect)) {
                     return null;
                 }
@@ -588,8 +589,7 @@ public class EditPortalFrame extends jmri.util.JmriJFrame implements ListSelecti
         panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                 Bundle.getMessage("BeanNamePortal")));
         try {
-            JLabel label = new IconDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR));
-            label.setIcon(icon);
+            PositionableLabel label = new IconDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR), icon);
             label.setName(Bundle.getMessage("BeanNamePortal"));
             panel.add(label);
         } catch (java.lang.ClassNotFoundException cnfe) {
@@ -601,8 +601,8 @@ public class EditPortalFrame extends jmri.util.JmriJFrame implements ListSelecti
 
     public class IconDragJLabel extends DragJLabel {
 
-        public IconDragJLabel(DataFlavor flavor) {
-            super(flavor);
+        public IconDragJLabel(DataFlavor flavor, NamedIcon icon) {
+            super(flavor, icon);
         }
 
         @Override

@@ -4,6 +4,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import jmri.jmrit.catalog.NamedIcon;
@@ -60,8 +61,11 @@ public /*abstract*/ class PortalItemPanel extends FamilyItemPanel {
     }
 
     private void setDefaults() {
-        HashMap<String, NamedIcon> map = getIconMap();
-        ((ControlPanelEditor) _editor).setDefaultPortalIcons(jmri.jmrit.display.PositionableIcon.cloneMap(map, null));
+        HashMap<String, NamedIcon> map = new HashMap<>();;
+        for (Map.Entry<String, NamedIcon> entry : getIconMap().entrySet()) {
+            map.put(entry.getKey(), new NamedIcon(entry.getValue()));
+        }
+        ((ControlPanelEditor)_editor).setDefaultPortalIcons(map);
     }
 
     @Override

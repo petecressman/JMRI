@@ -51,8 +51,9 @@ public class PositionableCircleXml extends PositionableShapeXml {
         PositionableCircle ps = new PositionableCircle(ed);
 
         Element elem = element.getChild("size");
-        ps.setWidth(getInt(elem, "radius"));    // actually diameter - too late to change name
-
+        int dia = getInt(elem, "radius");    // actually diameter - too late to change name
+        ps.setWidth(dia);
+        ps.setHeight(dia);
         // get object class and determine editor being used
         Editor editor = (Editor) o;
         editor.putItem(ps);

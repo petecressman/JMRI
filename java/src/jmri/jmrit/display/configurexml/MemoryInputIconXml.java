@@ -35,7 +35,7 @@ public class MemoryInputIconXml extends PositionableLabelXml {
         element.setAttribute("colWidth", "" + p.getNumColumns());
         element.setAttribute("memory", p.getNamedMemory().getName());
         storeCommonAttributes(p, element);
-        storeTextInfo(p, element);
+        storeFontInfo(p, element);
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.MemoryInputIconXml");
         return element;
@@ -62,7 +62,7 @@ public class MemoryInputIconXml extends PositionableLabelXml {
 
         MemoryInputIcon l = new MemoryInputIcon(nCol, p);
 
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
         String name;
         Attribute attr = element.getAttribute("memory");
         if (attr == null) {
@@ -86,15 +86,6 @@ public class MemoryInputIconXml extends PositionableLabelXml {
         p.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.MEMORIES, element);
-        
-        javax.swing.JComponent textField = l.getTextComponent();
-        jmri.jmrit.display.PositionablePopupUtil util = l.getPopupUtility();
-        if (util.hasBackground()) {
-            textField.setBackground(util.getBackground());            
-        } else {
-            textField.setBackground(null);
-            textField.setOpaque(false);
-        }
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemoryInputIconXml.class);

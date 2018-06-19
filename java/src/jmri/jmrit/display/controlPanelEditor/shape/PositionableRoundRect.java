@@ -18,6 +18,7 @@ public class PositionableRoundRect extends PositionableRectangle {
 
     public PositionableRoundRect(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("roundRect"));
     }
 
     public PositionableRoundRect(Editor editor, Shape shape) {
@@ -34,7 +35,7 @@ public class PositionableRoundRect extends PositionableRectangle {
     }
 
     @Override
-    protected Shape makeShape() {
+    public Shape makeShape() {
         return new RoundRectangle2D.Double(0, 0, _width, _height, _radius, _radius);
     }
 
@@ -51,7 +52,7 @@ public class PositionableRoundRect extends PositionableRectangle {
     }
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("roundRect"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

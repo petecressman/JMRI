@@ -115,7 +115,7 @@ public class PortalIconXml extends PositionableLabelXml {
                 log.error(l.getNameString() + " can't convert rotate " + dce);
             }
         }
-        l.rotate(deg);
+        l.setDegrees(deg);
 
         boolean value = true;
         if ((a = element.getAttribute("arrowSwitch")) != null && a.getValue().equals("no")) {

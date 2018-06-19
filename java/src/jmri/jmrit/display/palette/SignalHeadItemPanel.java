@@ -22,6 +22,7 @@ import jmri.jmrit.catalog.DragJLabel;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.SignalHeadIcon;
 import jmri.jmrit.picker.PickListModel;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
     }
 
     @Override
-    protected JPanel initTablePanel(PickListModel model, Editor editor) {
+    protected JPanel initTablePanel(PickListModel model) {
         _table = model.makePickTable();
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout());
@@ -170,7 +171,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
     }
 
     @Override
-    protected JLabel getDragger(DataFlavor flavor, HashMap<String, 
+    protected PositionableLabel getDragger(DataFlavor flavor, HashMap<String, 
             NamedIcon> map, NamedIcon icon) {
         return new IconDragJLabel(flavor, map, icon);
     }
@@ -213,7 +214,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
                 Iterator<Entry<String, NamedIcon>> iter = map.entrySet().iterator();
                 while (iter.hasNext()) {
                     Entry<String, NamedIcon> ent = iter.next();
-                    sh.setIcon(Bundle.getMessage(ent.getKey()), new NamedIcon(ent.getValue()));
+                    sh.setStateIcon(Bundle.getMessage(ent.getKey()), new NamedIcon(ent.getValue()));
                 }
                 sh.setFamily(_family);
                 sh.setLevel(Editor.SIGNALS);

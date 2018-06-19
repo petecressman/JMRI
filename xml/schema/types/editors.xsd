@@ -61,7 +61,7 @@
       <xs:complexContent mixed="false">
         <xs:extension base="EditorIconType">
           <xs:sequence>
-            <xs:element name="text" type="xs:string" />
+            <xs:element name="text" type="xs:string"></xs:element>
           </xs:sequence>
         </xs:extension>
       </xs:complexContent>
@@ -1048,7 +1048,7 @@
               <xs:element name="closed" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="rotation" type="xs:string"></xs:element>
+                    <xs:element name="rotation" type="xs:string" minOccurs="0"></xs:element>
                   </xs:sequence>
                   <xs:attribute name="url" type="xs:string"></xs:attribute>
                   <xs:attribute name="degrees" type="xs:string"></xs:attribute>
@@ -1058,7 +1058,7 @@
               <xs:element name="thrown" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="rotation" type="xs:string"></xs:element>
+                    <xs:element name="rotation" type="xs:string" minOccurs="0"></xs:element>
                   </xs:sequence>
                   <xs:attribute name="url" type="xs:string"></xs:attribute>
                   <xs:attribute name="degrees" type="xs:string"></xs:attribute>
@@ -1068,7 +1068,7 @@
               <xs:element name="unknown" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="rotation" type="xs:string"></xs:element>
+                    <xs:element name="rotation" type="xs:string" minOccurs="0"></xs:element>
                   </xs:sequence>
                   <xs:attribute name="url" type="xs:string"></xs:attribute>
                   <xs:attribute name="degrees" type="xs:string"></xs:attribute>
@@ -1078,7 +1078,7 @@
               <xs:element name="inconsistent" minOccurs="0" maxOccurs="1">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element name="rotation" type="xs:string"></xs:element>
+                    <xs:element name="rotation" type="xs:string" minOccurs="0"></xs:element>
                   </xs:sequence>
                   <xs:attribute name="url" type="xs:string"></xs:attribute>
                   <xs:attribute name="degrees" type="xs:string"></xs:attribute>
@@ -1953,7 +1953,7 @@
 
     <xs:complexType name="LightIconIconsType">
       <xs:sequence>
-        <xs:element name="rotation" minOccurs="1" maxOccurs="1" type="xs:integer"></xs:element>
+        <xs:element name="rotation" minOccurs="0" maxOccurs="1" type="xs:integer"></xs:element>
       </xs:sequence>
       <xs:attribute name="url" type="urlType" use="required"></xs:attribute>
       <xs:attribute name="degrees" type="xs:integer" use="required"></xs:attribute>

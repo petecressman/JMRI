@@ -30,21 +30,21 @@ public class LinkingLabelXml extends PositionableLabelXml {
         LinkingLabel p = (LinkingLabel) o;
 
         if (!p.isActive()) {
-            return null;  // if flagged as inactive, don't store
+            return null; // if flagged as inactive, don't store
         }
         Element element = new Element("linkinglabel");
         storeCommonAttributes(p, element);
+        storeFontInfo(p, element);
 
         if (p.isText()) {
-            if (p.getUnRotatedText() != null) {
-                element.setAttribute("text", p.getUnRotatedText());
+            if (p.getText() != null) {
+                element.setAttribute("text", p.getText());
             }
-            storeTextInfo(p, element);
         }
 
         if (p.isIcon() && p.getIcon() != null) {
             element.setAttribute("icon", "yes");
-            element.addContent(storeIcon("icon", (NamedIcon) p.getIcon()));
+            element.addContent(storeIcon("icon", p.getIcon()));
         }
 
         element.addContent(new Element("url").addContent(p.getURL()));
@@ -57,7 +57,7 @@ public class LinkingLabelXml extends PositionableLabelXml {
      * Create LinkingLabel, then add to a target JLayeredPane
      *
      * @param element Top level Element to unpack.
-     * @param o       Editor as an Object
+     * @param o Editor as an Object
      */
     @Override
     public void load(Element element, Object o) {
@@ -71,7 +71,7 @@ public class LinkingLabelXml extends PositionableLabelXml {
         if (element.getAttribute("icon") != null) {
             NamedIcon icon;
             String name = element.getAttribute("icon").getValue();
-//            if (log.isDebugEnabled()) log.debug("icon attribute= "+name);
+            //            if (log.isDebugEnabled()) log.debug("icon attribute= "+name);
             if (name.equals("yes")) {
                 icon = getNamedIcon("icon", element, "LinkingLabel ", editor);
             } else {
@@ -84,18 +84,20 @@ public class LinkingLabelXml extends PositionableLabelXml {
                     }
                 }
             }
+            // allow null icons for now
+/*
             // abort if name != yes and have null icon
             if (icon == null && !name.equals("yes")) {
                 log.info("LinkingLabel icon removed for url= {}", name);
                 return;
             }
+*/
             l = new LinkingLabel(icon, editor, url);
-            l.setPopupUtility(null);        // no text
             try {
                 Attribute a = element.getAttribute("rotate");
                 if (a != null && icon != null) {
                     int rotation = element.getAttribute("rotate").getIntValue();
-                    icon.setRotation(rotation, l);
+                    doRotationConversion(rotation, l);
                 }
             } catch (org.jdom2.DataConversionException e) {
             }
@@ -103,19 +105,23 @@ public class LinkingLabelXml extends PositionableLabelXml {
             if (name.equals("yes")) {
                 NamedIcon nIcon = loadIcon(l, "icon", element, "LinkingLabel ", editor);
                 if (nIcon != null) {
-                    l.updateIcon(nIcon);
+                    l.setIcon(nIcon);
                 } else {
                     log.info("LinkingLabel icon removed for url= {}", name);
                     return;
                 }
             } else {
-                l.updateIcon(icon);
+                if (icon == null) {
+                    log.info("LinkingLabel icon removed for url= " + name);
+                    return;
+                } else {
+                    l.setIcon(icon);
+                }
             }
 
             //l.setSize(l.getPreferredSize().width, l.getPreferredSize().height);
         } else if (element.getAttribute("text") != null) {
             l = new LinkingLabel(element.getAttribute("text").getValue(), editor, url);
-            loadTextInfo(l, element);
 
         } else {
             log.error("LinkingLabel is null!");
@@ -136,6 +142,7 @@ public class LinkingLabelXml extends PositionableLabelXml {
             editor.loadFailed();
             return;
         }
+        loadFontInfo(l, element);
         editor.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.LABELS, element);

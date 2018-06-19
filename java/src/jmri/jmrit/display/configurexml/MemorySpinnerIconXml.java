@@ -30,7 +30,7 @@ public class MemorySpinnerIconXml extends PositionableLabelXml {
         // include attributes
         element.setAttribute("memory", p.getNamedMemory().getName());
         storeCommonAttributes(p, element);
-        storeTextInfo(p, element);
+        storeFontInfo(p, element);
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.MemorySpinnerIconXml");
         return element;
@@ -50,7 +50,7 @@ public class MemorySpinnerIconXml extends PositionableLabelXml {
 
         l.setMemory(element.getAttribute("memory").getValue());
 
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
         p.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.MEMORIES, element);

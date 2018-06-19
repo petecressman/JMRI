@@ -17,7 +17,7 @@ public class DragJLabelTest {
     @Test
     public void testCTor() throws java.lang.ClassNotFoundException {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        DragJLabel t = new DragJLabel(DataFlavor.stringFlavor);
+        DragJLabel t = new DragJLabel(DataFlavor.stringFlavor, "text");
         Assert.assertNotNull("exists",t);
     }
 

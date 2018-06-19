@@ -1,341 +1,52 @@
 package jmri.jmrit.display;
 
-import java.awt.Container;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
+import javax.swing.JTextField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Bob Jacobsen copyright (C) 2009
  */
-public class PositionableJPanel extends JPanel implements Positionable, MouseListener, MouseMotionListener {
-
-    protected Editor _editor = null;
-
-    private ToolTip _tooltip;
-    protected boolean _showTooltip = true;
-    protected boolean _editable = true;
-    protected boolean _positionable = true;
-    protected boolean _viewCoordinates = false;
-    protected boolean _controlling = true;
-    protected boolean _hidden = false;
-    protected int _displayLevel;
-    private double _scale = 1.0;    // scaling factor
-
-    JMenuItem lock = null;
-    JCheckBoxMenuItem showTooltipItem = null;
-
+abstract public class PositionableJPanel extends Positionable implements MouseListener, MouseMotionListener {
+    
+    private final JTextField _textComponent;
+    private final JComponent _bodyComponent;
+    
     public PositionableJPanel(Editor editor) {
-        _editor = editor;
-    }
+        super(editor);
+        setLayout(new java.awt.GridBagLayout());
+        _bodyComponent = getContainerComponent();
+        add(_bodyComponent, new java.awt.GridBagConstraints());
+//        invalidate();
 
-    @Override
-    public Positionable deepClone() {
-        PositionableJPanel pos = new PositionableJPanel(_editor);
-        return finishClone(pos);
-    }
+        _textComponent = getTextField();
 
-    protected Positionable finishClone(PositionableJPanel pos) {
-        pos.setLocation(getX(), getY());
-        pos._displayLevel = _displayLevel;
-        pos._controlling = _controlling;
-        pos._hidden = _hidden;
-        pos._positionable = _positionable;
-        pos._showTooltip = _showTooltip;
-        pos.setToolTip(getToolTip());
-        pos._editable = _editable;
-        if (getPopupUtility() == null) {
-            pos.setPopupUtility(null);
-        } else {
-            pos.setPopupUtility(getPopupUtility().clone(pos, pos.getTextComponent()));
-        }
-        pos.updateSize();
-        return pos;
+//        Dimension dim = getPreferredSize();
+//        super.setFixedSize(dim.width, dim.height);
     }
-
-    @Override
-    public void setPositionable(boolean enabled) {
-        _positionable = enabled;
-    }
-
-    @Override
-    public boolean isPositionable() {
-        return _positionable;
-    }
-
-    @Override
-    public void setEditable(boolean enabled) {
-        _editable = enabled;
-    }
-
-    @Override
-    public boolean isEditable() {
-        return _editable;
-    }
-
-    @Override
-    public void setViewCoordinates(boolean enabled) {
-        _viewCoordinates = enabled;
-    }
-
-    @Override
-    public boolean getViewCoordinates() {
-        return _viewCoordinates;
-    }
-
-    @Override
-    public void setControlling(boolean enabled) {
-        _controlling = enabled;
-    }
-
-    @Override
-    public boolean isControlling() {
-        return _controlling;
-    }
-
-    @Override
-    public void setHidden(boolean hide) {
-        _hidden = hide;
-    }
-
-    @Override
-    public boolean isHidden() {
-        return _hidden;
-    }
-
-    @Override
-    public void showHidden() {
-        if (!_hidden || _editor.isEditable()) {
-            setVisible(true);
-        } else {
-            setVisible(false);
-        }
-    }
-
-    public void setLevel(int l) {
-        _displayLevel = l;
-    }
-
-    @Override
-    public void setDisplayLevel(int l) {
-        int oldDisplayLevel = _displayLevel;
-        _displayLevel = l;
-        if (oldDisplayLevel != l) {
-            log.debug("Changing label display level from " + oldDisplayLevel + " to " + _displayLevel);
-            _editor.displayLevelChange(this);
-        }
-    }
-
-    @Override
-    public int getDisplayLevel() {
-        return _displayLevel;
-    }
-
-    @Override
-    public void setShowToolTip(boolean set) {
-        _showTooltip = set;
-    }
-
-    @Override
-    public boolean showToolTip() {
-        return _showTooltip;
-    }
-
-    @Override
-    public void setToolTip(ToolTip tip) {
-        _tooltip = tip;
-    }
-
-    @Override
-    public ToolTip getToolTip() {
-        return _tooltip;
-    }
-
-    @Override
-    public void setScale(double s) {
-        _scale = s;
-    }
-
-    @Override
-    public double getScale() {
-        return _scale;
-    }
-
-    // no subclasses support rotations (yet)
-    @Override
-    public void rotate(int deg) {
-    }
-
-    @Override
-    public int getDegrees() {
-        return 0;
-    }
-
-    @Override
-    public JComponent getTextComponent() {
-        return this;
-    }
-
-    @Override
-    public String getNameString() {
-        return getName();
-    }
-
-    @Override
-    public Editor getEditor() {
-        return _editor;
-    }
-
-    @Override
-    public void setEditor(Editor ed) {
-        _editor = ed;
-    }
-
-    // overide where used - e.g. momentary
-    @Override
-    public void doMousePressed(MouseEvent event) {
-    }
-
-    @Override
-    public void doMouseReleased(MouseEvent event) {
-    }
-
-    @Override
-    public void doMouseClicked(MouseEvent event) {
-    }
-
-    @Override
-    public void doMouseDragged(MouseEvent event) {
-    }
-
-    @Override
-    public void doMouseMoved(MouseEvent event) {
-    }
-
-    @Override
-    public void doMouseEntered(MouseEvent event) {
-    }
-
-    @Override
-    public void doMouseExited(MouseEvent event) {
-    }
-
-    @Override
-    public boolean storeItem() {
-        return true;
-    }
-
-    @Override
-    public boolean doViemMenu() {
-        return true;
-    }
+    
+    abstract protected JTextField getTextField();
+    abstract protected JComponent getContainerComponent();
+    abstract public String getText();
+    abstract public boolean setIconEditMenu(javax.swing.JPopupMenu popup);
 
     /**
-     * For over-riding in the using classes: add item specific menu choices
+     * Provides a generic method to return the bean associated with the
+     * Positionable
      */
     @Override
-    public boolean setRotateOrthogonalMenu(JPopupMenu popup) {
-        return false;
+    abstract public jmri.NamedBean getNamedBean();
+
+    public JComponent getContainer() {
+        return _bodyComponent;
     }
-
-    @Override
-    public boolean setRotateMenu(JPopupMenu popup) {
-        return false;
-    }
-
-    @Override
-    public boolean setScaleMenu(JPopupMenu popup) {
-        return false;
-    }
-
-    @Override
-    public boolean setDisableControlMenu(JPopupMenu popup) {
-        return false;
-    }
-
-    @Override
-    public boolean setTextEditMenu(JPopupMenu popup) {
-        return false;
-    }
-
-    @Override
-    public boolean showPopUp(JPopupMenu popup) {
-        return false;
-    }
-
-    JFrame _iconEditorFrame;
-    IconAdder _iconEditor;
-
-    @Override
-    public boolean setEditIconMenu(JPopupMenu popup) {
-        return false;
-    }
-
-    @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
-        return setEditIconMenu(popup);
-    }
-
-    protected void makeIconEditorFrame(Container pos, String name, boolean table, IconAdder editor) {
-        if (editor != null) {
-            _iconEditor = editor;
-        } else {
-            _iconEditor = new IconAdder(name);
-        }
-        _iconEditorFrame = _editor.makeAddIconFrame(name, false, table, _iconEditor);
-        _iconEditorFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent e) {
-                _iconEditorFrame.dispose();
-                _iconEditorFrame = null;
-            }
-        });
-        _iconEditorFrame.setLocationRelativeTo(pos);
-        _iconEditorFrame.toFront();
-        _iconEditorFrame.setVisible(true);
-    }
-
-    void edit() {
-    }
-
-    /**
-     * ************** end Positionable methods *********************
-     */
-    /**
-     * Removes this object from display and persistance
-     */
-    @Override
-    public void remove() {
-        _editor.removeFromContents(this);
-        cleanup();
-        // remove from persistance by flagging inactive
-        active = false;
-    }
-
-    /**
-     * To be overridden if any special work needs to be done
-     */
-    void cleanup() {
-    }
-
-    boolean active = true;
-
-    /**
-     * @return true if this object is still displayed, and should be stored;
-     *         false otherwise
-     */
-    public boolean isActive() {
-        return active;
-    }
-
+    
     @Override
     public void mousePressed(MouseEvent e) {
         _editor.mousePressed(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
@@ -359,7 +70,7 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
 
     @Override
     public void mouseExited(MouseEvent e) {
-//     transferFocus();
+//    	transferFocus();
         _editor.mouseExited(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),
                 e.getX() + this.getX(), e.getY() + this.getY(),
                 e.getClickCount(), e.isPopupTrigger()));
@@ -386,102 +97,113 @@ public class PositionableJPanel extends JPanel implements Positionable, MouseLis
                 e.getClickCount(), e.isPopupTrigger()));
     }
 
-    /**
-     * ************************************************************
-     */
-    PositionablePopupUtil _popupUtil;
+    /**************************************************************/
 
     @Override
-    public void setPopupUtility(PositionablePopupUtil tu) {
-        _popupUtil = tu;
-    }
-
-    @Override
-    public PositionablePopupUtil getPopupUtility() {
-        return _popupUtil;
-    }
-
-    /**
-     * Update the AWT and Swing size information due to change in internal
-     * state, e.g. if one or more of the icons that might be displayed is
-     * changed
-     */
-    @Override
-    public void updateSize() {
-        invalidate();
-        setSize(maxWidth(), maxHeight());
+    public int getWidth() {
+        int width = _bodyComponent.getPreferredSize().width;;
+        width += (getBorderSize() + getMarginSize()) * 2;            
         if (log.isDebugEnabled()) {
-//            javax.swing.JTextField text = (javax.swing.JTextField)_popupUtil._textComponent;
-            log.debug("updateSize: {}, text: w={} h={}",
-                    _popupUtil.toString(),
-                    getFontMetrics(_popupUtil.getFont()).stringWidth(_popupUtil.getText()),
-                    getFontMetrics(_popupUtil.getFont()).getHeight());
+            log.debug("width= " + width + " preferred width= " + getPreferredSize().width);
         }
-        validate();
-        repaint();
+        return width;
     }
 
     @Override
-    public int maxWidth() {
-        int max = 0;
-        if (_popupUtil != null) {
-            if (_popupUtil.getFixedWidth() != 0) {
-                max = _popupUtil.getFixedWidth();
-                max += _popupUtil.getMargin() * 2;
-                if (max < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
-                    _popupUtil.setFixedWidth(PositionablePopupUtil.MIN_SIZE);
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
-            } else {
-                max = getPreferredSize().width;
-                /*
-                 if(_popupUtil._textComponent instanceof javax.swing.JTextField) {
-                 javax.swing.JTextField text = (javax.swing.JTextField)_popupUtil._textComponent;
-                 max = getFontMetrics(text.getFont()).stringWidth(text.getText());
-                 } */
-                max += _popupUtil.getMargin() * 2;
-                if (max < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
-            }
+    public int getHeight() {
+        int height = _bodyComponent.getPreferredSize().height;
+        height += (getBorderSize() + getMarginSize()) * 2;
+        if (log.isDebugEnabled()) {
+            log.debug("height= " + height + " preferred height= " + getPreferredSize().height);
         }
-        log.debug("maxWidth= {} preferred width= {}", max, getPreferredSize().width);
-        return max;
+        return height;
     }
 
     @Override
-    public int maxHeight() {
-        int max = 0;
-        if (_popupUtil != null) {
-            if (_popupUtil.getFixedHeight() != 0) {
-                max = _popupUtil.getFixedHeight();
-                max += _popupUtil.getMargin() * 2;
-                if (max < PositionablePopupUtil.MIN_SIZE) {   // don't let item disappear
-                    _popupUtil.setFixedHeight(PositionablePopupUtil.MIN_SIZE);
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
-            } else {
-                max = getPreferredSize().height;
-                /*
-                 if(_popupUtil._textComponent!=null) {
-                 max = getFontMetrics(_popupUtil._textComponent.getFont()).getHeight();
-                 }  */
-                if (_popupUtil != null) {
-                    max += _popupUtil.getMargin() * 2;
-                }
-                if (max < PositionablePopupUtil.MIN_SIZE) {  // don't let item disappear
-                    max = PositionablePopupUtil.MIN_SIZE;
-                }
-            }
-        }
-        log.debug("maxHeight= {} preferred width= {}", max, getPreferredSize().height);
-        return max;
+    public void setForeground(Color c) {
+        super.setForeground(c);
+        _bodyComponent.setForeground(c);
     }
 
     @Override
-    public jmri.NamedBean getNamedBean() {
-        return null;
+    public Color getForeground() {
+        return _bodyComponent.getForeground();
     }
 
-    private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class);
+    @Override
+    public void setFont(Font font) {
+        Font oldFont = _bodyComponent.getFont();
+        Font newFont = new Font(font.getFamily(), oldFont.getStyle(), oldFont.getSize());
+        if (!oldFont.equals(newFont)) {
+            _bodyComponent.setFont(newFont);
+            super.setFont(newFont);
+            updateSize();
+        }
+    }
+
+    @Override
+    public Font getFont() {
+        return _bodyComponent.getFont();
+    }
+
+    /*
+     ****************** Fixed width & height *************** 
+     *
+    @Override
+    public void setFixedSize(int w, int h) {
+        _bodyComponent.setPreferredSize(new Dimension(w, h));
+        super.setFixedSize(w, h);
+    }
+
+    @Override
+    public int getFixedWidth() {
+        return getPreferredSize().width;
+    }
+
+    @Override
+    public void setFixedWidth(int w) {
+        Dimension dim = getPreferredSize();
+        _bodyComponent.setPreferredSize(new Dimension(w, dim.height));
+        super.setFixedWidth(w);
+    }
+
+    @Override
+    public int getFixedHeight() {
+        return getPreferredSize().height;
+    }
+
+    @Override
+    public void setFixedHeight(int h) {
+        Dimension dim = getPreferredSize();
+        _bodyComponent.setPreferredSize(new Dimension(dim.width, h));
+        super.setFixedHeight(h);
+    }
+
+    @Override
+    public void setJustification(int just) {
+        log.debug("setJustification: justification={}", just);
+        int justification = getJustification();
+        switch (justification) {
+            case PositionableJComponent.LEFT:
+                _textComponent.setHorizontalAlignment(JTextField.LEFT);
+                break;
+            case PositionableJComponent.RIGHT:
+                _textComponent.setHorizontalAlignment(JTextField.RIGHT);
+                break;
+            default:
+                _textComponent.setHorizontalAlignment(JTextField.CENTER);
+        }
+        super.setJustification(just);
+    }
+
+/*    @Override
+    public void paintComponent(Graphics g) {
+//        g = getTransfomGraphics(g);
+
+        if (_textComponent instanceof JTextField) {
+        }
+        super.paintComponent(g); 
+    }*/
+    
+    private final static Logger log = LoggerFactory.getLogger(PositionableJPanel.class.getName());
 }

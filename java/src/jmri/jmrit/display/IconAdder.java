@@ -213,16 +213,12 @@ public class IconAdder extends JPanel implements ListSelectionListener {
             button.setText(Bundle.getMessage("invisibleIcon"));
             button.setForeground(Color.lightGray);
         } else {
-            icon.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
             button.setToolTipText(icon.getName());
         }
 
         if (_allowDeletes) {
             String fileName = "resources/icons/misc/X-red.gif";
             button.setSelectedIcon(new jmri.jmrit.catalog.NamedIcon(fileName, fileName));
-        }
-        if (icon != null) {
-            icon.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
         }
 
         _iconMap.put(label, button);

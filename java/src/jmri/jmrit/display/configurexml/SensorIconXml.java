@@ -1,10 +1,10 @@
 package jmri.jmrit.display.configurexml;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.List;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.SensorIcon;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -16,17 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright: Copyright (c) 2002
  */
-public class SensorIconXml extends PositionableLabelXml {
-
-    static final HashMap<String, String> _nameMap = new HashMap<String, String>();
-
-    public SensorIconXml() {
-        // map previous store names to actual localized names
-        _nameMap.put("active", "SensorStateActive");
-        _nameMap.put("inactive", "SensorStateInactive");
-        _nameMap.put("unknown", "BeanStateUnknown");
-        _nameMap.put("inconsistent", "BeanStateInconsistent");
-    }
+public class SensorIconXml extends PositionableIconXml {
 
     /**
      * Default implementation for storing the contents of a SensorIcon
@@ -37,24 +27,21 @@ public class SensorIconXml extends PositionableLabelXml {
     @Override
     public Element store(Object o) {
         SensorIcon p = (SensorIcon) o;
-        if (!p.isActive()) {
-            return null;  // if flagged as inactive, don't store
-        }
         Element element = new Element("sensoricon");
+        
+        if (!storePositionableIcon(element, p)) {
+            return null;
+        }
         element.setAttribute("sensor", p.getNamedSensor().getName());
-        storeCommonAttributes(p, element);
         element.setAttribute("momentary", p.getMomentary() ? "true" : "false");
-        element.setAttribute("icon", p.isIcon() ? "yes" : "no");
 
-        storeIconInfo(p, element);
-        storeTextInfo(p, element);
         element.setAttribute("class", "jmri.jmrit.display.configurexml.SensorIconXml");
         return element;
     }
-
+/*
     protected void storeTextInfo(SensorIcon p, Element element) {
         if (p.getText() == null) {
-            String s = p.getOriginalText();
+            String s = p.getOverlayText();
             if (s != null && s.length() > 0) {
                 element.setAttribute("text", s);
             } else if (p.isText()) {
@@ -161,7 +148,8 @@ public class SensorIconXml extends PositionableLabelXml {
     @Override
     public void load(Element element, Object o) {
         Editor ed = (Editor) o;
-        SensorIcon l;
+        SensorIcon l = new SensorIcon(ed);
+
         String name;
         Attribute attr = element.getAttribute("sensor");
         if (attr == null) {
@@ -171,52 +159,9 @@ public class SensorIconXml extends PositionableLabelXml {
         } else {
             name = attr.getValue();
         }
-        _icon = true;
-        if (element.getAttribute("icon") != null) {
-            String yesno = element.getAttribute("icon").getValue();
-            if ((yesno != null) && (!yesno.equals(""))) {
-                if (yesno.equals("yes")) {
-                    _icon = true;
-                } else if (yesno.equals("no")) {
-                    _icon = false;
-                }
-            }
+        if (!loadPositionableIcon(element, l)) {
+            loadPre50(element, l, name);
         }
-
-        if (_icon) {
-            l = new SensorIcon(new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
-                    "resources/icons/smallschematics/tracksegments/circuit-error.gif"),
-                    ed);
-        } else {
-            l = new SensorIcon("  ", ed);
-        }
-        int rotation = 0;
-        try {
-            rotation = element.getAttribute("rotate").getIntValue();
-        } catch (org.jdom2.DataConversionException e) {
-        } catch (NullPointerException e) {  // considered normal if the attributes are not present
-        }
-
-        if (loadSensorIcon("active", rotation, l, element, name, ed) == null) {
-            return;
-        }
-        if (loadSensorIcon("inactive", rotation, l, element, name, ed) == null) {
-            return;
-        }
-        if (loadSensorIcon("unknown", rotation, l, element, name, ed) == null) {
-            return;
-        }
-        if (loadSensorIcon("inconsistent", rotation, l, element, name, ed) == null) {
-            return;
-        }
-        Element elem = element.getChild("iconmaps");
-        if (elem != null) {
-            attr = elem.getAttribute("family");
-            if (attr != null) {
-                l.setFamily(attr.getValue());
-            }
-        }
-
         Attribute a = element.getAttribute("momentary");
         if ((a != null) && a.getValue().equals("true")) {
             l.setMomentary(true);
@@ -224,27 +169,77 @@ public class SensorIconXml extends PositionableLabelXml {
             l.setMomentary(false);
         }
 
-        loadTextInfo(l, element);
         l.setSensor(name);
 
         ed.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.SENSORS, element);
-        if (l.isIcon() && l.getText()!=null) {
-            l.setOpaque(false);            
+    }
+    
+    /*
+     * pre release 5.0 or something like that
+     */
+    private void loadPre50(Element element, SensorIcon l, String name) {
+        boolean isIcon = true;
+        if (element.getAttribute("icon") != null) {
+            String yesno = element.getAttribute("icon").getValue();
+            if ((yesno != null) && (!yesno.equals(""))) {
+                if (yesno.equals("yes")) {
+                    isIcon = true;
+                } else if (yesno.equals("no")) {
+                    isIcon = false;
+                }
+            }
+        }
+        l.setIsIcon(isIcon);
+        if (element.getAttribute("text") != null) {
+            if (element.getAttribute("text").getValue().length()>=0) {
+                l.setIsText(true); //text mode
+                if (l.isIcon()) {
+                    log.debug("Sensor "+l.getNameString()+" is both text and icon for overlay.");
+                }
+            }
+        }
+
+        try {
+            int rotation = element.getAttribute("rotate").getIntValue();
+            PositionableLabelXml.doRotationConversion(rotation, l);
+        } catch (org.jdom2.DataConversionException e) {
+        } catch (NullPointerException e) {  // considered normal if the attributes are not present
+        }
+
+        Editor ed = l.getEditor();
+        loadSensorIcon("active", "SensorStateActive", l, element, name, ed);      
+        loadSensorIcon("inactive", "SensorStateInactive", l, element, name, ed);
+        loadSensorIcon("unknown", "BeanStateUnknown", l, element, name, ed);
+        loadSensorIcon("inconsistent", "BeanStateInconsistent", l, element, name, ed);
+        
+        loadSensorTextState("Active", "SensorStateActive", l, element);
+        loadSensorTextState("InActive", "SensorStateInactive", l, element);
+        loadSensorTextState("Unknown", "BeanStateUnknown", l, element);
+        loadSensorTextState("Inconsistent", "BeanStateInconsistent", l, element);
+
+        Element elem = element.getChild("iconmaps");
+        if (elem != null) {
+            Attribute attr = elem.getAttribute("family");
+            if (attr != null) {
+                l.setFamily(attr.getValue());
+            }
         }
     }
 
-    private NamedIcon loadSensorIcon(String state, int rotation, SensorIcon l,
-            Element element, String name, Editor ed) {
+    /*
+     * pre 5.0
+     */
+    private NamedIcon loadSensorIcon(String key, String state, SensorIcon l, Element element, String name, Editor ed) {
         String msg = "SensorIcon \"" + name + "\": icon \"" + state + "\" ";
         // loadIcon gets icon as an element
-        NamedIcon icon = loadIcon(l, state, element, msg, ed);
-        if (icon == null && _icon) {
+        NamedIcon icon = PositionableLabelXml.loadIcon(l, key, element, msg, ed);
+        if (icon == null) {
             // old config files may define icons as attributes
             String iconName;
-            if (element.getAttribute(state) != null
-                    && !(iconName = element.getAttribute(state).getValue()).equals("")) {
+            if (element.getAttribute(key) != null
+                    && !(iconName = element.getAttribute(key).getValue()).equals("")) {
 
                 icon = NamedIcon.getIconByName(iconName);
                 if (icon == null) {
@@ -252,41 +247,29 @@ public class SensorIconXml extends PositionableLabelXml {
                     if (icon == null) {
                         log.info(msg + " removed for url= " + iconName);
                     }
-                } else {
-                    icon.setRotation(rotation, l);
                 }
             } else {
-                log.warn("did not locate " + state + " icon file for " + name);
+                log.warn("did not locate " + key + " icon file for " + name);
             }
         }
         if (icon == null) {
-            log.info(msg + " removed");
+            log.info(msg + " removed", msg);
         } else {
-            l.setIcon(_nameMap.get(state), icon);
+            l.setStateIcon(state, icon);
         }
         return icon;
     }
 
-    void loadTextInfo(SensorIcon l, Element element) {
-        super.loadTextInfo(l, element);
-
-        loadSensorTextState("Active", l, element);
-        loadSensorTextState("InActive", l, element);
-        loadSensorTextState("Unknown", l, element);
-        loadSensorTextState("Inconsistent", l, element);
-        if (element.getAttribute("text") != null) {
-            l.setOriginalText(element.getAttribute("text").getValue());
-            l.setText(element.getAttribute("text").getValue());
-        }
-    }
-
-    private void loadSensorTextState(String state, SensorIcon l, Element element) {
+    /*
+     * pre 5.0
+     */
+    private void loadSensorTextState(String key, String state, SensorIcon si, Element element) {
         String name = null;
         Color clrText = null;
         Color clrBackground = null;
-        List<Element> textList = element.getChildren(state.toLowerCase() + "Text");
+        List<Element> textList = element.getChildren(key.toLowerCase() + "Text");
         if (log.isDebugEnabled()) {
-            log.debug("Found " + textList.size() + " " + state + "Text objects");
+            log.debug("Found " + textList.size() + " " + key + "Text objects");
         }
         if (textList.size() > 0) {
             Element elem = textList.get(0);
@@ -312,73 +295,35 @@ public class SensorIconXml extends PositionableLabelXml {
                 log.warn("Could not parse color attributes!");
             } catch (NullPointerException e) {  // considered normal if the attributes are not present
             }
-
         } else {
-            if (element.getAttribute(state.toLowerCase()) != null) {
-                name = element.getAttribute(state.toLowerCase()).getValue();
+            if (element.getAttribute(key.toLowerCase()) != null) {
+                name = element.getAttribute(key.toLowerCase()).getValue();
             }
             try {
-                int red = element.getAttribute("red" + state).getIntValue();
-                int blue = element.getAttribute("blue" + state).getIntValue();
-                int green = element.getAttribute("green" + state).getIntValue();
+                int red = element.getAttribute("red" + key).getIntValue();
+                int blue = element.getAttribute("blue" + key).getIntValue();
+                int green = element.getAttribute("green" + key).getIntValue();
                 clrText = new Color(red, green, blue);
             } catch (org.jdom2.DataConversionException e) {
                 log.warn("Could not parse color attributes!");
             } catch (NullPointerException e) {  // considered normal if the attributes are not present
             }
             try {
-                int red = element.getAttribute("red" + state + "Back").getIntValue();
-                int blue = element.getAttribute("blue" + state + "Back").getIntValue();
-                int green = element.getAttribute("green" + state + "Back").getIntValue();
+                int red = element.getAttribute("red" + key + "Back").getIntValue();
+                int blue = element.getAttribute("blue" + key + "Back").getIntValue();
+                int green = element.getAttribute("green" + key + "Back").getIntValue();
                 clrBackground = new Color(red, green, blue);
             } catch (org.jdom2.DataConversionException e) {
                 log.warn("Could not parse color attributes!");
             } catch (NullPointerException e) {  // considered normal if the attributes are not present
             }
         }
-        if (state.equals("Active")) {
-            if (name != null) {
-                l.setActiveText(name);
-            }
-            if (clrText != null) {
-                l.setTextActive(clrText);
-            }
-            if (clrBackground != null) {
-                l.setBackgroundActive(clrBackground);
-            }
-        } else if (state.equals("InActive")) {
-            if (name != null) {
-                l.setInactiveText(name);
-            }
-            if (clrText != null) {
-                l.setTextInActive(clrText);
-            }
-            if (clrBackground != null) {
-                l.setBackgroundInActive(clrBackground);
-            }
-        } else if (state.equals("Unknown")) {
-            if (name != null) {
-                l.setUnknownText(name);
-            }
-            if (clrText != null) {
-                l.setTextUnknown(clrText);
-            }
-            if (clrBackground != null) {
-                l.setBackgroundUnknown(clrBackground);
-            }
-        } else if (state.equals("Inconsistent")) {
-            if (name != null) {
-                l.setInconsistentText(name);
-            }
-            if (clrText != null) {
-                l.setTextInconsistent(clrText);
-            }
-            if (clrBackground != null) {
-                l.setBackgroundInconsistent(clrBackground);
-            }
-        }
+
+        PositionableLabel pos = si.getStateData(state); 
+        pos.setText(name);
+        pos.setForeground(clrText);
+        pos.setBackgroundColor(clrBackground);
     }
 
     private final static Logger log = LoggerFactory.getLogger(SensorIconXml.class);
-
 }

@@ -1,7 +1,6 @@
 package jmri.jmrit.display.controlPanelEditor;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -25,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +34,6 @@ import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -59,14 +56,9 @@ import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.IndicatorTrack;
 import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.LocoIcon;
-import jmri.jmrit.display.MemoryIcon;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableIcon;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.PositionableJPanel;
 import jmri.jmrit.display.PositionableLabel;
-import jmri.jmrit.display.PositionablePopupUtil;
-import jmri.jmrit.display.SensorIcon;
 import jmri.jmrit.display.ToolTip;
 import jmri.jmrit.display.controlPanelEditor.shape.ShapeDrawer;
 import jmri.jmrit.display.palette.ItemPalette;
@@ -287,7 +279,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
         addItem = new JMenuItem(Bundle.getMessage("Zoom", "..."));
         _zoomMenu.add(addItem);
-        PositionableJComponent z = new PositionableJComponent(this);
+        Positionable z = new Positionable(this);
         z.setScale(getPaintScale());
         addItem.addActionListener(CoordinateEdit.getZoomEditAction(z));
 
@@ -415,7 +407,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         });
 
         JMenuItem editItem = new JMenuItem(Bundle.getMessage("renamePanelMenu", "..."));
-        PositionableJComponent z = new PositionableJComponent(this);
+        Positionable z = new Positionable(this);
         z.setScale(getPaintScale());
         editItem.addActionListener(CoordinateEdit.getNameEditAction(z));
         _fileMenu.add(editItem);
@@ -718,16 +710,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                             pos.updateSize();
                             pos.setVisible(true);
                             _selectionGroup.add(pos);
-                            if (pos instanceof PositionableIcon) {
-                                jmri.NamedBean bean = pos.getNamedBean();
-                                if (bean != null) {
-                                    ((PositionableIcon) pos).displayState(bean.getState());
-                                }
-                            } else if (pos instanceof MemoryIcon) {
-                                ((MemoryIcon) pos).displayState();
-                            } else if (pos instanceof PositionableJComponent) {
-                                ((PositionableJComponent) pos).displayState();
-                            }
+                            pos.displayState();
                             log.debug("Paste Added at ({}, {})", pos.getLocation().x, pos.getLocation().y);
                         }
                     }
@@ -1123,15 +1106,8 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         if (_selectionGroup == null) {
             return null;
         }
-        double x = event.getX();
-        double y = event.getY();
-
         for (Positionable p : _selectionGroup) {
-            Rectangle2D.Double rect2D = new Rectangle2D.Double(p.getX() * _paintScale,
-                    p.getY() * _paintScale,
-                    p.maxWidth() * _paintScale,
-                    p.maxHeight() * _paintScale);
-            if (rect2D.contains(x, y)) {
+            if (pointOnItem(p, event)) {
                 return p;
             }
         }
@@ -1148,27 +1124,30 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         int x = 0;
         int y = 0;
         switch (e.getKeyCode()) {
+            case KeyEvent.VK_U:
             case KeyEvent.VK_UP:
             case KeyEvent.VK_KP_UP:
             case KeyEvent.VK_NUMPAD8:
                 y = -1;
                 break;
+            case KeyEvent.VK_D:
             case KeyEvent.VK_DOWN:
             case KeyEvent.VK_KP_DOWN:
             case KeyEvent.VK_NUMPAD2:
                 y = 1;
                 break;
+            case KeyEvent.VK_L:
             case KeyEvent.VK_LEFT:
             case KeyEvent.VK_KP_LEFT:
             case KeyEvent.VK_NUMPAD4:
                 x = -1;
                 break;
+            case KeyEvent.VK_R:
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_KP_RIGHT:
             case KeyEvent.VK_NUMPAD6:
                 x = 1;
                 break;
-            case KeyEvent.VK_D:
             case KeyEvent.VK_DELETE:
             case KeyEvent.VK_MINUS:
                 _shapeDrawer.delete();
@@ -1468,7 +1447,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             g.setColor(new Color(150, 150, 255));
             for (Positionable p : _secondSelectionGroup) {
                 if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                    g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
+                    g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
                 }
             }
         }
@@ -1512,18 +1491,14 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         }
         _selectionGroup = selectionGroup;  // group is now disconnected
         _pastePending = true;
-        log.debug("Exit copyItem: _selectionGroup.size()={}", _selectionGroup.size());
+        if (log.isDebugEnabled())
+            log.debug("Exit copyItem: _selectionGroup.size()={}", _selectionGroup.size());
     }
 
     void pasteItems() {
         if (_selectionGroup != null) {
             for (Positionable pos : _selectionGroup) {
-                if (pos instanceof PositionableIcon) {
-                    jmri.NamedBean bean = pos.getNamedBean();
-                    if (bean != null) {
-                        ((PositionableIcon) pos).displayState(bean.getState());
-                    }
-                }
+                pos.displayState();
                 putItem(pos);
                 log.debug("Add {}", pos.getNameString());
             }
@@ -1597,7 +1572,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
     @Override
     protected void setSelectionsRotation(int k, Positionable p) {
         if (_circuitBuilder.saveSelectionGroup(_selectionGroup)) {
-            p.rotate(k);
+            p.setDegrees(k);
         } else {
             super.setSelectionsRotation(k, p);
         }
@@ -1610,12 +1585,13 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
      */
     @Override
     protected void showPopUp(Positionable p, MouseEvent event) {
-        if (!((JComponent) p).isVisible()) {
-            return;     // component must be showing on the screen to determine its location
+        if (log.isDebugEnabled())
+            log.debug("showPopUp comp {}", p.getNameString());
+        if (!p.isVisible()) {
+            return;
         }
         JPopupMenu popup = new JPopupMenu();
 
-        PositionablePopupUtil util = p.getPopupUtility();
         if (p.isEditable()) {
             // items common to all
             if (p.doViemMenu()) {
@@ -1633,50 +1609,48 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
             // items with defaults or using overrides
             boolean popupSet = false;
-//            popupSet |= p.setRotateOrthogonalMenu(popup);
+            popupSet |= p.setRotateOrthogonalMenu(popup);
             popupSet |= p.setRotateMenu(popup);
             popupSet |= p.setScaleMenu(popup);
             if (popupSet) {
                 popup.addSeparator();
                 popupSet = false;
             }
-            popupSet = p.setEditItemMenu(popup);
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
-            }
+            p.setFixedTextMenu(popup);
+            p.setTextMarginMenu(popup);
+            p.setTextBorderMenu(popup);
+            p.setTextFontMenu(popup);
+            p.setBackgroundMenu(popup);
+            p.setTextJustificationMenu(popup);
+            p.setTextOrientationMenu(popup);
+            p.copyItem(popup);
+            popup.addSeparator();
+            p.propertyUtil(popup);
+            
+            popup.addSeparator();
             if (p instanceof PositionableLabel) {
-                PositionableLabel pl = (PositionableLabel) p;
-                /*                if (pl.isIcon() && "javax.swing.JLabel".equals(pl.getClass().getSuperclass().getName()) ) {
-                    popupSet |= setTextAttributes(pl, popup);       // only for plain icons
-                }   Add backgrounds & text over icons later */
-                if (!pl.isIcon()) {
-                    popupSet |= p.setTextEditMenu(popup);
-                    popupSet |= setTextAttributes(p, popup);
-//                    popupSet |= pl.setEditTextMenu(popup);
-                } else if (p instanceof SensorIcon) {
-                    popup.add(CoordinateEdit.getTextEditAction(p, "OverlayText"));
-                    if (pl.isText()) {
-                        popupSet |= setTextAttributes(p, popup);
-//                        popupSet |= pl.setEditTextMenu(popup);
-                    }
-                }
-            } else if (p instanceof PositionableJPanel) {
+                PositionableLabel pl = (PositionableLabel)p;
+                popupSet = pl.setDisplayModeMenu(popup);
+                popupSet |= pl.setDisableControlMenu(popup);
+                popupSet |= pl.setTextEditMenu(popup);
                 popupSet |= setTextAttributes(p, popup);
+                popupSet |= pl.setEditIconMenu(popup);
+                popupSet |= pl.setIconEditMenu(popup);
+            } else {
+                popupSet = setTextAttributes(p, popup);
             }
+            if (p instanceof PositionableJPanel) {
+                popupSet = ((PositionableJPanel)p).setIconEditMenu(popup);
+            }
+            if (popupSet) {
+                popupSet = false;
+                popup.addSeparator();
+            }
+
+            p.setAdditionalEditPopUpMenu(popup);
             if (p instanceof LinkingObject) {
                 ((LinkingObject) p).setLinkMenu(popup);
             }
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
-            }
-            p.setDisableControlMenu(popup);
-            if (util != null) {
-                util.setAdditionalEditPopUpMenu(popup);
-            }
-            // for Positionables with unique settings
-            p.showPopUp(popup);
 
             if (p.doViemMenu()) {
                 setShowToolTipMenu(p, popup);
@@ -1687,11 +1661,9 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 setCopyMenu(p, popup);
             }
             p.showPopUp(popup);
-            if (util != null) {
-                util.setAdditionalViewPopUpMenu(popup);
-            }
+            p.setAdditionalViewPopUpMenu(popup);
         }
-        popup.show((Component) p, p.getWidth() / 2 + (int) ((getPaintScale() - 1.0) * p.getX()),
+        popup.show(p, p.getWidth() / 2 + (int) ((getPaintScale() - 1.0) * p.getX()),
                 p.getHeight() / 2 + (int) ((getPaintScale() - 1.0) * p.getY()));
 
         _currentSelection = null;
@@ -1699,7 +1671,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
     private HashMap<String, NamedIcon> _portalIconMap;
 
-    private void makePortalIconMap() {
+    private void makeDefaultPortalIconMap() {
         _portalIconMap = new HashMap<>();
         _portalIconMap.put(PortalIcon.VISIBLE,
                 new NamedIcon("resources/icons/throttles/RoundRedCircle20.png", "resources/icons/throttles/RoundRedCircle20.png"));
@@ -1715,14 +1687,14 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
 
     protected NamedIcon getPortalIcon(String name) {
         if (_portalIconMap == null) {  // set defaults
-            makePortalIconMap();
+            makeDefaultPortalIconMap();
         }
         return _portalIconMap.get(name);
     }
 
     public HashMap<String, NamedIcon> getPortalIconMap() {
         if (_portalIconMap == null) {  // set defaults
-            makePortalIconMap();
+            makeDefaultPortalIconMap();
         }
         return _portalIconMap;
     }
@@ -1780,7 +1752,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             _highlightcomponent = null;
         } else {
             _highlightcomponent = new Rectangle(pos.getX(), pos.getY(),
-                    pos.maxWidth(), pos.maxHeight());
+                    pos.getWidth(), pos.getHeight());
         }
         repaint();
     }

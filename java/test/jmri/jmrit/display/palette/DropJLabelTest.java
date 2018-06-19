@@ -1,9 +1,8 @@
 package jmri.jmrit.display.palette;
 
-import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.GraphicsEnvironment;
-import javax.swing.Icon;
+import java.util.HashMap;
+import jmri.jmrit.catalog.NamedIcon;
 import jmri.util.JUnitUtil;
 import org.junit.After;
 import org.junit.Assert;
@@ -20,20 +19,9 @@ public class DropJLabelTest {
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Icon i = new Icon(){
-           @Override 
-           public int getIconHeight(){
-              return 0;
-           }
-           @Override 
-           public int getIconWidth(){
-              return 0;
-           }
-           @Override
-           public void paintIcon(Component c, Graphics g,int x, int y){
-           }
-        };
-        DropJLabel t = new DropJLabel(i);
+        NamedIcon i = new NamedIcon("program:resources/logo.gif","logo");
+        HashMap<String, NamedIcon> map = new HashMap();
+        DropJLabel t = new DropJLabel(i, map, false);
         Assert.assertNotNull("exists",t);
     }
 

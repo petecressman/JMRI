@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright: Copyright (c) 2010
  */
-public class SignalMastIconXml extends PositionableLabelXml {
+public class SignalMastIconXml extends PositionableIconXml {
 
     public SignalMastIconXml() {
     }
@@ -28,19 +28,16 @@ public class SignalMastIconXml extends PositionableLabelXml {
     public Element store(Object o) {
 
         SignalMastIcon p = (SignalMastIcon) o;
-        if (!p.isActive()) {
-            return null;  // if flagged as inactive, don't store
-        }
         Element element = new Element("signalmasticon");
+        
+        if (!storePositionableIcon(element, p)) {
+            return null;
+        }
         element.setAttribute("signalmast", "" + p.getNamedSignalMast().getName());
-        storeCommonAttributes(p, element);
         element.setAttribute("clickmode", "" + p.getClickMode());
         element.setAttribute("litmode", "" + p.getLitMode());
-        element.setAttribute("degrees", String.valueOf(p.getDegrees()));
-        element.setAttribute("scale", String.valueOf(p.getScale()));
         element.setAttribute("imageset", p.useIconSet());
         element.setAttribute("class", "jmri.jmrit.display.configurexml.SignalMastIconXml");
-        //storeIconInfo(p, element);
         return element;
     }
 
@@ -55,8 +52,10 @@ public class SignalMastIconXml extends PositionableLabelXml {
         // create the objects
         Editor ed = (Editor) o;
         SignalMastIcon l = new SignalMastIcon(ed);
+        if (!loadPositionableIcon(element, l)) {
+        }
+        
         String name;
-
         Attribute attr;
         /*
          * We need to set the rotation and scaling first, prior to setting the
@@ -74,7 +73,7 @@ public class SignalMastIconXml extends PositionableLabelXml {
             if (attr != null) {
                 rotation = attr.getIntValue();
             }
-            l.rotate(rotation);
+            l.setDegrees(rotation);
             attr = element.getAttribute("scale");
             String text = "Error attr null";
             if (attr != null) {

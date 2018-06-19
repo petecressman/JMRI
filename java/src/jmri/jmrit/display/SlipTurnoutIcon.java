@@ -40,15 +40,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author Kevin Dickerson Copyright (c) 2010
  */
-public class SlipTurnoutIcon extends PositionableLabel implements java.beans.PropertyChangeListener {
+public class SlipTurnoutIcon extends PositionableIcon implements java.beans.PropertyChangeListener {
 
     public SlipTurnoutIcon(Editor editor) {
         // super ctor call to make sure this is an icon label
         super(new NamedIcon("resources/icons/smallschematics/tracksegments/os-slip-lower-west-upper-east.gif",
                 "resources/icons/smallschematics/tracksegments/os-slip-lower-west-upper-east.gif"), editor);
-        _control = true;
         displayState(turnoutState());
-        setPopupUtility(null);
     }
 
     // the associated Turnout object
@@ -359,7 +357,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
         unknown = i;
         displayState(turnoutState());
     }
-
+/*
     @Override
     public int maxHeight() {
         return Math.max(
@@ -384,7 +382,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
                         Math.max((unknown != null) ? unknown.getIconWidth() : 0,
                                 (inconsistent != null) ? inconsistent.getIconWidth() : 0))
         );
-    }
+    }*/
 
     /**
      * Get current state of attached turnouts This adds the two turnout states
@@ -545,7 +543,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
     /**
      * ****** popup AbstractAction.actionPerformed method overrides ********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         lowerWestToUpperEast.setRotation(lowerWestToUpperEast.getRotation() + 1, this);
         upperWestToLowerEast.setRotation(upperWestToLowerEast.getRotation() + 1, this);
@@ -578,7 +576,7 @@ public class SlipTurnoutIcon extends PositionableLabel implements java.beans.Pro
         unknown.rotate(deg, this);
         inconsistent.rotate(deg, this);
         displayState(turnoutState());
-    }
+    }*/
 
     /**
      * Drive the current state of the display from the state of the turnout.

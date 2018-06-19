@@ -10,7 +10,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -59,10 +60,10 @@ public class PositionablePropertiesUtil {
         JPanel exampleHolder = new JPanel();
         //example = new JLabel(text);
 
-        for (int i = 0; i < txtList.size(); i++) {
+        for (int i = 0; i < _textMap.size(); i++) {
             JPanel p = new JPanel();
-            p.setBorder(BorderFactory.createTitledBorder(txtList.get(i).getDescription()));
-            p.add(txtList.get(i).getLabel()); // add a visual example for each
+            p.setBorder(BorderFactory.createTitledBorder(_textMap.get(i).getDescription()));
+            p.add(_textMap.get(i).getLabel()); // add a visual example for each
             exampleHolder.add(p);
         }
         //exampleHolder.add(example);
@@ -173,7 +174,7 @@ public class PositionablePropertiesUtil {
             preview();
         });
 
-        for (int i = 0; i < txtList.size(); i++) { // repeat 4 times for sensor icons, or just once
+        for (int i = 0; i < _textMap.size(); i++) { // repeat 4 times for sensor icons, or just once
             final int x = i;
 
             JPanel txtPanel = new JPanel();
@@ -185,7 +186,7 @@ public class PositionablePropertiesUtil {
             txtColorChooser.getSelectionModel().addChangeListener(previewChangeListener);
             txtPanel.add(txtColorChooser);
             txtColorChooser.getSelectionModel().addChangeListener((ChangeEvent ce) -> {
-                txtList.get(x).setForeground(txtColorChooser.getColor());
+                _textMap.get(x).setForeground(txtColorChooser.getColor());
             });
 
             JPanel p = new JPanel();
@@ -202,13 +203,13 @@ public class PositionablePropertiesUtil {
             txtBackColorChooser.getSelectionModel().addChangeListener(previewChangeListener);
             txtPanel.add(txtBackColorChooser);
             txtBackColorChooser.getSelectionModel().addChangeListener((ChangeEvent ce) -> {
-                txtList.get(x).setBackground(txtBackColorChooser.getColor());
+                _textMap.get(x).setBackground(txtBackColorChooser.getColor());
             });
             p = new JPanel();
             p.add(new JLabel(Bundle.getMessage("FontBackgroundColor") + ": "));
             p.add(txtBackColorChooser);
 
-            String _borderTitle = txtList.get(i).getDescription();
+            String _borderTitle = _textMap.get(i).getDescription();
             if (_borderTitle.equals(Bundle.getMessage("TextExampleLabel"))) {
                 _borderTitle = Bundle.getMessage("TextDecoLabel"); // replace default label by an appropriate one for text decoration box on Font tab
             }
@@ -321,18 +322,18 @@ public class PositionablePropertiesUtil {
     void editText() {
         JPanel editText = new JPanel();
         editText.setLayout(new BoxLayout(editText, BoxLayout.Y_AXIS));
-        for (int i = 0; i < txtList.size(); i++) {
+        for (int i = 0; i < _textMap.size(); i++) {
             final int x = i;
             JPanel p = new JPanel();
 
-            String _borderTitle = txtList.get(i).getDescription();
+            String _borderTitle = _textMap.get(i).getDescription();
             if (_borderTitle.equals(Bundle.getMessage("TextExampleLabel"))) {
                 _borderTitle = Bundle.getMessage("TextBorderLabel"); // replace label provided by Ctor by an appropriate one for text string box on Contents tab
             }
             p.setBorder(BorderFactory.createTitledBorder(_borderTitle));
 
             JLabel txt = new JLabel(Bundle.getMessage("TextValueLabel") + ": ");
-            JTextField textField = new JTextField(txtList.get(i).getText(), 20);
+            JTextField textField = new JTextField(_textMap.get(i).getText(), 20);
             textField.addKeyListener(new KeyListener() {
                 @Override
                 public void keyTyped(KeyEvent E) {
@@ -345,7 +346,7 @@ public class PositionablePropertiesUtil {
                 @Override
                 public void keyReleased(KeyEvent E) {
                     JTextField tmp = (JTextField) E.getSource();
-                    txtList.get(x).setText(tmp.getText());
+                    _textMap.get(x).setText(tmp.getText());
                     preview();
                 }
             });
@@ -413,78 +414,76 @@ public class PositionablePropertiesUtil {
     }
 
     void fontApply() {
-        pop.setFontSize(Integer.parseInt(fontSizeField.getText()));
+        _parent.setFontSize(Integer.parseInt(fontSizeField.getText()));
         if (bold.isSelected()) {
-            pop.setFontStyle(Font.BOLD, 0);
+            _parent.setFontStyle(Font.BOLD, 0);
         } else {
-            pop.setFontStyle(0, Font.BOLD);
+            _parent.setFontStyle(0, Font.BOLD);
         }
         if (italic.isSelected()) {
-            pop.setFontStyle(Font.ITALIC, 0);
+            _parent.setFontStyle(Font.ITALIC, 0);
         } else {
-            pop.setFontStyle(0, Font.ITALIC);
+            _parent.setFontStyle(0, Font.ITALIC);
         }
 
         Color desiredColor;
-        if (_parent instanceof SensorIcon) {
-            SensorIcon si = (SensorIcon) _parent;
-            if (si.isIcon()) {
-                PositionableLabel pp = (PositionableLabel) _parent;
-                pp.setText(txtList.get(0).getText());
-                pop.setForeground(txtList.get(0).getForeground());
-                pop.setBackgroundColor(txtList.get(0).getBackground());
+        if (_parent instanceof PositionableIcon) {
+            PositionableIcon pi = (PositionableIcon) _parent;
+            if (pi.isIcon() && pi.isText()) {   // text overlaid icon
+                TextDetails det = _textMap.get("parent");
+                pi.setText(det.getText());
+                pi.setForeground(det.getForeground());
+                pi.setBackgroundColor(det.getBackground());
             } else {
-                si.setActiveText(txtList.get(0).getText());
-                si.setTextActive(txtList.get(0).getForeground());
-                si.setBackgroundActive(txtList.get(0).getBackground());
-
-                si.setInactiveText(txtList.get(1).getText());
-                si.setTextInActive(txtList.get(1).getForeground());
-                si.setBackgroundInActive(txtList.get(1).getBackground());
-
-                si.setUnknownText(txtList.get(2).getText());
-                si.setTextUnknown(txtList.get(2).getForeground());
-                si.setBackgroundUnknown(txtList.get(2).getBackground());
-
-                si.setInconsistentText(txtList.get(3).getText());
-                si.setTextInconsistent(txtList.get(3).getForeground());
-                si.setBackgroundInconsistent(txtList.get(3).getBackground());
+                for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                    String state = entry.getKey();
+                    TextDetails det = _textMap.get(state);
+                    PositionableLabel p = entry.getValue();
+                    p.setText(det.getText());
+                    p.setForeground(det.getForeground());
+                    p.setBackground(det.getBackground());
+                }
             }
-        } else {
+        } else if (_parent instanceof PositionableLabel) {
             PositionableLabel pp = (PositionableLabel) _parent;
-            pp.setText(txtList.get(0).getText());
-            pop.setForeground(txtList.get(0).getForeground());
-            pop.setBackgroundColor(txtList.get(0).getBackground());
+            TextDetails det = _textMap.get("parent");
+            pp.setText(det.getText());
+            pp.setForeground(det.getForeground());
+            pp.setBackground(det.getBackground());
+        } else if (_parent instanceof PositionableJPanel) {
+            PositionableJPanel pj = (PositionableJPanel)_parent;
+            TextDetails det = _textMap.get("noText");
+            pj.setForeground(det.getForeground());
+            pj.setBackground(det.getBackground());
+        } else {
+            TextDetails det = _textMap.get("noText");
+            _parent.setForeground(det.getForeground());
+            _parent.setBackground(det.getBackground());
         }
 
-        int deg = _parent.getDegrees();
-        if (deg != 0) {
-            _parent.rotate(0);
-        }
         desiredColor = borderColorChooser.getColor();
-        pop.setBorderColor(desiredColor);
+        _parent.setBorderColor(desiredColor);
 
-        pop.setBorderSize(((Number) borderSizeTextSpin.getValue()).intValue());
+        _parent.setBorderSize(((Number) borderSizeTextSpin.getValue()).intValue());
 
-        pop.setMargin(((Number) marginSizeTextSpin.getValue()).intValue());
+        _parent.setMarginSize(((Number) marginSizeTextSpin.getValue()).intValue());
         _parent.setLocation(((Number) xPositionTextSpin.getValue()).intValue(), ((Number) yPositionTextSpin.getValue()).intValue());
-        pop.setFixedWidth(((Number) widthSizeTextSpin.getValue()).intValue());
-        pop.setFixedHeight(((Number) heightSizeTextSpin.getValue()).intValue());
+        _parent.setFixedWidth(((Number) widthSizeTextSpin.getValue()).intValue());
+        _parent.setFixedHeight(((Number) heightSizeTextSpin.getValue()).intValue());
         switch (_justificationCombo.getSelectedIndex()) {
             case 0:
-                pop.setJustification(0x00);
+                _parent.setJustification(0x00);
                 break;
             case 1:
-                pop.setJustification(0x02);
+                _parent.setJustification(0x02);
                 break;
             case 2:
-                pop.setJustification(0x04);
+                _parent.setJustification(0x04);
                 break;
             default:
                 log.warn("Unhandled combo index: {}", _justificationCombo.getSelectedIndex());
                 break;
         }
-        _parent.rotate(deg);
     }
 
     void cancelButton() {
@@ -529,8 +528,8 @@ public class PositionablePropertiesUtil {
                 break;
         }
 
-        for (int i = 0; i < txtList.size(); i++) {
-            JLabel tmp = txtList.get(i).getLabel();
+        for (int i = 0; i < _textMap.size(); i++) {
+            JLabel tmp = _textMap.get(i).getLabel();
             if (tmp.isOpaque()) {
                 borderMargin = new LineBorder(tmp.getBackground(), margin);
             } else {
@@ -555,10 +554,8 @@ public class PositionablePropertiesUtil {
             if (tmp.getText().trim().length() > 0) {
                 max = tmp.getFontMetrics(tmp.getFont()).stringWidth(tmp.getText());
             }
-            if (pop != null) {
-                max += ((Number) marginSizeTextSpin.getValue()).intValue() * 2;
-                max += ((Number) borderSizeTextSpin.getValue()).intValue() * 2;
-            }
+            max += ((Number) marginSizeTextSpin.getValue()).intValue() * 2;
+            max += ((Number) borderSizeTextSpin.getValue()).intValue() * 2;
         }
         return max;
     }
@@ -572,91 +569,92 @@ public class PositionablePropertiesUtil {
             if (tmp.getText().trim().length() > 0) {
                 max = tmp.getFontMetrics(tmp.getFont()).getHeight();
             }
-            if (pop != null) {
-                max += ((Number) marginSizeTextSpin.getValue()).intValue() * 2;
-                max += ((Number) borderSizeTextSpin.getValue()).intValue() * 2;
-            }
+            max += ((Number) marginSizeTextSpin.getValue()).intValue() * 2;
+            max += ((Number) borderSizeTextSpin.getValue()).intValue() * 2;
         }
 
         return max;
     }
-    PositionablePopupUtil pop;
 
     private void undoChanges() {
-        if (_parent instanceof SensorIcon) {
-            SensorIcon si = (SensorIcon) _parent;
-            if (si.isIcon()) {
-                PositionableLabel pp = (PositionableLabel) _parent;
-                pp.setText(txtList.get(0).getOrigText());
-                pop.setForeground(txtList.get(0).getOrigForeground());
-                pop.setBackgroundColor(txtList.get(0).getOrigBackground());
+        if (_parent instanceof PositionableIcon) {
+            PositionableIcon pi = (PositionableIcon) _parent;
+            if (pi.isIcon() && pi.isText()) {   // text overlaid icon
+                TextDetails det = _textMap.get("parent");
+                pi.setText(det.getOrigText());
+                pi.setForeground(det.getOrigForeground());
+                pi.setBackgroundColor(det.getOrigBackground());
             } else {
-                si.setActiveText(txtList.get(0).getOrigText());
-                si.setTextActive(txtList.get(0).getOrigForeground());
-                si.setBackgroundActive(txtList.get(0).getOrigBackground());
-
-                si.setInactiveText(txtList.get(1).getOrigText());
-                si.setTextInActive(txtList.get(1).getOrigForeground());
-                si.setBackgroundInActive(txtList.get(1).getOrigBackground());
-
-                si.setUnknownText(txtList.get(2).getOrigText());
-                si.setTextUnknown(txtList.get(2).getOrigForeground());
-                si.setBackgroundUnknown(txtList.get(2).getOrigBackground());
-
-                si.setInconsistentText(txtList.get(3).getOrigText());
-                si.setTextInconsistent(txtList.get(3).getOrigForeground());
-                si.setBackgroundInconsistent(txtList.get(3).getOrigBackground());
+                for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                    String state = entry.getKey();
+                    TextDetails det = _textMap.get(state);
+                    PositionableLabel p = entry.getValue();
+                    p.setText(det.getOrigText());
+                    p.setForeground(det.getOrigForeground());
+                    p.setBackground(det.getOrigBackground());
+                }
             }
-        } else {
+        } else if (_parent instanceof PositionableLabel) {
             PositionableLabel pp = (PositionableLabel) _parent;
-            pp.setText(txtList.get(0).getOrigText());
-            pop.setForeground(txtList.get(0).getOrigForeground());
-            pop.setBackgroundColor(txtList.get(0).getOrigBackground());
+            TextDetails det = _textMap.get("parent");
+            pp.setText(det.getOrigText());
+            pp.setForeground(det.getOrigForeground());
+            pp.setBackground(det.getOrigBackground());
+        } else if (_parent instanceof PositionableJPanel) {
+            PositionableJPanel pj = (PositionableJPanel)_parent;
+            TextDetails det = _textMap.get("noText");
+            pj.setForeground(det.getOrigForeground());
+            pj.setBackground(det.getOrigBackground());
+        } else {
+            TextDetails det = _textMap.get("noText");
+            _parent.setForeground(det.getOrigForeground());
+            _parent.setBackground(det.getOrigBackground());
         }
-        int deg = _parent.getDegrees();
-        if (deg != 0) {
-            _parent.rotate(0);
-        }
-        pop.setJustification(justification);
-        pop.setFixedWidth(fixedWidth);
-        pop.setFixedHeight(fixedHeight);
-        pop.setMargin(marginSize);
-        pop.setBorderSize(borderSize);
-        pop.setFontStyle(0, fontStyle);
-        pop.setFontSize(fontSize);
-        pop.setBorderColor(defaultBorderColor);
+        _parent.setJustification(justification);
+        _parent.setFixedWidth(fixedWidth);
+        _parent.setFixedHeight(fixedHeight);
+        _parent.setMarginSize(marginSize);
+        _parent.setBorderSize(borderSize);
+        _parent.setFontStyle(0, fontStyle);
+        _parent.setFontSize(fontSize);
+        _parent.setBorderColor(defaultBorderColor);
         _parent.setLocation(xPos, yPos);
-        _parent.rotate(deg);
+//        _parent.rotate(deg);
     }
 
     private void getCurrentValues() {
-        pop = _parent.getPopupUtility();
-        txtList = new ArrayList<>();
+        _textMap = new HashMap<>();
 
-        if (_parent instanceof SensorIcon) {
-            SensorIcon si = (SensorIcon) _parent;
-            if (si.isIcon()) {
+        if (_parent instanceof PositionableIcon) {
+            PositionableIcon pi = (PositionableIcon) _parent;
+            if (pi.isIcon() && pi.isText()) {   // text overlaid icon
                 // just 1 label Example
-                txtList.add(new TextDetails(Bundle.getMessage("TextExampleLabel"), pop.getText(), pop.getForeground(), pop.getBackground()));
+                _textMap.put("parent", new TextDetails(Bundle.getMessage("TextExampleLabel"), pi.getText(), pi.getForeground(), pi.getBackgroundColor()));
             } else {
-                // 4 different labels (and bordered boxes to set decoration of) labels
-                txtList.add(new TextDetails(Bundle.getMessage("SensorStateActive"), si.getActiveText(), si.getTextActive(), si.getBackgroundActive()));
-                txtList.add(new TextDetails(Bundle.getMessage("SensorStateInactive"), si.getInactiveText(), si.getTextInActive(), si.getBackgroundInActive()));
-                txtList.add(new TextDetails(Bundle.getMessage("BeanStateUnknown"), si.getUnknownText(), si.getTextUnknown(), si.getBackgroundUnknown()));
-                txtList.add(new TextDetails(Bundle.getMessage("BeanStateInconsistent"), si.getInconsistentText(), si.getTextInconsistent(), si.getBackgroundInconsistent()));
+                for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                    String state = entry.getKey();
+                    PositionableLabel p = entry.getValue();
+                    _textMap.put(state, new TextDetails(Bundle.getMessage(state), p.getText(), p.getForeground(), p.getBackgroundColor()));                    
+                }
             }
+        } else if (_parent instanceof PositionableLabel) {
+            PositionableLabel p = (PositionableLabel)_parent;
+            _textMap.put("parent", new TextDetails(Bundle.getMessage("TextExampleLabel"), p.getText(), p.getForeground(), p.getBackgroundColor()));
+        } else if (_parent instanceof PositionableJPanel) {
+            PositionableJPanel pj = (PositionableJPanel)_parent;
+            _textMap.put("noText", new TextDetails(Bundle.getMessage("TextExampleLabel"), pj.getText(), pj.getForeground(), pj.getBackgroundColor()));
         } else {
             // just 1 label Example
-            txtList.add(new TextDetails(Bundle.getMessage("TextExampleLabel"), pop.getText(), pop.getForeground(), pop.getBackground()));
+            _textMap.put("noText", new TextDetails(Bundle.getMessage("TextExampleLabel"), null, _parent.getForeground(), _parent.getBackgroundColor()));
         }
 
-        fixedWidth = pop.getFixedWidth();
-        fixedHeight = pop.getFixedHeight();
-        marginSize = pop.getMargin();
-        borderSize = pop.getBorderSize();
-        justification = pop.getJustification();
-        fontStyle = pop.getFontStyle();
-        fontSize = pop.getFontSize();
+        fixedWidth = _parent.getFixedWidth();
+        fixedHeight = _parent.getFixedHeight();
+        marginSize = _parent.getMarginSize();
+        borderSize = _parent.getBorderSize();
+        justification = _parent.getJustification();
+        fontStyle = _parent.getFont().getStyle();
+        fontSize = _parent.getFont().getSize();
         if ((Font.BOLD & fontStyle) == Font.BOLD) {
             bold.setSelected(true);
         }
@@ -666,8 +664,8 @@ public class PositionablePropertiesUtil {
         if (_parent.isOpaque()) {
             defaultBackground = _parent.getBackground();
         }
-        defaultForeground = pop.getForeground();
-        defaultBorderColor = pop.getBorderColor();
+        defaultForeground = _parent.getForeground();
+        defaultBorderColor = _parent.getBorderColor();
         if (_parent instanceof MemoryIcon) {
             MemoryIcon pm = (MemoryIcon) _parent;
             xPos = pm.getOriginalX();
@@ -690,7 +688,7 @@ public class PositionablePropertiesUtil {
     private int xPos;
     private int yPos;
 
-    private ArrayList<TextDetails> txtList = null;
+    private HashMap<String, TextDetails> _textMap = null;
 
     private final JCheckBox italic = new JCheckBox(Bundle.getMessage("Italic"), false);
     private final JCheckBox bold = new JCheckBox(Bundle.getMessage("Bold"), false);

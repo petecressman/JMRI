@@ -36,14 +36,14 @@ public class LocoIconXml extends PositionableLabelXml {
         storeCommonAttributes(p, element);
 
         // include contents
-        if (p.getUnRotatedText() != null) {
-            element.setAttribute("text", p.getUnRotatedText());
+        if (p.getText() != null) {
+            element.setAttribute("text", p.getText());
         }
-        storeTextInfo(p, element);
+        storeFontInfo(p, element);
         element.setAttribute("icon", "yes");
         element.setAttribute("dockX", "" + p.getDockX());
         element.setAttribute("dockY", "" + p.getDockY());
-        element.addContent(storeIcon("icon", (NamedIcon) p.getIcon()));
+        element.addContent(storeIcon("icon", p.getIcon()));
         RosterEntry entry = p.getRosterEntry();
         if (entry != null) {
             element.setAttribute("rosterentry", entry.getId());
@@ -90,7 +90,7 @@ public class LocoIconXml extends PositionableLabelXml {
                 }
             }
         }
-        l.updateIcon(icon);
+        l.setIcon(icon);
 
         try {
             int x = element.getAttribute("dockX").getIntValue();
@@ -112,7 +112,7 @@ public class LocoIconXml extends PositionableLabelXml {
         ed.putLocoIcon(l, textName);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.MARKERS, element);
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
 
         l.init();  // to detect "background" color for use in Tracker, examine icon file 
     }

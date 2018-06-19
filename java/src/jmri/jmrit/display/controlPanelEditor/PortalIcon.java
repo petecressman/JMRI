@@ -4,6 +4,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
@@ -16,7 +18,7 @@ import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.CoordinateEdit;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableIcon;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ToolTip;
 import jmri.jmrit.logix.Portal;
 import org.slf4j.Logger;
@@ -25,7 +27,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Pete Cressman Copyright (C) 2011
  */
-public class PortalIcon extends PositionableIcon implements PropertyChangeListener {
+public class PortalIcon extends PositionableLabel implements PropertyChangeListener {
 
     public static final String HIDDEN = "hidden";
     public static final String VISIBLE = "block";
@@ -34,6 +36,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
     public static final String FROM_ARROW = "fromArrow";
 
     private NamedBeanHandle<Portal> _portalHdl;
+    private HashMap<String, NamedIcon> _iconMap;
     private String _status;
     private boolean _regular = true; // true when TO_ARROW shows entry into ToBlock
     private boolean _hide = false; // true when arrow should NOT show entry into ToBlock
@@ -50,9 +53,9 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
     }
 
     public void initMap() {
-        ControlPanelEditor ed = (ControlPanelEditor) _editor;
+        ControlPanelEditor ed = (ControlPanelEditor) getEditor();
         int deg = getDegrees();
-        _iconMap = PositionableIcon.cloneMap(ed.getPortalIconMap(), this);
+        _iconMap = cloneMap(ed.getPortalIconMap());
         if (!_regular) {
             NamedIcon a = _iconMap.get(TO_ARROW);
             NamedIcon b = _iconMap.get(FROM_ARROW);
@@ -60,7 +63,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
             _iconMap.put(TO_ARROW, b);
         }
         setScale(getScale());
-        rotate(deg);
+        setDegrees(deg);
         setIcon(_iconMap.get(HIDDEN));
     }
 
@@ -71,23 +74,35 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
     }
 
     protected Positionable finishClone(PortalIcon pos) {
-        pos._iconMap = cloneMap(_iconMap, pos);
+        pos._iconMap = cloneMap(_iconMap);
         pos._regular = _regular;
         pos._hide = _hide;
         pos._status = _status;
         return super.finishClone(pos);
     }
+    
+    protected HashMap<String, NamedIcon> cloneMap(HashMap<String, NamedIcon> map) {
+        HashMap<String, NamedIcon> clone = new HashMap<>();
+        for (Map.Entry<String, NamedIcon> entry : map.entrySet()) {
+            clone.put(entry.getKey(), new NamedIcon(entry.getValue()));
+        }
+        return clone;
+    }
 
+    // Called from EditPortalDirection frame in CircuitBuilder
     protected void setIcon(String name, NamedIcon ic) {
         if (log.isDebugEnabled()) {
             log.debug("Icon " + getPortal().getName() + " put icon key= \"" + name + "\" icon= " + ic);
         }
-        NamedIcon icon = cloneIcon(ic, this);
-        icon.scale(getScale(), this);
-        icon.rotate(getDegrees(), this);
+        NamedIcon icon = new NamedIcon(ic, this);
         _iconMap.put(name, icon);
     }
+    
+    protected NamedIcon getIcon(String status ) {
+        return _iconMap.get(status);
+    }
 
+    // Called from EditPortalDirection frame in CircuitBuilder
     public void setArrowOrientatuon(boolean set) {
         if (log.isDebugEnabled()) {
             log.debug("Icon " + getPortal().getName() + " setArrowOrientatuon regular=" + set + " from " + _regular);
@@ -95,6 +110,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
         _regular = set;
     }
 
+    // Called from EditPortalDirection frame in CircuitBuilder
     public void setHideArrows(boolean set) {
         if (log.isDebugEnabled()) {
             log.debug("Icon " + getPortal().getName() + " setHideArrows hide=" + set + " from " + _hide);
@@ -154,7 +170,6 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
         return getPortal();
     }
 
-    @Override
     public void displayState(int state) {
         switch (state) {
             case 0x02:
@@ -290,7 +305,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
         setRemoveMenu(popup);
         return true;
     }
-
+/*
     @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         return false;
@@ -304,7 +319,7 @@ public class PortalIcon extends PositionableIcon implements PropertyChangeListen
     @Override
     public boolean setEditItemMenu(JPopupMenu popup) {
         return false;
-    }
+    }*/
 
     private final static Logger log = LoggerFactory.getLogger(PortalIcon.class);
 }

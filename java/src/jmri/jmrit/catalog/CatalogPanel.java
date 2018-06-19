@@ -51,6 +51,7 @@ import jmri.CatalogTree;
 import jmri.CatalogTreeManager;
 import jmri.InstanceManager;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.palette.IconItemPanel;
 import jmri.util.FileUtil;
 import jmri.util.swing.DrawSquares;
@@ -505,7 +506,6 @@ public class CatalogPanel extends JPanel {
             _preview.setOpaque(false);
             _preview.invalidate();
         });
-
         JPanel backgroundPanel = new JPanel();
         backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS));
         JPanel pp = new JPanel();
@@ -536,6 +536,7 @@ public class CatalogPanel extends JPanel {
             log.debug("_preview.removeAll done.");
         }
         _preview.removeAll();
+//        PreviewDialog.setBackGround(_preview, _currentBackground);
         _preview.repaint();
     }
 
@@ -1034,11 +1035,11 @@ public class CatalogPanel extends JPanel {
                 return;
             }
             try {
-                JLabel image;
+                PositionableLabel image;
                 if (_dragIcons) {
-                    image = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime));
+                    image = new DragJLabel(new DataFlavor(ImageIndexEditor.IconDataFlavorMime), icon);
                 } else {
-                    image = new JLabel();
+                    image = new PositionableLabel(icon, null);
                 }
                 image.setOpaque(false);
                 image.setName(_name);
@@ -1049,10 +1050,11 @@ public class CatalogPanel extends JPanel {
                     image.setForeground(Color.lightGray);
                     scale = 0;
                 } else {
-                    scale = icon.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
+                    scale = image.reduceTo(ICON_WIDTH, ICON_HEIGHT, ICON_SCALE);
                 }
                 image.setIcon(icon);
-                image.setHorizontalAlignment(JLabel.CENTER);
+
+                image.setJustification(jmri.jmrit.display.Positionable.CENTRE);
                 image.addMouseListener(new IconListener());
                 add(image, BorderLayout.NORTH);
                 

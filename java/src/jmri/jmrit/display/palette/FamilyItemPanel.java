@@ -28,6 +28,8 @@ import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.util.swing.ImagePanel;
+import jmri.jmrit.display.PositionableLabel;
+import jmri.util.JmriJFrame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -660,7 +662,6 @@ public abstract class FamilyItemPanel extends ItemPanel {
         while (it.hasNext()) {
             Entry<String, NamedIcon> entry = it.next();
             NamedIcon icon = new NamedIcon(entry.getValue()); // make copy for possible reduction
-            icon.reduceTo(100, 100, 0.2);
             JPanel panel = new JPanel();
             panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
             panel.setOpaque(false);
@@ -671,18 +672,18 @@ public abstract class FamilyItemPanel extends ItemPanel {
             }
             String borderName = getIconBorderName(key);
             panel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), borderName));
-            JLabel image;
+            PositionableLabel image;
             if (dropIcon) {
                 image = new DropJLabel(icon, iconMap, _update);
             } else {
-                image = new JLabel(icon);
+                image = new PositionableLabel(icon, _editor);
             }
             double scale;
             if (icon.getIconWidth() < 1 || icon.getIconHeight() < 1) {
                 image.setText(Bundle.getMessage("invisibleIcon"));
                 scale = 0;
             } else {
-                scale = icon.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
+                scale = image.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
             }
             image.setOpaque(false);
             image.setToolTipText(icon.getName());
@@ -731,7 +732,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
         return ItemPalette.convertText(key);
     }
 
-    protected JLabel getDragger(DataFlavor flavor, HashMap<String, NamedIcon> map, NamedIcon icon) {
+    protected PositionableLabel getDragger(DataFlavor flavor, HashMap<String, NamedIcon> map, NamedIcon icon) {
         return null;
     }
 
@@ -741,7 +742,7 @@ public abstract class FamilyItemPanel extends ItemPanel {
         }
         if (!jmri.util.ThreadingUtil.isGUIThread()) log.error("Not on GUI thread", new Exception("traceback"));
         if (iconMap != null) {
-            if (iconMap.get(displayKey) == null) {
+           if (iconMap.get(displayKey) == null) {
                 displayKey = (String) iconMap.keySet().toArray()[0];
             }
             NamedIcon ic = iconMap.get(displayKey);
@@ -753,12 +754,11 @@ public abstract class FamilyItemPanel extends ItemPanel {
                         borderName));
                 panel.setToolTipText(Bundle.getMessage("ToolTipDragIcon"));
                 panel.setOpaque(false);
-                JLabel label;
+                PositionableLabel label;
                 try {
                     label = getDragger(new DataFlavor(Editor.POSITIONABLE_FLAVOR), iconMap, icon);
                     if (label != null) {
                         label.setToolTipText(Bundle.getMessage("ToolTipDragIcon"));
-                        // label.setIcon(icon);
                         label.setName(borderName);
                         label.setOpaque(false);
                         panel.add(label);

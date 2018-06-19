@@ -430,8 +430,8 @@ public class IconItemPanel extends ItemPanel {
 
         int level;
 
-        public IconDragJLabel(DataFlavor flavor, int zLevel) {
-            super(flavor);
+        public IconDragJLabel(DataFlavor flavor, NamedIcon icon, int zLevel) {
+            super(flavor, icon);
             level = zLevel;
             new DropTarget(this, DnDConstants.ACTION_COPY_OR_MOVE, this);
         }
@@ -524,7 +524,6 @@ public class IconItemPanel extends ItemPanel {
                 label.setText(Bundle.getMessage("invisibleIcon"));
                 label.setForeground(Color.lightGray);
             } else {
-//                newIcon.reduceTo(100, 100, 0.2);
                 label.setText(null);
             }
             _iconMap.put(label.getName(), newIcon);
@@ -570,11 +569,11 @@ public class IconItemPanel extends ItemPanel {
                 return;
             }
             try {
-                JLabel image;
+                PositionableLabel image;
                 if (_update) {
-                    image = new JLabel();
+                    image = new PositionableLabel(icon, _editor);
                 } else {
-                    image = new IconDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR), _level);
+                    image = new IconDragJLabel(new DataFlavor(Editor.POSITIONABLE_FLAVOR), icon, _level);
                 }
                 image.setOpaque(false);
                 image.setName(_borderName);
@@ -585,7 +584,7 @@ public class IconItemPanel extends ItemPanel {
                     image.setForeground(Color.lightGray);
                     scale = 0;
                 } else {
-                    scale = icon.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
+                    scale = image.reduceTo(CatalogPanel.ICON_WIDTH, CatalogPanel.ICON_HEIGHT, CatalogPanel.ICON_SCALE);
                 }
                 image.setIcon(icon);
                 image.addMouseListener(this);

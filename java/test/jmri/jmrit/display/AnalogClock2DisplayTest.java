@@ -31,16 +31,18 @@ public class AnalogClock2DisplayTest extends PositionableJComponentTest {
         a1.dispose();
     }
 
+    @Override
     @Test
-    public void testGetFaceWidth(){
+    public void testGetWidth(){
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Assert.assertEquals("Face Width",166,a.getFaceWidth());
+        Assert.assertEquals("Face Width",166,a.getWidth());
     }
 
+    @Override
     @Test
-    public void testGetFaceWeight(){
+    public void testGetHeight(){
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Assert.assertEquals("Face Height",166,a.getFaceHeight());
+        Assert.assertEquals("Face Height",166,a.getHeight());
     }
 
     @Test
@@ -61,6 +63,7 @@ public class AnalogClock2DisplayTest extends PositionableJComponentTest {
         }
     }
 
+    @Override
     @After
     public void tearDown() {
         if(editor != null){

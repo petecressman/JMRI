@@ -1,51 +1,46 @@
 package jmri.jmrit.display.configurexml;
 
-import jmri.jmrit.catalog.NamedIcon;
+import apps.gui.GuiLafPreferencesManager;
+import java.awt.Color;
+import java.awt.Font;
+import jmri.InstanceManager;
+import jmri.configurexml.AbstractXmlAdapter;
 import jmri.jmrit.display.Editor;
-import jmri.jmrit.display.PositionableLabel;
+import jmri.jmrit.display.Positionable;
+import jmri.jmrit.display.ToolTip;
 import org.jdom2.Attribute;
+import org.jdom2.DataConversionException;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Handle configuration for display.PositionableLabel objects
+ * Handle configuration for display.Positionable objects
  *
- * @author Bob Jacobsen Copyright: Copyright (c) 2002
+ * @author PeteCressman Copyright: Copyright (c) 2018
  */
-public class PositionableLabelXml extends PositionableJComponentXml {
+public class PositionableJComponentXml extends AbstractXmlAdapter {
 
-    public PositionableLabelXml() {
+    public PositionableJComponentXml() {
     }
 
     /**
-     * Default implementation for storing the contents of a PositionableLabel
+     * Default implementation for storing the contents of a Positionable
      *
-     * @param o Object to store, of type PositionableLabel
+     * @param o Object to store, of type Positionable
      * @return Element containing the complete info
      */
     @Override
     public Element store(Object o) {
-        PositionableLabel p = (PositionableLabel) o;
+        Positionable p = (Positionable) o;
 
         if (!p.isActive()) {
             return null;  // if flagged as inactive, don't store
         }
-        Element element = new Element("positionablelabel");
-        storeCommonLabelAttributes(p, element);
+        Element element = new Element("Positionable");
+        storeCommonAttributes(p, element);
         storeFontInfo(p, element);
-
-        if (p.isText()) {
-            if (p.getText() != null) {
-                element.setAttribute("text", p.getText());
-            }
-        }
-
-        if (p.isIcon() && p.getIcon() != null) {
-            element.setAttribute("icon", "yes");
-            element.addContent(storeIcon("icon", p.getIcon()));
-        }
-        element.setAttribute("class", "jmri.jmrit.display.configurexml.PositionableLabelXml");
+        element.setAttribute("class", "jmri.jmrit.display.configurexml.PositionableJComponentXml");
         return element;
     }
 
@@ -53,16 +48,13 @@ public class PositionableLabelXml extends PositionableJComponentXml {
      * Store the text formatting information.
      * <p>
      * This is always stored, even if the icon isn't in text mode, because some
-     * uses (subclasses) of PositionableLabel flip back and forth between icon
+     * uses (subclasses) of Positionable flip back and forth between icon
      * and text, and want to remember their formatting.
      *
      * @param p       the icon to store
      * @param element the XML representation of the icon
-     *
-    protected void storeTextInfo(Positionable p, Element element) {
-        //if (p.getText()!=null) element.setAttribute("text", p.getText());
-        PositionablePopupUtil util = p.getPopupUtility();
-
+     */
+    protected void storeFontInfo(Positionable p, Element element) {
         GuiLafPreferencesManager manager = InstanceManager.getDefault(GuiLafPreferencesManager.class);
         String defaultFontName = manager.getDefaultFont().getFontName();
 
@@ -71,8 +63,8 @@ public class PositionableLabelXml extends PositionableJComponentXml {
             element.setAttribute("fontname", "" + p.getFont().getFontName());
         }
 
-        element.setAttribute("size", "" + util.getFontSize());
-        element.setAttribute("style", "" + util.getFontStyle());
+        element.setAttribute("size", "" + p.getFont().getSize());
+        element.setAttribute("style", "" + p.getFont().getStyle());
 
         // always write the foreground (text) color
         element.setAttribute("red", "" + p.getForeground().getRed());
@@ -95,15 +87,15 @@ public class PositionableLabelXml extends PositionableJComponentXml {
             element.setAttribute("greenBorder", "" + p.getBorderColor().getGreen());
             element.setAttribute("blueBorder", "" + p.getBorderColor().getBlue());
         }
-        if (util.getFixedWidth() != 0) {
-            element.setAttribute("fixedWidth", "" + util.getFixedWidth());
+        if (p.getFixedWidth() != 0) {
+            element.setAttribute("fixedWidth", "" + p.getFixedWidth());
         }
-        if (util.getFixedHeight() != 0) {
-            element.setAttribute("fixedHeight", "" + util.getFixedHeight());
+        if (p.getFixedHeight() != 0) {
+            element.setAttribute("fixedHeight", "" + p.getFixedHeight());
         }
 
         String just;
-        switch (util.getJustification()) {
+        switch (p.getJustification()) {
             case 0x02:
                 just = "right";
                 break;
@@ -123,28 +115,25 @@ public class PositionableLabelXml extends PositionableJComponentXml {
      * @param p       the icon to store
      * @param element the XML representation of the icon
      */
-    public void storeCommonLabelAttributes(PositionableLabel p, Element element) {
+    public void storeCommonAttributes(Positionable p, Element element) {
 
-        // can be both for text overlaid icon
-        element.setAttribute("isText", p.isText() ? "yes" : "no");
-        element.setAttribute("isIcon", p.isIcon() ? "yes" : "no");
-
-        if (p.getText() != null) {
-            element.setAttribute("text", p.getText());
+        element.setAttribute("x", "" + p.getX());
+        element.setAttribute("y", "" + p.getY());
+        element.setAttribute("level", String.valueOf(p.getDisplayLevel()));
+        element.setAttribute("hidden", p.isHidden() ? "yes" : "no");
+        element.setAttribute("positionable", p.isPositionable() ? "true" : "false");
+        element.setAttribute("showtooltip", p.showToolTip() ? "true" : "false");
+        element.setAttribute("editable", p.isEditable() ? "true" : "false");
+        ToolTip tip = p.getToolTip();
+        String txt = tip.getText();
+        if (txt != null) {
+            Element elem = new Element("tooltip").addContent(txt); // was written as "toolTip" 3.5.1 and before
+            element.addContent(elem);
         }
-        if (p.getIcon() != null) {
-            element.addContent(storeIcon("icon", p.getIcon()));
-        }       
-        storeCommonAttributes(p, element);
-    }
-
-    public Element storeIcon(String elemName, NamedIcon icon) {
-        if (icon == null) {
-            return null;
+        if (p.getDegrees() != 0) {
+            element.setAttribute("degrees", "" + p.getDegrees());
         }
-        Element element = new Element(elemName);
-        element.setAttribute("url", icon.getURL());
-        return element;
+        element.setAttribute("scale", String.valueOf(p.getScale()));
     }
 
     @Override
@@ -154,7 +143,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
     }
 
     /**
-     * Create a PositionableLabel, then add to a target JLayeredPane
+     * Create a Positionable, then add to a target JLayeredPane
      *
      * @param element Top level Element to unpack.
      * @param o       Editor as an Object
@@ -162,101 +151,37 @@ public class PositionableLabelXml extends PositionableJComponentXml {
     @Override
     public void load(Element element, Object o) {
         // create the objects
-        PositionableLabel l = null;
-
-        // get object class and determine editor being used
         Editor editor = (Editor) o;
+        Positionable l = new Positionable(editor);
+        loadFontInfo(l, element);
 
-        if (element.getAttribute("icon") != null) {
-            NamedIcon icon;
-            String name = element.getAttribute("icon").getValue();
-//            if (log.isDebugEnabled()) log.debug("icon attribute= "+name);
-            if (name.equals("yes")) {
-                icon = getNamedIcon("icon", element, "PositionableLabel ", editor);
-            } else {
-                icon = NamedIcon.getIconByName(name);
-                if (icon == null) {
-                    icon = editor.loadFailed("PositionableLabel", name);
-                    if (icon == null) {
-                        log.info("PositionableLabel icon removed for url= {}", name);
-                        return;
-                    }
-                }
+        if (log.isDebugEnabled()) {
+            java.util.List<Attribute> attrs = element.getAttributes();
+            log.debug("\tElement Has " + attrs.size() + " Attributes:");
+            for (int i = 0; i < attrs.size(); i++) {
+                Attribute a = attrs.get(i);
+                log.debug("\t\t" + a.getName() + " = " + a.getValue());
             }
-            // allow null icons for now
-            l = new PositionableLabel(icon, editor);
-            try {
-                Attribute a = element.getAttribute("rotate");
-                if (a != null && icon != null) {
-                    int rotation = element.getAttribute("rotate").getIntValue();
-                    doRotationConversion(rotation, l);
-                }
-            } catch (org.jdom2.DataConversionException e) {
-            }
-
-            if (name.equals("yes")) {
-                NamedIcon nIcon = loadIcon(l, "icon", element, "PositionableLabel ", editor);
-                if (nIcon != null) {
-                    l.setIcon(nIcon);
-                } else {
-                    log.info("PositionableLabel icon removed for url= {}", name);
-                    return;
-                }
-            } else {
-                if (icon == null) {
-                    log.info("PositionableLabel icon removed for url= " + name);
-                    return;
-                } else {
-                    l.setIcon(icon);
-                }
+            java.util.List<Element> kids = element.getChildren();
+            log.debug("\tElementHas " + kids.size() + " children:");
+            for (int i = 0; i < kids.size(); i++) {
+                Element e = kids.get(i);
+                log.debug("\t\t" + e.getName() + " = \"" + e.getValue() + "\"");
             }
         }
-
-        if (element.getAttribute("text") != null) {
-            if (l == null) {
-                l = new PositionableLabel(element.getAttribute("text").getValue(), editor);
-            }
-
-        } else if (l == null) {
-            log.error("PositionableLabel is null!");
-            if (log.isDebugEnabled()) {
-                java.util.List<Attribute> attrs = element.getAttributes();
-                log.debug("\tElement Has " + attrs.size() + " Attributes:");
-                for (int i = 0; i < attrs.size(); i++) {
-                    Attribute a = attrs.get(i);
-                    log.debug("\t\t" + a.getName() + " = " + a.getValue());
-                }
-                java.util.List<Element> kids = element.getChildren();
-                log.debug("\tElementHas " + kids.size() + " children:");
-                for (int i = 0; i < kids.size(); i++) {
-                    Element e = kids.get(i);
-                    log.debug("\t\t" + e.getName() + " = \"" + e.getValue() + "\"");
-                }
-            }
-            editor.loadFailed();
-            return;
-        }
-
-       loadFontInfo(l, element);
-       editor.putItem(l);
+        editor.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.LABELS, element);
     }
 
-/*    protected void loadTextInfo(PositionableLabel l, Element element) {
+    protected void loadFontInfo(Positionable l, Element element) {
         if (log.isDebugEnabled()) {
             log.debug("loadTextInfo");
         }
-        jmri.jmrit.display.PositionablePopupUtil util = l.getPopupUtility();
-        if (util == null) {
-            log.warn("PositionablePopupUtil is null! {}", element);
-            return;
-        }
-
         Attribute a = element.getAttribute("size");
         try {
             if (a != null) {
-                util.setFontSize(a.getFloatValue());
+                l.setFontSize(a.getFloatValue());
             }
         } catch (DataConversionException ex) {
             log.warn("invalid size attribute value");
@@ -278,7 +203,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
                         // fall through
                         break;
                 }
-                util.setFontStyle(style, drop);
+                l.setFontStyle(style | ~drop);
             }
         } catch (DataConversionException ex) {
             log.warn("invalid style attribute value");
@@ -287,10 +212,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
         a = element.getAttribute("fontname");
         try {
             if (a != null) {
-                l.setFont(new Font(a.getValue(), util.getFontStyle(), util.getFontSize()));
-                // Reset util to the new instance
-                // The setFont process clones the current util instance but the rest of loadTextInfo used the orignal instance.
-                util = l.getPopupUtility();
+                l.setFont(new Font(a.getValue(), l.getFont().getStyle(), l.getFont().getSize()));
             }
         } catch (NullPointerException e) {  // considered normal if the attributes are not present
         }
@@ -355,13 +277,13 @@ public class PositionableLabelXml extends PositionableJComponentXml {
 
         a = element.getAttribute("justification");
         if (a == null) {
-            l.setJustification(PositionableLabel.LEFT);
+            l.setJustification(Positionable.LEFT);
         } else if (a.equals("left") ) {
-            l.setJustification(PositionableLabel.LEFT);
+            l.setJustification(Positionable.LEFT);
         } else if (a.equals("centre") ) {
-            l.setJustification(PositionableLabel.LEFT);
+            l.setJustification(Positionable.LEFT);
         } else if (a.equals("right") ) {
-            l.setJustification(PositionableLabel.LEFT);
+            l.setJustification(Positionable.LEFT);
         }
         a = element.getAttribute("orientation");
         if (a != null) {
@@ -388,11 +310,14 @@ public class PositionableLabelXml extends PositionableJComponentXml {
     }
 
     public void loadCommonAttributes(Positionable l, int defaultLevel, Element element) {
-        try {
-            l.setControlling(!element.getAttribute("forcecontroloff").getBooleanValue());
-        } catch (DataConversionException e1) {
-            log.warn("unable to convert positionable label forcecontroloff attribute");
-        } catch (Exception e) {
+        if (l instanceof jmri.jmrit.display.PositionableIcon &&
+                element.getAttribute("forcecontroloff") != null) {    // pre 5.0 or something
+            try {
+                ((jmri.jmrit.display.PositionableIcon)l).setControlling(!element.getAttribute("forcecontroloff").getBooleanValue());
+            } catch (DataConversionException e1) {
+                log.warn("unable to convert positionable label forcecontroloff attribute");
+            } catch (Exception e) {
+            }
         }
 
         // find coordinates
@@ -449,10 +374,10 @@ public class PositionableLabelXml extends PositionableJComponentXml {
         }
 
         Attribute a = element.getAttribute("degrees");
-        if (a != null && l instanceof PositionableLabel) {
+        if (a != null && l instanceof Positionable) {
             try {
                 int deg = a.getIntValue();
-                ((PositionableLabel) l).setDegrees(deg);
+                l.setDegrees(deg);
             } catch (org.jdom2.DataConversionException dce) {
             }
         }
@@ -467,60 +392,15 @@ public class PositionableLabelXml extends PositionableJComponentXml {
                 tip.setText(elem.getText());
             }
         }
-    }*/
-
-    static public NamedIcon loadIcon(PositionableLabel l, String attrName, Element element,
-            String name, Editor ed) {
-        NamedIcon icon = getNamedIcon(attrName, element, name, ed);
-        if (icon != null) {
-            try {
-                int deg = 0;
-                double scale = 1.0;
-                Element elem = element.getChild(attrName);
-                if (elem != null) {
-                    Attribute a = elem.getAttribute("degrees");
-                    if (a != null) {
-                        deg = a.getIntValue();
-                    }
-                    a = elem.getAttribute("scale");
-                    if (a != null) {
-                        scale = elem.getAttribute("scale").getDoubleValue();
-                    }
-
-                    if (deg == 0) {
-                        // "rotate" attribute is JMRI 2.9.3 and before
-                        a = elem.getAttribute("rotate");
-                        if (a != null) {
-                            int rotation = a.getIntValue();
-                            // 2.9.3 and before, only unscaled icons rotate
-                            if (scale == 1.0) {
-                                doRotationConversion(rotation, l);
-                            }
-                        }
-                        // "rotation" element is JMRI 2.9.4 and after
-                        Element e = elem.getChild("rotation");
-                        if (e != null) {
-                            // ver 2.9.4 allows orthogonal rotations of scaled icons
-                            int rotation = Integer.parseInt(e.getText());
-                            doRotationConversion(rotation, l);
-                        }
-                    }
-                }
-                l.setIcon(icon);
-                l.setScale(scale);
-                l.setDegrees(deg);
-            } catch (org.jdom2.DataConversionException dce) {
-            }
-        }
-        return icon;
     }
+
 
     /**
      * Use general rotation code for orthogonal rotations.
-     * @param rotation orthogonal rotations
-     * @param l positionable item
-     */
-    static protected void doRotationConversion(int rotation, PositionableLabel l) {
+     * @param rotation
+     * @param l
+     *
+    protected void doRotationConversion(int rotation, PositionableJComponent l) {
         switch(rotation) {
             case 1:
                 l.setDegrees(90);
@@ -535,27 +415,7 @@ public class PositionableLabelXml extends PositionableJComponentXml {
                 l.setDegrees(0);
                 break;
         }        
-    }
+    }*/
 
-    static protected NamedIcon getNamedIcon(String childName, Element element,
-            String name, Editor ed) {
-        NamedIcon icon = null;
-        Element elem = element.getChild(childName);
-        if (elem != null) {
-            String iconName = elem.getAttribute("url").getValue();
-            icon = NamedIcon.getIconByName(iconName);
-            if (icon == null) {
-                icon = ed.loadFailed(name, iconName);
-                if (icon == null) {
-                    log.info("{} removed for url= {}", name, iconName);
-                }
-            }
-        } else {
-            log.debug("getNamedIcon: child element \"{}\" not found in element {} for {}",
-                    childName, element.getName(), name);
-        }
-        return icon;
-    }
-
-    private final static Logger log = LoggerFactory.getLogger(PositionableLabelXml.class);
+    private final static Logger log = LoggerFactory.getLogger(PositionableJComponentXml.class);
 }

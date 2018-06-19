@@ -1,7 +1,6 @@
 package jmri.jmrit.display.panelEditor;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -46,9 +45,10 @@ import jmri.configurexml.XmlAdapter;
 import jmri.jmrit.catalog.CatalogPanel;
 import jmri.jmrit.catalog.ImageIndexEditor;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionablePopupUtil;
+import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ToolTip;
 import jmri.util.JmriJFrame;
 import org.jdom2.Element;
@@ -633,11 +633,10 @@ public class PanelEditor extends Editor implements ItemListener {
      */
     @Override
     protected void showPopUp(Positionable p, MouseEvent event) {
-        if (!((JComponent) p).isVisible()) {
+        if (!p.isVisible()) {
             return;     // component must be showing on the screen to determine its location
         }
         JPopupMenu popup = new JPopupMenu();
-        PositionablePopupUtil util = p.getPopupUtility();
         if (p.isEditable()) {
             // items for all Positionables
             if (p.doViemMenu()) {
@@ -661,43 +660,45 @@ public class PanelEditor extends Editor implements ItemListener {
                 popup.addSeparator();
                 popupSet = false;
             }
-            popupSet = p.setEditIconMenu(popup);
+            p.setFixedTextMenu(popup);
+            p.setTextMarginMenu(popup);
+            p.setTextBorderMenu(popup);
+            p.setTextFontMenu(popup);
+            p.setBackgroundMenu(popup);
+            p.setTextJustificationMenu(popup);
+            p.setTextOrientationMenu(popup);
+            p.copyItem(popup);
+            popup.addSeparator();
+            p.propertyUtil(popup);
+            
+            popup.addSeparator();
+            if (p instanceof PositionableLabel) {
+                PositionableLabel pl = (PositionableLabel)p;
+                popupSet = pl.setDisplayModeMenu(popup);
+                popupSet |= pl.setDisableControlMenu(popup);
+                popupSet |= pl.setTextEditMenu(popup);
+                popupSet |= setTextAttributes(p, popup);
+                popupSet |= pl.setEditIconMenu(popup);
+                popupSet |= pl.setIconEditMenu(popup);
+            } else {
+                popupSet = setTextAttributes(p, popup);
+            }
             if (popupSet) {
-                popup.addSeparator();
                 popupSet = false;
-            }
-            popupSet = p.setTextEditMenu(popup);
-            if (util != null) {
-                util.setFixedTextMenu(popup);
-                util.setTextMarginMenu(popup);
-                util.setTextBorderMenu(popup);
-                util.setTextFontMenu(popup);
-                util.setBackgroundMenu(popup);
-                util.setTextJustificationMenu(popup);
-                util.setTextOrientationMenu(popup);
-                util.copyItem(popup);
                 popup.addSeparator();
-                util.propertyUtil(popup);
-                util.setAdditionalEditPopUpMenu(popup);
-                popupSet = true;
             }
-            if (popupSet) {
-                popup.addSeparator();
-                popupSet = false;
-            }
-            p.setDisableControlMenu(popup);
 
-            // for Positionables with unique item settings
-            p.showPopUp(popup);
+            p.setAdditionalEditPopUpMenu(popup);
+            if (p instanceof LinkingObject) {
+                ((LinkingObject) p).setLinkMenu(popup);
+            }
 
             setRemoveMenu(p, popup);
         } else {
             p.showPopUp(popup);
-            if (util != null) {
-                util.setAdditionalViewPopUpMenu(popup);
-            }
+            p.setAdditionalViewPopUpMenu(popup);
         }
-        popup.show((Component) p, p.getWidth() / 2, p.getHeight() / 2);
+        popup.show(p, p.getWidth() / 2, p.getHeight() / 2);
     }
 
     /**
@@ -886,7 +887,7 @@ public class PanelEditor extends Editor implements ItemListener {
             } else {
                 moveItem(_currentSelection, deltaX, deltaY);
                 _highlightcomponent = new Rectangle(_currentSelection.getX(), _currentSelection.getY(),
-                        _currentSelection.maxWidth(), _currentSelection.maxHeight());
+                        _currentSelection.getWidth(), _currentSelection.getHeight());
             }
         } else {
             if (allPositionable() && _selectionGroup == null) {
@@ -916,7 +917,7 @@ public class PanelEditor extends Editor implements ItemListener {
             }
         }
         if (isEditable() && selection != null && selection.getDisplayLevel() > BKG) {
-            _highlightcomponent = new Rectangle(selection.getX(), selection.getY(), selection.maxWidth(), selection.maxHeight());
+            _highlightcomponent = new Rectangle(selection.getX(), selection.getY(), selection.getWidth(), selection.getHeight());
             _targetPanel.repaint();
         } else {
             _highlightcomponent = null;
@@ -1165,7 +1166,7 @@ public class PanelEditor extends Editor implements ItemListener {
             ArrayList<Positionable> _copyOfMultiItemCopyGroup = new ArrayList<>(_multiItemCopyGroup);
             Collections.copy(_copyOfMultiItemCopyGroup, _multiItemCopyGroup);
             for (Positionable comp : _copyOfMultiItemCopyGroup) {
-                copied = (JComponent) comp;
+                copied = comp;
                 xOrig = copied.getX();
                 yOrig = copied.getY();
                 x = xOrig + xoffset;

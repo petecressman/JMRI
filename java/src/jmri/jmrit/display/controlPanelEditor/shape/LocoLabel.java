@@ -39,8 +39,8 @@ public class LocoLabel extends PositionableRoundRect {
         g.setFont(font);
         int textWidth = getFontMetrics(font).stringWidth(trainName);
         int textHeight = getFontMetrics(font).getHeight();
-        int hOffset = Math.max((maxWidth() - textWidth) / 2, 0);
-        int vOffset = Math.max((maxHeight() - textHeight) / 2, 0) + getFontMetrics(font).getAscent();
+        int hOffset = Math.max((getWidth() - textWidth) / 2, 0);
+        int vOffset = Math.max((getHeight() - textHeight) / 2, 0) + getFontMetrics(font).getAscent();
         g.setColor(_block.getMarkerForeground());
         g.drawString(trainName, hOffset, vOffset);
     }

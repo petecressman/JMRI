@@ -19,28 +19,20 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
         // super ctor call to make sure this is a String label
         super("???", editor);
         setText("???");
-        setPopupUtility(new ReporterPopupUtil(this, this));
     }
 
-    // suppress inappropriate menu items
-    static class ReporterPopupUtil extends PositionablePopupUtil {
-
-        ReporterPopupUtil(Positionable parent, javax.swing.JComponent textComp) {
-            super(parent, textComp);
-        }
-
-        @Override
-        public void setTextJustificationMenu(JPopupMenu popup) {
-        }
-
-        @Override
-        public void setFixedTextMenu(JPopupMenu popup) {
-        }
-
-        @Override
-        public void setTextMarginMenu(JPopupMenu popup) {
-        }
+//    @Override
+    public void setTextJustificationMenu(JPopupMenu popup) {
     }
+
+    @Override
+    public void setFixedTextMenu(JPopupMenu popup) {
+    }
+
+//    @Override
+    public void setTextMarginMenu(JPopupMenu popup) {
+    }
+
     // the associated Reporter object
     Reporter reporter = null;
 
@@ -116,8 +108,11 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
     /**
      * Drive the current state of the display from the state of the Reporter.
      */
-    void displayState() {
-        if (reporter.getCurrentReport() != null) {
+    @Override
+    public void displayState() {
+        if (reporter == null) {
+            setText(Bundle.getMessage("NotConnected"));
+        } else if (reporter.getCurrentReport() != null) {
             if (reporter.getCurrentReport().equals("")) {
                 setText(Bundle.getMessage("Blank"));
             } else {
@@ -160,16 +155,6 @@ public class ReporterIcon extends PositionableLabel implements java.beans.Proper
         reporter = null;
 
         super.dispose();
-    }
-
-    @Override
-    public int maxHeight() {
-        return ((javax.swing.JLabel) this).getMaximumSize().height;  // defer to superclass
-    }
-
-    @Override
-    public int maxWidth() {
-        return ((javax.swing.JLabel) this).getMaximumSize().width;  // defer to superclass
     }
 
     private final static Logger log = LoggerFactory.getLogger(ReporterIcon.class);

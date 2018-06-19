@@ -1,9 +1,9 @@
 package jmri.jmrit.display;
 
-import java.awt.event.WindowListener;
 import java.awt.GraphicsEnvironment;
-import javax.swing.JPanel;
+import java.awt.event.WindowListener;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import jmri.util.JUnitUtil;
 import org.junit.After;
 import org.junit.Assert;
@@ -138,15 +138,15 @@ abstract public class PositionableTestBase {
     }
 
     @Test
-    public void testMaxWidth() {
+    public void testGetWidth() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Assert.assertTrue("Max Width",0<=p.maxWidth());
+        Assert.assertTrue("Max Width",0<=p.getWidth());
     }
 
     @Test
-    public void testMaxHeight() {
+    public void testGetHeight() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        Assert.assertTrue("Max Height",0<=p.maxHeight());
+        Assert.assertTrue("Max Height",0<=p.getHeight());
     }
 
     @Test
@@ -158,9 +158,9 @@ abstract public class PositionableTestBase {
     }
     
     @Test
-    public void testGetAndSetRotationDegrees(){
+    public void testGetAndSetDegrees(){
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        p.rotate(50);
+        p.setDegrees(50);
         Assert.assertEquals("Degrees",50,p.getDegrees());
     }
 

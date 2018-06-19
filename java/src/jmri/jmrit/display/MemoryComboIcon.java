@@ -3,11 +3,11 @@ package jmri.jmrit.display;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -45,29 +45,34 @@ public class MemoryComboIcon extends PositionableJPanel
         } else {
             _model = new ComboModel();
         }
-        _comboBox = new JComboBox<>(_model);
-        _comboBox.addActionListener(this);
+        _comboBox.setModel(_model);
         setDisplayLevel(Editor.LABELS);
-
-        setLayout(new java.awt.GridBagLayout());
-        add(_comboBox);
-        _comboBox.addMouseListener(this);
-
-        for (int i = 0; i < _comboBox.getComponentCount(); i++) {
-            java.awt.Component component = _comboBox.getComponent(i);
-            if (component instanceof AbstractButton) {
-                component.addMouseListener(this);
-                component.addMouseMotionListener(this);
-            }
-        }
-        setPopupUtility(new PositionablePopupUtil(this, _comboBox));
     }
 
     @Override
-    public JComboBox<String> getTextComponent() {
+    protected JComponent getContainerComponent() {
+        _comboBox = new JComboBox<>();
+        _comboBox.addActionListener(this);
+
+        _comboBox.addMouseListener(this);
+        for (int i = 0; i < _comboBox.getComponentCount(); i++) {
+            java.awt.Component component = _comboBox.getComponent(i);
+            component.addMouseListener(this);
+            component.addMouseMotionListener(this);
+        }
         return _comboBox;
     }
 
+    @Override
+    protected JTextField getTextField() {
+        return null;
+    }
+
+    @Override
+    public String getText() {
+        return _comboBox.getSelectedItem().toString();
+    }
+    
     class ComboModel extends DefaultComboBoxModel<String> {
 
         ComboModel() {
@@ -158,6 +163,11 @@ public class MemoryComboIcon extends PositionableJPanel
         return namedMemory.getBean();
     }
 
+    @Override
+    public jmri.NamedBean getNamedBean() {
+        return getMemory();
+    }
+
     public ComboModel getComboModel() {
         return _model;
     }
@@ -199,7 +209,7 @@ public class MemoryComboIcon extends PositionableJPanel
     }
 
     @Override
-    public boolean setEditIconMenu(javax.swing.JPopupMenu popup) {
+    public boolean setIconEditMenu(javax.swing.JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameMemory"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override
@@ -215,7 +225,6 @@ public class MemoryComboIcon extends PositionableJPanel
      */
     DefaultListModel<String> _listModel;
 
-    @Override
     protected void edit() {
         _iconEditor = new IconAdder("Memory") {
             JList<String> list;
@@ -304,6 +313,7 @@ public class MemoryComboIcon extends PositionableJPanel
     /**
      * Drive the current state of the display from the state of the Memory.
      */
+    @Override
     public void displayState() {
         log.debug("displayState");
         if (namedMemory == null) {  // leave alone if not connected yet
@@ -320,21 +330,20 @@ public class MemoryComboIcon extends PositionableJPanel
     }
 
     @Override
-    void cleanup() {
+    public void dispose() {
         if (namedMemory != null) {
             getMemory().removePropertyChangeListener(this);
         }
         if (_comboBox != null) {
             for (int i = 0; i < _comboBox.getComponentCount(); i++) {
                 java.awt.Component component = _comboBox.getComponent(i);
-                if (component instanceof AbstractButton) {
-                    component.removeMouseListener(this);
-                    component.removeMouseMotionListener(this);
-                }
+                component.removeMouseListener(this);
+                component.removeMouseMotionListener(this);
             }
             _comboBox.removeMouseListener(this);
         }
         namedMemory = null;
+        super.dispose();
     }
 
     private final static Logger log = LoggerFactory.getLogger(MemoryComboIcon.class);

@@ -28,6 +28,7 @@ public class PositionablePolygon extends PositionableShape {
     // there is no default PositionablePolygon
     private PositionablePolygon(Editor editor) {
         super(editor);
+        super.setName(Bundle.getMessage("Polygon"));
     }
 
     public PositionablePolygon(Editor editor, Shape shape) {
@@ -73,7 +74,7 @@ public class PositionablePolygon extends PositionableShape {
     }
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("Polygon"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override

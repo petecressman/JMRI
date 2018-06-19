@@ -6,6 +6,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import jmri.InstanceManager;
 import jmri.NamedBean;
@@ -30,14 +31,14 @@ import org.slf4j.LoggerFactory;
 public class MultiSensorIcon extends PositionableLabel implements java.beans.PropertyChangeListener {
 
     String _iconFamily;
+    private boolean _controlling;
 
     public MultiSensorIcon(Editor editor) {
         // super ctor call to make sure this is an icon label
         super(new NamedIcon("resources/icons/smallschematics/tracksegments/circuit-error.gif",
                 "resources/icons/smallschematics/tracksegments/circuit-error.gif"), editor);
-        _control = true;
+        _controlling = true;
         displayState();
-        setPopupUtility(null);
     }
 
     boolean updown = false;
@@ -60,11 +61,11 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     }
 
     protected Positionable finishClone(MultiSensorIcon pos) {
-        pos.setInactiveIcon(cloneIcon(getInactiveIcon(), pos));
-        pos.setInconsistentIcon(cloneIcon(getInconsistentIcon(), pos));
-        pos.setUnknownIcon(cloneIcon(getUnknownIcon(), pos));
+        pos.setInactiveIcon(new NamedIcon(getInactiveIcon()));
+        pos.setInconsistentIcon(new NamedIcon(getInconsistentIcon()));
+        pos.setUnknownIcon(new NamedIcon(getUnknownIcon()));
         for (int i = 0; i < entries.size(); i++) {
-            pos.addEntry(getSensorName(i), cloneIcon(getSensorIcon(i), pos));
+            pos.addEntry(getSensorName(i), new NamedIcon(getSensorIcon(i)));
         }
         return super.finishClone(pos);
     }
@@ -181,10 +182,14 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
         return name.toString();
     }
 
+    public void setControlling(boolean enabled) {
+        _controlling = enabled;
+    }
+
     /**
      * ****** popup AbstractAction.actionPerformed method overrides ********
      */
-    @Override
+/*    @Override
     protected void rotateOrthogonal() {
         for (int i = 0; i < entries.size(); i++) {
             NamedIcon icon = entries.get(i).icon;
@@ -220,10 +225,17 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
         unknown.rotate(deg, this);
         inconsistent.rotate(deg, this);
         displayState();
-    }
+    }*/
 
     @Override
-    public boolean setEditItemMenu(JPopupMenu popup) {
+    public boolean setIconEditMenu(JPopupMenu popup) {
+        JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
+        disableItem.setSelected(!_controlling);
+        popup.add(disableItem);
+        disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
+            setControlling(!disableItem.isSelected());
+        });
+        
         String txt = Bundle.getMessage("EditItem", Bundle.getMessage("MultiSensor"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override
@@ -337,6 +349,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     /**
      * Drive the current state of the display from the state of the turnout.
      */
+    @Override
     public void displayState() {
 
         updateSize();
@@ -394,7 +407,6 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
 
     // Use largest size. If icons are not same size, 
     // this can result in drawing artifacts.
-    @Override
     public int maxHeight() {
         int size = Math.max(
                 ((inactive != null) ? inactive.getIconHeight() : 0),
@@ -411,7 +423,6 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
 
     // Use largest size. If icons are not same size, 
     // this can result in drawing artifacts.
-    @Override
     public int maxWidth() {
         int size = Math.max(
                 ((inactive != null) ? inactive.getIconWidth() : 0),
@@ -482,7 +493,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
     }
 
     boolean buttonLive() {
-        return _editor.getFlag(Editor.OPTION_CONTROLS, isControlling());
+        return _editor.getFlag(Editor.OPTION_CONTROLS, _controlling);
     }
 
     @Override
@@ -500,7 +511,7 @@ public class MultiSensorIcon extends PositionableLabel implements java.beans.Pro
                     .removePropertyChangeListener(this);
         }
         super.dispose();
-    }
+     }
 
     static class Entry {
 

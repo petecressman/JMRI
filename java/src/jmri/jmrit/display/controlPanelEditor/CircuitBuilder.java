@@ -8,8 +8,13 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.*;
+import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.SortedSet;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -940,12 +945,11 @@ public class CircuitBuilder {
             if (pos instanceof PortalIcon) {
                 continue;
             }
-            homeRect = pos.getBounds(homeRect);
+            homeRect = pos.getContentBounds(homeRect);
             if (iconIntersectsRect(icon, homeRect)) {
                 ok = true;
                 break;
             }
-
         }
         if (!ok) {
             icon.setStatus(status);
@@ -958,7 +962,7 @@ public class CircuitBuilder {
             if (pos instanceof PortalIcon) {
                 continue;
             }
-            homeRect = pos.getBounds(homeRect);
+            homeRect = pos.getContentBounds(homeRect);
             if (iconIntersectsRect(icon, homeRect)) {
                 ok = true;
                 break;
@@ -969,10 +973,15 @@ public class CircuitBuilder {
         return ok;
     }
 
-    private static boolean iconIntersectsRect(Positionable icon, Rectangle rect) {
-        Rectangle iconRect = icon.getBounds(new Rectangle());
-        return (iconRect.intersects(rect));
-    }
+    protected static final boolean iconIntersectsRect(Positionable icon, Rectangle rect) {
+        java.awt.geom.AffineTransform tf = icon.getTransform();
+        Rectangle test = icon.getContentBounds(null);
+        test.x = 0;
+        test.y = 0;
+        AffineTransform t = AffineTransform.getTranslateInstance(icon.getX(), icon.getY());
+        t.concatenate(tf);
+        return (t.createTransformedShape(test).intersects(rect));
+        }                    
 
     ////////////////////////// Frame Utilities //////////////////////////
     protected List<Positionable> getCircuitIcons(OBlock block) {
@@ -1211,12 +1220,12 @@ public class CircuitBuilder {
             Iterator<Entry<String, NamedIcon>> iter = entry.getValue().entrySet().iterator();
             while (iter.hasNext()) {
                 Entry<String, NamedIcon> ent = iter.next();
-                t.setIcon(status, ent.getKey(), new NamedIcon(ent.getValue()));
+                t.setStateIcon(status, ent.getKey(), new NamedIcon(ent.getValue()));
             }
         }
         t.setLevel(Editor.TURNOUTS);
         t.setScale(_oldIcon.getScale());
-        t.rotate(_oldIcon.getDegrees());
+        t.setDegrees(_oldIcon.getDegrees());
         finishConvert(t);
     }
 
@@ -1234,12 +1243,12 @@ public class CircuitBuilder {
                 if (log.isDebugEnabled()) {
                     log.debug("key= " + entry.getKey());
                 }
-                t.setIcon(entry.getKey(), new NamedIcon(entry.getValue()));
+                t.setStateIcon(entry.getKey(), new NamedIcon(entry.getValue()));
             }
         }
         t.setLevel(Editor.TURNOUTS);
         t.setScale(_oldIcon.getScale());
-        t.rotate(_oldIcon.getDegrees());
+        t.setDegrees(_oldIcon.getDegrees());
         finishConvert(t);
     }
 
@@ -1301,7 +1310,7 @@ public class CircuitBuilder {
         } else if (pos instanceof PositionableLabel) {
             PositionableLabel pl = (PositionableLabel) pos;
             if (pl.isIcon()) {
-                NamedIcon icon = (NamedIcon) pl.getIcon();
+                NamedIcon icon = pl.getIcon();
                 if (icon != null) {
                     String fileName = icon.getURL();
                     // getURL() returns Unix separatorChar= "/" even on windows
@@ -1325,7 +1334,7 @@ public class CircuitBuilder {
         } else if (pos instanceof PositionableLabel) {
             PositionableLabel pl = (PositionableLabel) pos;
             if (pl.isIcon()) {
-                NamedIcon icon = (NamedIcon) pl.getIcon();
+                NamedIcon icon = pl.getIcon();
                 if (icon != null) {
                     String fileName = icon.getURL();
                     if (log.isDebugEnabled()) {

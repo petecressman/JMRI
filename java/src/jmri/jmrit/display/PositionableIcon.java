@@ -1,35 +1,63 @@
 package jmri.jmrit.display;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import javax.annotation.Nonnull;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JColorChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import jmri.jmrit.catalog.NamedIcon;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Gather common methods for Turnouts, Semsors, SignalHeads, Masts, etc.
+ * The common ancestor of Namedbeans having multiple states and displays
+ * each state as either an icon or a text string.
+ * Gather common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
+ * Also used for items that use display modes to show status, e.g. IndicatorTrack.
+ * IndicatorTrack currently is the only descendant that is not a controlling widget.
+ * <p>
+ * Flags, _iconDisplay and _textDisplay, determine the display mode.
+ * When both are true, display mode is icon overlaid with text.
+ * In text display mode, text and decoration can be individually edited.
+ * In Overlay mode, the text is a common (decorated) label for all states.
  *
- * @author PeteCressman Copyright (C) 2011
+ * @author PeteCressman Copyright (C) 2011, 2018
  */
 public class PositionableIcon extends PositionableLabel {
 
-    protected HashMap<String, NamedIcon> _iconMap;
-    protected String _iconFamily;
-    protected double _scale = 1.0;          // getScale, come from net result found in one of the icons
-    protected int _rotate = 0;
+    private HashMap<String, PositionableLabel> _iconMap;
+    private String _iconFamily;
+    private String _displayState;       // current state or status of the bean/item
+    private boolean _iconDisplay;       // Icons display mode 
+    private boolean _textDisplay;       // Text display mode
+    private boolean _controlling;
+
+    protected static String _redX = "resources/icons/misc/X-red.gif";
 
     public PositionableIcon(Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(new NamedIcon("resources/icons/misc/X-red.gif", "resources/icons/misc/X-red.gif"), editor);
+        super(editor);
+        _controlling = true;
+        _iconMap = makeDefaultMap();
+        _displayState = Bundle.getMessage("BeanStateUnknown");
     }
 
     public PositionableIcon(NamedIcon s, Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(s, editor);
+        super(editor);
+        setIsIcon(true);
+        setIsText(false);
     }
 
     public PositionableIcon(String s, Editor editor) {
-        // super ctor call to make sure this is an icon label
-        super(s, editor);
+        super(editor);
+        setIsIcon(false);
+        setIsText(true);
     }
 
     @Override
@@ -37,136 +65,336 @@ public class PositionableIcon extends PositionableLabel {
         PositionableIcon pos = new PositionableIcon(_editor);
         return finishClone(pos);
     }
-
     protected Positionable finishClone(PositionableIcon pos) {
         pos._iconFamily = _iconFamily;
-        pos._scale = _scale;
-        pos._rotate = _rotate;
+        pos._displayState = _displayState;
         pos._iconMap = cloneMap(_iconMap, pos);
+        pos._controlling = _controlling;
         return super.finishClone(pos);
     }
 
     /**
-     * Get icon by its localized bean state name.
-     *
-     * @param state the state name
-     * @return the icon or null if no match
+     * Sets the state that should be displayed.
+     * @param state state of text and/or icon to display
      */
-    public NamedIcon getIcon(String state) {
-        return _iconMap.get(state);
-    }
-
-    public String getFamily() {
-        return _iconFamily;
-    }
-
-    public void setFamily(String family) {
-        _iconFamily = family;
-    }
-
-    public Iterator<String> getIconStateNames() {
-        return _iconMap.keySet().iterator();
-    }
-
-    @Override
-    public int maxHeight() {
-        int max = super.maxHeight();
-        if (_iconMap != null) {
-            Iterator<NamedIcon> iter = _iconMap.values().iterator();
-            while (iter.hasNext()) {
-                max = Math.max(iter.next().getIconHeight(), max);
-            }
-        }
-        return max;
-    }
-
-    @Override
-    public int maxWidth() {
-        int max = super.maxWidth();
-        if (_iconMap != null) {
-            Iterator<NamedIcon> iter = _iconMap.values().iterator();
-            while (iter.hasNext()) {
-                max = Math.max(iter.next().getIconWidth(), max);
-            }
-        }
-        return max;
-    }
-
-    public void displayState(int state) {
+    protected void setDisplayState(String state) {
+        _displayState  = state;
     }
 
     /**
-     * ****** popup AbstractAction method overrides ********
+     * Show bean disconnected.  This may be a temporary condition so
+     * save the intended display mode for when case connection is restored.
+     */
+    protected void setDisconnectedText() {
+        log.debug("Display state disconnected");
+        setText(Bundle.getMessage("disconnected"));
+        setIcon(new NamedIcon(_redX, _redX));
+        super.setIsText(true);
+        super.setIsIcon(true);
+    }
+
+    protected void restoreConnectionDisplay() {
+        super.setIsText(_textDisplay);
+        super.setIsIcon(_iconDisplay);
+    }
+
+    /**
+     * Set whether icon should be displayed
+     * @param b if true, display icon
      */
     @Override
-    protected void rotateOrthogonal() {
-        Iterator<Entry<String, NamedIcon>> it = _iconMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            entry.getValue().setRotation(entry.getValue().getRotation() + 1, this);
+    public final void setIsIcon(boolean b) {
+        _iconDisplay = b;
+        super.setIsIcon(b);
+        for(PositionableLabel p : _iconMap.values()) {
+            p.setIsIcon(b);
         }
-        updateSize();
     }
 
+    /**
+     * Set whether text should be displayed
+     * @param b if true, display text
+     */
     @Override
-    public void setScale(double s) {
-        _scale = s;
-        if (_iconMap == null) {
-            return;
+    public final void setIsText(boolean b) {
+        _textDisplay = b;
+        super.setIsText(b);
+        for(PositionableLabel p : _iconMap.values()) {
+            p.setIsText(b);
         }
-        Iterator<Entry<String, NamedIcon>> it = _iconMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            entry.getValue().scale(s, this);
-        }
-        updateSize();
+    }
+    
+    /**
+     * NamedBean icon items should return a map with the default localized text
+     * names for their states.
+     * @return mapping of state names as found in jmri.NamedBeanBundle.properties
+     */
+    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        return null;
+    }
+    public HashMap<String, PositionableLabel> getIconMap() {
+        return _iconMap;
+    }
+    protected void  setIconMap(HashMap<String, PositionableLabel> map) {
+        _iconMap = map;
+    }
+    public PositionableLabel getStateData(String state) {
+        return _iconMap.get(state);
     }
 
-    @Override
-    public double getScale() {
-        return _scale;
-    }
-
-    @Override
-    public int getDegrees() {
-        if (_text) {
-            return super.getDegrees();
+    /**
+     * Verify that there is non-null default text and icon for each state
+     * in _iconMap
+     * @return true if all states are OK
+     */
+    public boolean isIconMapOK() {
+        Iterator<String> iter = getIconStateNames();
+        if (iter == null) {
+            return false;
         }
-        if (_iconMap != null) {
-            Iterator<NamedIcon> it = _iconMap.values().iterator();
-            if (it.hasNext()) {
-                return it.next().getDegrees();
+        if (isIcon()) {
+            while (iter.hasNext()) {
+                PositionableLabel pos = _iconMap.get(iter.next());
+                if (pos.getIcon()== null) {
+                    return false;
+                }
+            }
+        } else {
+            while (iter.hasNext()) {
+                PositionableLabel pos = _iconMap.get(iter.next());
+                if (pos.getText()== null) {
+                    return false;
+                }
             }
         }
-        return super.getDegrees();
+        return true;
+    }
+
+    /**
+     * Get an iterator of state names of the NameBean 
+     * as found in jmri.NamedBeanBundle.properties
+     * @return Iterator for the state names
+     */
+    public Iterator<String> getIconStateNames() {
+        if (_iconMap.keySet() == null) {
+            return null;
+        }
+        return _iconMap.keySet().iterator();
+    }
+
+    /**
+     * Get icon by its bean state name key found in
+     * jmri.NamedBeanBundle.properties
+     * @param state state of the bean
+     * @return NamedIcon icon representing the state of the bean
+     */
+    public NamedIcon getIcon(String state) {
+        return _iconMap.get(state).getIcon();
+    }
+
+    /**
+     * Get text by its bean state name key found in
+     * jmri.NamedBeanBundle.properties
+     * @param state state of the bean
+     * @return String text representing the state of the bean
+     */
+    public String getText(String state) {
+        return _iconMap.get(state).getText();
+    }
+
+    /**
+     * Set the icon representing the state of the bean
+     * into the state map.
+     * @param state state of the bean
+     * @param icon NamedIcon representing the state of the bean 
+     */
+    public void setStateIcon(@Nonnull String state, NamedIcon icon) {
+        _iconMap.get(state).setIcon(icon);
+        _iconMap.get(state).setIsIcon(icon != null);
+    }
+
+    /**
+     * Set the test representing the state of the bean
+     * into the state map.
+     * @param state state name of the bean
+     * @param text text representing the state of the bean 
+     */
+    public void setStateText(@Nonnull String state, String text) {
+        _iconMap.get(state).setText(text);
+        _iconMap.get(state).setIsText(text != null);
+    }
+
+    /**
+     * Set font color for a state of the NamedBean
+     * @param state state name of the bean
+     * @param color Color for the state
+    */
+    public void setFontColor(String state, Color color) {
+        _iconMap.get(state).setForeground(color);
+    }
+
+    /**
+     * Set font color for a state of the NamedBean
+     * @param state state name of the bean
+     * @return color for the state
+    */
+    public Color getFontColor(String state) {
+        return _iconMap.get(state).getForeground();
+    }
+
+    /**
+     * Set background color for a state of the NamedBean
+     * @param state state name of the bean
+     * @param color Color for the state
+    */
+    public void setBackgroundColor(String state, Color color) {
+        _iconMap.get(state).setBackground(color);
+    }
+
+    /**
+     * Set background color for a state of the NamedBean
+     * @param state state name of the bean
+     * @return color for the state
+    */
+    public Color getBackgroundColor(String state) {
+        return _iconMap.get(state).getBackground();
+    }
+
+    /**
+     * Get the name for the family of icons in the icon map
+     * @return name
+     */
+    public final String getFamily() {
+        return _iconFamily;
+    }
+
+    /**
+     * Set the name for the family of icons in the icon map
+     * @param family name
+     */
+    public final void setFamily(String family) {
+        _iconFamily = family;
+    }
+
+    public void setControlling(boolean enabled) {
+        _controlling = enabled;
+    }
+
+    public boolean isControlling() {
+        return _controlling;
+    }
+
+    //////// popup Menu method overrides ////////
+
+    @Override
+    public boolean setDisableControlMenu(JPopupMenu popup) {
+        JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
+        disableItem.setSelected(!_controlling);
+        popup.add(disableItem);
+        disableItem.addActionListener((java.awt.event.ActionEvent e) -> {
+            setControlling(!disableItem.isSelected());
+        });
+        return true;
+    }
+
+    /**
+     * @param popup the menu to display
+     * @return true when text is to be displayed
+     */
+    @Override
+    public boolean setTextEditMenu(JPopupMenu popup) {
+        log.debug("setTextEditMenu isIcon={}, isText={}", isIcon(), isText());
+        if (isText()) {
+            if (!isIcon()) {
+                JMenu stateText = new JMenu(Bundle.getMessage("SetSensorText"));
+                Iterator<String> iter = getIconStateNames();
+                while (iter.hasNext()) {
+                    String state = iter.next();
+                    stateText.add(CoordinateEdit.getTextEditAction(_iconMap.get(state), state));
+                }
+                popup.add(stateText);
+                
+                JMenu stateColor = new JMenu(Bundle.getMessage("StateColors"));
+                iter = getIconStateNames();
+                while (iter.hasNext()) {
+                    stateColor.add(stateColorMenu(iter.next()));
+                }
+                popup.add(stateColor);
+            } else {
+                popup.add(CoordinateEdit.getTextEditAction(this, "OverlayText"));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /* TODO ???  compare to 4.x to see if above is good enough
+    private JMenu stateTextMenu(final String state) {
+        JMenu menu = new JMenu(Bundle.getMessage(state));
+        return menu;
+    }*/
+
+    private JMenu stateColorMenu(final String state) {
+        JMenu menu = new JMenu(Bundle.getMessage(state));
+        JMenuItem colorMenu = new JMenuItem(Bundle.getMessage("FontColor"));
+        colorMenu.addActionListener((ActionEvent event) -> {
+            Color desiredColor = JColorChooser.showDialog(this,
+                                 Bundle.getMessage("FontColor"),
+                                 getFontColor(state));
+            if (desiredColor!=null ) {
+                 setFontColor(state, desiredColor);
+            }
+        });
+        menu.add(colorMenu);
+        colorMenu = new JMenuItem(Bundle.getMessage("FontBackgroundColor"));
+        colorMenu.addActionListener((ActionEvent event) -> {
+            Color desiredColor = JColorChooser.showDialog(this,
+                                 Bundle.getMessage("FontBackgroundColor"),
+                                 getBackgroundColor(state));
+            if (desiredColor!=null ) {
+                setBackgroundColor(state, desiredColor);
+            }
+        });
+        menu.add(colorMenu);
+        return menu;
     }
 
     @Override
-    public void rotate(int deg) {
-        _rotate = deg % 360;
-        setDegrees(deg);
-        if (_iconMap != null) {
-            Iterator<Entry<String, NamedIcon>> it = _iconMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, NamedIcon> entry = it.next();
-                entry.getValue().rotate(deg, this);
-            }
-        }
-        super.rotate(deg);
-        updateSize();
+    public void dispose() {
+        _iconMap = null;
+        super.dispose();
     }
 
-    public static HashMap<String, NamedIcon> cloneMap(HashMap<String, NamedIcon> map,
-            PositionableLabel pos) {
-        HashMap<String, NamedIcon> clone = new HashMap<String, NamedIcon>();
+    public static HashMap<String, PositionableLabel> cloneMap(HashMap<String, PositionableLabel> map,
+            PositionableIcon pos) {
+        HashMap<String, PositionableLabel> clone = new HashMap<>();
         if (map != null) {
-            Iterator<Entry<String, NamedIcon>> it = map.entrySet().iterator();
+            Iterator<Entry<String, PositionableLabel>> it = map.entrySet().iterator();
             while (it.hasNext()) {
-                Entry<String, NamedIcon> entry = it.next();
-                clone.put(entry.getKey(), cloneIcon(entry.getValue(), pos));
+                Entry<String, PositionableLabel> entry = it.next();
+                clone.put(entry.getKey(), (PositionableLabel)entry.getValue().deepClone());
             }
         }
         return clone;
     }
 
+    @Override
+    public void paintComponent(Graphics g) {
+
+        if (log.isDebugEnabled()) log.debug("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
+        PositionableLabel pos = _iconMap.get(_displayState);
+        if (isIcon() && isText()) { // overlaid
+            super.paintComponent(g);
+        } else {
+            if (pos == null) {
+                log.error("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
+            } else {
+                pos.paintComponent(g);
+            }
+        }
+    }
+
+    private final static Logger log = LoggerFactory.getLogger(PositionableIcon.class);
 }

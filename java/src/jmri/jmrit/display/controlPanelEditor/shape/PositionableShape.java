@@ -2,7 +2,6 @@ package jmri.jmrit.display.controlPanelEditor.shape;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -21,9 +20,9 @@ import jmri.NamedBeanHandle;
 import jmri.NamedBeanHandleManager;
 import jmri.Sensor;
 import jmri.SensorManager;
+import jmri.jmrit.display.CoordinateEdit;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.controlPanelEditor.ControlPanelEditor;
 import jmri.util.SystemType;
 import org.slf4j.Logger;
@@ -34,14 +33,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright (c) 2012
  */
-public abstract class PositionableShape extends PositionableJComponent implements PropertyChangeListener {
+public abstract class PositionableShape extends Positionable implements PropertyChangeListener {
 
     private Shape _shape;
     protected Color _lineColor = Color.black;
     protected Color _fillColor = new Color(255, 255, 255, 0);
     protected int _lineWidth = 1;
-    private int _degrees;
-    protected AffineTransform _transform;
     private NamedBeanHandle<Sensor> _controlSensor = null;
     private int _saveLevel = ControlPanelEditor.ICONS; // default level set in popup
     private int _changeLevel = 5;
@@ -80,6 +77,7 @@ public abstract class PositionableShape extends PositionableJComponent implement
 
     protected void setShape(@Nonnull Shape s) {
         _shape = s;
+        updateSize();
     }
 
     @Nonnull
@@ -88,10 +86,6 @@ public abstract class PositionableShape extends PositionableJComponent implement
             _shape = makeShape();
         }
         return _shape;
-    }
-
-    public AffineTransform getTransform() {
-        return _transform;
     }
 
     public void setWidth(int w) {
@@ -170,28 +164,13 @@ public abstract class PositionableShape extends PositionableJComponent implement
     }
 
     @Override
-    public void rotate(int deg) {
-        _degrees = deg % 360;
-        if (_degrees == 0) {
-            _transform = null;
-        } else {
-            double rad = Math.toRadians(_degrees);
-            _transform = new AffineTransform();
-            // use bit shift to avoid SpotBugs paranoia
-            _transform.setToRotation(rad, (_width >>> 1), (_height >>> 1));
-        }
-        updateSize();
-    }
-
-    @Override
+//    @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST", justification = "Cast required due to how Graphics2D was implemented in Java 1.2")
     public void paint(Graphics g) {
         if (!getEditor().isEditable() && !isVisible()) {
             return;
         }
-        if (!(g instanceof Graphics2D)) {
-            return;
-        }
-        Graphics2D g2d = (Graphics2D) g;
+        Graphics2D g2d = (Graphics2D)g.create();
+        g2d.transform(getTransform());
 
         // set antialiasing hint for macOS and Windows
         // note: antialiasing has performance problems on constrained systems
@@ -209,18 +188,17 @@ public abstract class PositionableShape extends PositionableJComponent implement
         }
 
         g2d.setClip(null);
-        if (_transform != null) {
-            g2d.transform(_transform);
-        }
+        Shape shape = getShape();
+        
         if (_fillColor != null) {
             g2d.setColor(_fillColor);
-            g2d.fill(getShape());
+            g2d.fill(shape);
         }
         if (_lineColor != null) {
             BasicStroke stroke = new BasicStroke(_lineWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f);
             g2d.setColor(_lineColor);
             g2d.setStroke(stroke);
-            g2d.draw(getShape());
+            g2d.draw(shape);
         }
         paintHandles(g2d);
     }
@@ -229,7 +207,8 @@ public abstract class PositionableShape extends PositionableJComponent implement
         if (_editor.isEditable() && _handles != null) {
             g2d.setColor(Editor.HIGHLIGHT_COLOR);
             g2d.setStroke(new java.awt.BasicStroke(2.0f));
-            Rectangle r = getBounds();
+            Rectangle r = new Rectangle();
+            r = getContentBounds(r);
             r.x = -_lineWidth / 2;
             r.y = -_lineWidth / 2;
             r.width += _lineWidth;
@@ -261,33 +240,9 @@ public abstract class PositionableShape extends PositionableJComponent implement
         pos.setControlSensor(getSensorName());
         pos.setWidth(_width);
         pos.setHeight(_height);
-        pos.invalidateShape();
-        pos.rotate(getDegrees()); // recreates invalidated shape
+        pos.makeShape();
+        pos.setDegrees(getDegrees());       // must be after makeShape due to updateSize call
         return super.finishClone(pos);
-    }
-
-    @Override
-    public Dimension getSize(Dimension rv) {
-        return new Dimension(maxWidth(), maxHeight());
-    }
-
-    @Override
-    public void updateSize() {
-        Rectangle r = getShape().getBounds();
-        setWidth(r.width);
-        setHeight(r.height);
-        setSize(r.width, r.height);
-        getEditor().repaint();
-    }
-
-    @Override
-    public int maxWidth() {
-        return getSize().width;
-    }
-
-    @Override
-    public int maxHeight() {
-        return getSize().height;
     }
 
     @Override
@@ -304,7 +259,7 @@ public abstract class PositionableShape extends PositionableJComponent implement
     @Override
     public boolean setRotateMenu(JPopupMenu popup) {
         if (super.getDisplayLevel() > Editor.BKG) {
-            popup.add(jmri.jmrit.display.CoordinateEdit.getRotateEditAction(this));
+            popup.add(CoordinateEdit.getRotateEditAction(this));
             return true;
         }
         return false;
@@ -315,10 +270,6 @@ public abstract class PositionableShape extends PositionableJComponent implement
         return false;
     }
 
-    @Override
-    public int getDegrees() {
-        return _degrees;
-    }
 
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -490,6 +441,7 @@ public abstract class PositionableShape extends PositionableJComponent implement
     }
 
     public Point getInversePoint(int x, int y) throws java.awt.geom.NoninvertibleTransformException {
+        AffineTransform _transform = getTransform();
         if (_transform != null) {
             java.awt.geom.AffineTransform t = _transform.createInverse();
             float[] pt = new float[2];

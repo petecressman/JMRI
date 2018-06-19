@@ -10,7 +10,7 @@ import jmri.jmrit.logix.OBlock;
  *
  * @author Pete Cressman Copyright (c) 2010
  */
-public interface IndicatorTrack extends Positionable {
+public interface IndicatorTrack{
 
     public void setOccSensor(String pName);
 
@@ -39,4 +39,9 @@ public interface IndicatorTrack extends Positionable {
     public void removePath(String path);
 
     public void setStatus(int state);
+
+    public void setControlling(boolean enabled);
+
+    public boolean isControlling();
+
 }

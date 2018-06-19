@@ -46,7 +46,7 @@ public class MemoryComboIconXml extends PositionableLabelXml {
         // include attributes
         element.setAttribute("memory", memoryIcon.getNamedMemory().getName());
         storeCommonAttributes(memoryIcon, element);
-        storeTextInfo(memoryIcon, element);
+        storeFontInfo(memoryIcon, element);
 
         element.setAttribute("class", "jmri.jmrit.display.configurexml.MemoryComboIconXml");
         return element;
@@ -83,7 +83,7 @@ public class MemoryComboIconXml extends PositionableLabelXml {
 
         MemoryComboIcon l = new MemoryComboIcon(p, items);
 
-        loadTextInfo(l, element);
+        loadFontInfo(l, element);
         String name;
         Attribute attr = element.getAttribute("memory");
         if (attr == null) {

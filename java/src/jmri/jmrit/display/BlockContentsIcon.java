@@ -35,7 +35,7 @@ public class BlockContentsIcon extends MemoryIcon implements java.beans.Property
         resetDefaultIcon();
         _namedIcon = defaultIcon;
         //By default all text objects are left justified
-        _popupUtil.setJustification(LEFT);
+        setJustification(LEFT);
         this.setTransferHandler(new TransferHandler());
     }
 
@@ -43,7 +43,7 @@ public class BlockContentsIcon extends MemoryIcon implements java.beans.Property
         super(s, editor);
         setDisplayLevel(Editor.LABELS);
         defaultIcon = s;
-        _popupUtil.setJustification(LEFT);
+        setJustification(LEFT);
         log.debug("BlockContentsIcon ctor= " + BlockContentsIcon.class.getName());
         this.setTransferHandler(new TransferHandler());
     }

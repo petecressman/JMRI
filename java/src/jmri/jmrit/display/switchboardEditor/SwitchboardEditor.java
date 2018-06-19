@@ -45,7 +45,6 @@ import jmri.jmrit.catalog.DefaultCatalogTreeManager;
 import jmri.jmrit.display.CoordinateEdit;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.Positionable;
-import jmri.jmrit.display.PositionableJComponent;
 import jmri.jmrit.display.ToolTip;
 import jmri.util.ColorUtil;
 import jmri.util.ConnectionNameFromSystemName;
@@ -656,7 +655,7 @@ public class SwitchboardEditor extends Editor {
         });
 
         JMenuItem editItem = new JMenuItem(Bundle.getMessage("renamePanelMenu", "..."));
-        PositionableJComponent z = new PositionableJComponent(this);
+        Positionable z = new Positionable(this);
         z.setScale(getPaintScale());
         editItem.addActionListener(CoordinateEdit.getNameEditAction(z));
         _fileMenu.add(editItem);
@@ -1220,7 +1219,7 @@ public class SwitchboardEditor extends Editor {
             g2d.setStroke(new java.awt.BasicStroke(2.0f));
             for (Positionable p : _secondSelectionGroup) {
                 if (!(p instanceof jmri.jmrit.display.controlPanelEditor.shape.PositionableShape)) {
-                    g.drawRect(p.getX(), p.getY(), p.maxWidth(), p.maxHeight());
+                    g.drawRect(p.getX(), p.getY(), p.getWidth(), p.getHeight());
                 }
             }
         }

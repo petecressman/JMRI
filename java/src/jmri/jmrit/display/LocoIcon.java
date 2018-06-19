@@ -49,24 +49,26 @@ public class LocoIcon extends PositionableLabel {
         setDisplayLevel(Editor.MARKERS);
         setShowToolTip(false);
         //setEditable(false);
-        _text = true; //Markers are an icon with text
-        setPopupUtility(new PositionablePopupUtil(this, this) {       // need this class for Font Edit
-            @Override
-            public void setFixedTextMenu(JPopupMenu popup) {
-            }
+        setIsText(true); //Markers are an icon with text
+    }
 
-            @Override
-            public void setTextMarginMenu(JPopupMenu popup) {
-            }
+    @Override
+    public void setFixedTextMenu(JPopupMenu popup) {
+    }
 
-            @Override
-            public void setTextBorderMenu(JPopupMenu popup) {
-            }
+//    @Override
+    @Override
+    public void setTextMarginMenu(JPopupMenu popup) {
+    }
 
-            @Override
-            public void setTextJustificationMenu(JPopupMenu popup) {
-            }
-        });
+//    @Override
+    @Override
+    public void setTextBorderMenu(JPopupMenu popup) {
+    }
+
+//    @Override
+    @Override
+    public void setTextJustificationMenu(JPopupMenu popup) {
     }
 
     @Override
@@ -124,14 +126,14 @@ public class LocoIcon extends PositionableLabel {
             getEditor().setShowCoordinatesMenu(this, popup);
             popup.add(makeDockingMenu());
             popup.add(makeDockMenu());
-            getPopupUtility().setTextFontMenu(popup);
+            setTextFontMenu(popup);
         } else {
             setRotateMenu(popup);
             if (_entry == null) {
                 setTextEditMenu(popup);
             }
             popup.add(makeDockMenu());
-            getPopupUtility().setTextFontMenu(popup);
+            setTextFontMenu(popup);
             getEditor().setRemoveMenu(this, popup);
         }
         return true;
@@ -180,32 +182,32 @@ public class LocoIcon extends PositionableLabel {
     public void setLocoColor(String color) {
         log.debug("Set loco color to " + color);
         if (color.equals(WHITE)) {
-            super.updateIcon(white);
+            super.setIcon(white);
             _locoColor = Color.WHITE;
             setForeground(Color.black);
         }
         if (color.equals(GREEN)) {
-            super.updateIcon(green);
+            super.setIcon(green);
             _locoColor = Color.GREEN;
             setForeground(Color.black);
         }
         if (color.equals(GRAY)) {
-            super.updateIcon(gray);
+            super.setIcon(gray);
             _locoColor = Color.GRAY;
             setForeground(Color.white);
         }
         if (color.equals(RED)) {
-            super.updateIcon(red);
+            super.setIcon(red);
             _locoColor = Color.RED;
             setForeground(Color.white);
         }
         if (color.equals(BLUE)) {
-            super.updateIcon(blue);
+            super.setIcon(blue);
             _locoColor = COLOR_BLUE;
             setForeground(Color.white);
         }
         if (color.equals(YELLOW)) {
-            super.updateIcon(yellow);
+            super.setIcon(yellow);
             _locoColor = Color.YELLOW;
             setForeground(Color.black);
         }
@@ -291,7 +293,7 @@ public class LocoIcon extends PositionableLabel {
      * Called at load time to get "background" color
      */
     public void init() {
-        NamedIcon icon = (NamedIcon) getIcon();
+        NamedIcon icon = getIcon();
         String name = icon.getURL();
         if (name != null) {
             if (name.endsWith("loco-white.gif")) {
@@ -326,11 +328,10 @@ public class LocoIcon extends PositionableLabel {
                 if (block != null) {
                     block.setMarkerForeground(getForeground());
                     block.setMarkerBackground(_locoColor);
-                    PositionablePopupUtil util = getPopupUtility();
-                    block.setMarkerFont(util.getFont());
+                    block.setMarkerFont(getFont());
                     String name = getText(); // rotated icons have null text
                     if (name == null || name.length() == 0) {
-                        name = getUnRotatedText();
+                        name = getText();
                     }
                     if (InstanceManager.getDefault(TrackerTableAction.class).markNewTracker(block, name) != null) {
                         dock();

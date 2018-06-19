@@ -20,23 +20,21 @@ public class LinkingLabel extends PositionableLabel implements LinkingObject {
     public LinkingLabel(@Nonnull String s, @Nonnull Editor editor, @Nonnull String url) {
         super(s, editor);
         this.url = url;
-        setPopupUtility(new PositionablePopupUtil(this, this));
     }
 
     public LinkingLabel(NamedIcon s, @Nonnull Editor editor, @Nonnull String url) {
         super(s, editor);
         this.url = url;
-        setPopupUtility(new PositionablePopupUtil(this, this));
     }
 
     @Override
     public Positionable deepClone() {
         PositionableLabel pos;
-        if (_icon) {
-            NamedIcon icon = new NamedIcon((NamedIcon) getIcon());
+        if (isIcon()) {
+            NamedIcon icon = new NamedIcon(getIcon());
             pos = new LinkingLabel(icon, _editor, url);
         } else {
-            pos = new LinkingLabel(_unRotatedText, _editor, url);
+            pos = new LinkingLabel(getText(), _editor, url);
         }
         return finishClone(pos);
     }
