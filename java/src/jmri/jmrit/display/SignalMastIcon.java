@@ -77,12 +77,6 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         }
         loadIcon(map, "$dark");
         loadIcon(map, "$held");
-        if (!isIconMapOK()) {
-            JOptionPane.showMessageDialog(_editor.getTargetFrame(),
-                    java.text.MessageFormat.format(Bundle.getMessage("SignalMastIconLoadError"),
-                            new Object[]{getSignalMast().getDisplayName()}),
-                    Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
-        }
         return map;
     }
     
@@ -130,6 +124,12 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         namedMast = sh;
         if (namedMast != null) {
             setIconMap(makeDefaultMap());
+            if (!isIconMapOK()) {
+                JOptionPane.showMessageDialog(_editor.getTargetFrame(),
+                        java.text.MessageFormat.format(Bundle.getMessage("SignalMastIconLoadError"),
+                                new Object[]{getSignalMast().getDisplayName()}),
+                        Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
+            }
             displayState(mastState());
             getSignalMast().addPropertyChangeListener(this, namedMast.getName(), "SignalMast Icon");
         }
@@ -172,11 +172,10 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
      * @return An aspect from the SignalMast
      */
     public String mastState() {
-        if (getSignalMast() == null) {
-            return "<empty>";
-        } else {
+        if (getSignalMast() != null) {
             return getSignalMast().getAspect();
         }
+        return null;
     }
 
     // update icon as state of turnout changes
@@ -504,7 +503,13 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         }
         //clear the old icon map out.
         useIconSet = icon;
-        makeDefaultMap();
+//        setIconMap(makeDefaultMap());
+        if (!isIconMapOK()) {
+            JOptionPane.showMessageDialog(_editor.getTargetFrame(),
+                    java.text.MessageFormat.format(Bundle.getMessage("SignalMastIconLoadError"),
+                            new Object[]{getSignalMast().getDisplayName()}),
+                    Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
+        }
         displayState(mastState());
         _editor.getTargetPanel().repaint();
     }
@@ -525,12 +530,16 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
      * @param state the state to display
      */
     private void displayState(String state) {
-        if (getSignalMast() == null) {
-            setDisconnectedText();
+        if (state == null) {
+            if (getSignalMast() == null) {
+                setDisconnectedText("disconnected");
+            } else {
+                setDisconnectedText("BeanStateUnknown");
+            }
         } else {
             restoreConnectionDisplay();
         }
-        log.debug("Display state= {}", state);
+        log.debug("Display state= {}, isText()= {} isIcon()= {}", state, isText(), isIcon());
         /*
         if (isText()) {
             if (getSignalMast().getHeld()) {
@@ -568,8 +577,11 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         }*/
         setDisplayState(state);
         if (isText() && isIcon()) {  // Overlaid text
-            setIcon(getIcon(state));
+            if (state != null) {
+                setIcon(getIcon(state));
+            }
         }
+        updateSize();
         return;
     }
 

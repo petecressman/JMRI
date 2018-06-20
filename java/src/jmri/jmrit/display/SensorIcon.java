@@ -232,7 +232,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      */
     private void displayState(String state) {
         if (getNamedSensor() == null) {
-            setDisconnectedText();
+            setDisconnectedText("disconnected");
         } else {
             restoreConnectionDisplay();
         }

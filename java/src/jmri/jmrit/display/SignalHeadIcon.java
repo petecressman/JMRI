@@ -284,8 +284,12 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      */
     private void displayState(String state) {
         updateSize();
-        if (getSignalHead() == null) {
-            setDisconnectedText();
+        if (state == null) {
+            if (getSignalHead() == null) {
+                setDisconnectedText("disconnected");
+            } else {
+                setDisconnectedText("BeanStateUnknown");
+            }
         } else {
             restoreConnectionDisplay();
         }

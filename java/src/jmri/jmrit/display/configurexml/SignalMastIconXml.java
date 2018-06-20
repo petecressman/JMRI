@@ -2,6 +2,7 @@ package jmri.jmrit.display.configurexml;
 
 import jmri.SignalMast;
 import jmri.jmrit.display.Editor;
+import jmri.jmrit.display.PositionableIcon;
 import jmri.jmrit.display.SignalMastIcon;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -52,16 +53,39 @@ public class SignalMastIconXml extends PositionableIconXml {
         // create the objects
         Editor ed = (Editor) o;
         SignalMastIcon l = new SignalMastIcon(ed);
-        if (!loadPositionableIcon(element, l)) {
-        }
         
         String name;
         Attribute attr;
+        attr = element.getAttribute("signalmast");
+        if (attr == null) {
+            log.error("incorrect information for signal mast; must use signalmast name");
+            ed.loadFailed();
+            return;
+        } else {
+            name = attr.getValue();
+            if (log.isDebugEnabled()) {
+                log.debug("Load SignalMast " + name);
+            }
+        }
+        if (!loadPositionableIcon(element, l)) {
+            loadPre50(element, l, name);
+        }
+        
+        SignalMast sh = jmri.InstanceManager.getDefault(jmri.SignalMastManager.class).getSignalMast(name);
+
+        if (sh != null) {
+            l.setSignalMast(name);
+        } else {
+            log.error("SignalMast named '" + attr.getValue() + "' not found.");
+            ed.loadFailed();
+            //    return;
+        }
+
         /*
          * We need to set the rotation and scaling first, prior to setting the
          * signalmast, otherwise we end up in a situation where by the icons do
          * not get rotated or scaled correctly.
-         **/
+         **
         try {
             int rotation = 0;
             double scale = 1.0;
@@ -87,33 +111,7 @@ public class SignalMastIconXml extends PositionableIconXml {
             }
         } catch (org.jdom2.DataConversionException e) {
             log.error("failed to convert rotation or scale attribute");
-        }
-        attr = element.getAttribute("signalmast");
-        if (attr == null) {
-            log.error("incorrect information for signal mast; must use signalmast name");
-            ed.loadFailed();
-            return;
-        } else {
-            name = attr.getValue();
-            if (log.isDebugEnabled()) {
-                log.debug("Load SignalMast " + name);
-            }
-        }
-
-        SignalMast sh = jmri.InstanceManager.getDefault(jmri.SignalMastManager.class).getSignalMast(name);
-
-        if (sh != null) {
-            l.setSignalMast(name);
-        } else {
-            log.error("SignalMast named '" + attr.getValue() + "' not found.");
-            ed.loadFailed();
-            //    return;
-        }
-
-        attr = element.getAttribute("imageset");
-        if (attr != null) {
-            l.useIconSet(attr.getValue());
-        }
+        }*/
 
         attr = element.getAttribute("imageset");
         if (attr != null) {
@@ -142,6 +140,26 @@ public class SignalMastIconXml extends PositionableIconXml {
 
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.SIGNALS, element);
+    }
+
+    /*
+     * pre release 5.0 or something like that
+     */
+    static protected  void loadPre50(Element element, PositionableIcon l, String name) {
+        Editor ed = l.getEditor();
+
+        try {
+            int rotation = element.getAttribute("rotate").getIntValue();
+            PositionableLabelXml.doRotationConversion(rotation, l);
+        } catch (org.jdom2.DataConversionException e) {
+        } catch (NullPointerException e) {  // considered normal if the attributes are not present
+        }
+
+        Attribute attr = element.getAttribute("imageset");
+        if (attr != null) {
+            l.setFamily(attr.getValue());
+        }
+
     }
 
     private final static Logger log = LoggerFactory.getLogger(SignalMastIconXml.class);
