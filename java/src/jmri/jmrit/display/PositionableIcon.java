@@ -48,8 +48,14 @@ public class PositionableIcon extends PositionableLabel {
         _iconMap = makeDefaultMap();
         _displayState = Bundle.getMessage("BeanStateUnknown");
         if (log.isDebugEnabled()) {
-            for (Map.Entry<String, PositionableLabel> e : _iconMap.entrySet()) {
-                log.debug("state = {}, text= {}, icon= {}", e.getKey(), e.getValue().getText(), e.getValue().getIcon().getName());
+            if (_iconMap != null) {
+                for (Map.Entry<String, PositionableLabel> e : _iconMap.entrySet()) {
+                    PositionableLabel pos = e.getValue();
+                    log.debug("state = {}, text= {}, icon= {}", e.getKey(), pos.getText(),
+                            (pos.getIcon()==null?"null": pos.getIcon().getName()));
+                }
+            } else {
+                log.debug("_iconMap == null, {}", getClass().getName());
             }
         }
     }
@@ -86,6 +92,9 @@ public class PositionableIcon extends PositionableLabel {
     protected void setDisplayState(String state) {
         _displayState  = state;
     }
+    protected String getDisplayState() {
+        return _displayState;
+    }
 
     /**
      * Show bean disconnected.  This may be a temporary condition so
@@ -93,7 +102,7 @@ public class PositionableIcon extends PositionableLabel {
      * @param text overlay
      */
     protected void setDisconnectedText(String text) {
-        log.debug("Display state disconnected {}", text);
+        log.debug("setDisconnectedText({}) for {}", text, this.getClass().getName());
         setText(Bundle.getMessage(text));
         setIcon(new NamedIcon(_redX, _redX));
         super.setIsText(true);
@@ -146,7 +155,9 @@ public class PositionableIcon extends PositionableLabel {
         _iconMap = map;
         if (log.isDebugEnabled()) {
             for (Map.Entry<String, PositionableLabel> e : _iconMap.entrySet()) {
-                log.debug("state = {}, text= {}, icon= {}", e.getKey(), e.getValue().getText(), e.getValue().getIcon().getName());
+                PositionableLabel pos = e.getValue();
+                log.debug("state = {}, text= {}, icon= {}", e.getKey(), pos.getText(),
+                        (pos.getIcon()==null?"null": pos.getIcon().getName()));
             }
         }
     }
@@ -393,15 +404,22 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public void paintComponent(Graphics g) {
 
-//        if (log.isDebugEnabled()) log.debug("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
-//                getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
+        long time = 0;
+        if (System.currentTimeMillis() - time > 1000) {
+            System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
+            time = System.currentTimeMillis();
+        }
         PositionableLabel pos = _iconMap.get(_displayState);
         if (isIcon() && isText()) { // overlaid
             super.paintComponent(g);
         } else {
+            time = 0;
             if (pos == null) {
-                log.error("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
-                getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
+                if (System.currentTimeMillis() - time > 1000) {
+                    log.error("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                            getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
+                    time = System.currentTimeMillis();
+                }
             } else {
                 pos.paintComponent(g);
             }

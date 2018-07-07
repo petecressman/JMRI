@@ -38,106 +38,6 @@ public class SensorIconXml extends PositionableIconXml {
         element.setAttribute("class", "jmri.jmrit.display.configurexml.SensorIconXml");
         return element;
     }
-/*
-    protected void storeTextInfo(SensorIcon p, Element element) {
-        if (p.getText() == null) {
-            String s = p.getOverlayText();
-            if (s != null && s.length() > 0) {
-                element.setAttribute("text", s);
-            } else if (p.isText()) {
-                element.setAttribute("text", "");
-            } else {
-                return;
-            }
-        } else {
-            element.setAttribute("text", p.getText());
-        }
-        // get iconic overlay text info
-        super.storeTextInfo(p, element);
-        // get state textual info
-        Element textElement = new Element("activeText");
-        if (p.getActiveText() != null) {
-            textElement.setAttribute("text", p.getActiveText());
-        }
-
-        // always write text color
-        textElement.setAttribute("red", "" + p.getTextActive().getRed());
-        textElement.setAttribute("green", "" + p.getTextActive().getGreen());
-        textElement.setAttribute("blue", "" + p.getTextActive().getBlue());
-
-        if (p.getBackgroundActive() != null) {
-            textElement.setAttribute("redBack", "" + p.getBackgroundActive().getRed());
-            textElement.setAttribute("greenBack", "" + p.getBackgroundActive().getGreen());
-            textElement.setAttribute("blueBack", "" + p.getBackgroundActive().getBlue());
-        }
-        element.addContent(textElement);
-        textElement = new Element("inactiveText");
-        if (p.getInactiveText() != null) {
-            textElement.setAttribute("text", p.getInactiveText());
-        }
-
-        // always write text color
-        textElement.setAttribute("red", "" + p.getTextInActive().getRed());
-        textElement.setAttribute("green", "" + p.getTextInActive().getGreen());
-        textElement.setAttribute("blue", "" + p.getTextInActive().getBlue());
-
-        if (p.getBackgroundInActive() != null) {
-            textElement.setAttribute("redBack", "" + p.getBackgroundInActive().getRed());
-            textElement.setAttribute("greenBack", "" + p.getBackgroundInActive().getGreen());
-            textElement.setAttribute("blueBack", "" + p.getBackgroundInActive().getBlue());
-        }
-        element.addContent(textElement);
-
-        textElement = new Element("unknownText");
-
-        if (p.getUnknownText() != null) {
-            textElement.setAttribute("text", p.getUnknownText());
-        }
-
-        // always write text color
-        textElement.setAttribute("red", "" + p.getTextUnknown().getRed());
-        textElement.setAttribute("green", "" + p.getTextUnknown().getGreen());
-        textElement.setAttribute("blue", "" + p.getTextUnknown().getBlue());
-
-        if (p.getBackgroundUnknown() != null) {
-            textElement.setAttribute("redBack", "" + p.getBackgroundUnknown().getRed());
-            textElement.setAttribute("greenBack", "" + p.getBackgroundUnknown().getGreen());
-            textElement.setAttribute("blueBack", "" + p.getBackgroundUnknown().getBlue());
-        }
-        element.addContent(textElement);
-
-        textElement = new Element("inconsistentText");
-        if (p.getInconsistentText() != null) {
-            textElement.setAttribute("text", p.getInconsistentText());
-        }
-
-        // always write text color
-        textElement.setAttribute("red", "" + p.getTextInconsistent().getRed());
-        textElement.setAttribute("green", "" + p.getTextInconsistent().getGreen());
-        textElement.setAttribute("blue", "" + p.getTextInconsistent().getBlue());
-
-        if (p.getBackgroundInconsistent() != null) {
-            textElement.setAttribute("redBack", "" + p.getBackgroundInconsistent().getRed());
-            textElement.setAttribute("greenBack", "" + p.getBackgroundInconsistent().getGreen());
-            textElement.setAttribute("blueBack", "" + p.getBackgroundInconsistent().getBlue());
-        }
-        element.addContent(textElement);
-    }
-
-    protected void storeIconInfo(SensorIcon p, Element element) {
-        element.addContent(storeIcon("active", p.getIcon("SensorStateActive")));
-        element.addContent(storeIcon("inactive", p.getIcon("SensorStateInactive")));
-        element.addContent(storeIcon("unknown", p.getIcon("BeanStateUnknown")));
-        element.addContent(storeIcon("inconsistent", p.getIcon("BeanStateInconsistent")));
-        Element elem = new Element("iconmaps");
-        String family = p.getFamily();
-        if (family != null) {
-            elem.setAttribute("family", family);
-        }
-        element.addContent(elem);
-    }
-
-    boolean _icon;
 
     /**
      * Create a PositionableLabel, then add to a target JLayeredPane
@@ -269,7 +169,7 @@ public class SensorIconXml extends PositionableIconXml {
         Color clrBackground = null;
         List<Element> textList = element.getChildren(key.toLowerCase() + "Text");
         if (log.isDebugEnabled()) {
-            log.debug("Found " + textList.size() + " " + key + "Text objects");
+            log.debug("Found " + textList.size() + " " + key + " text objects");
         }
         if (textList.size() > 0) {
             Element elem = textList.get(0);

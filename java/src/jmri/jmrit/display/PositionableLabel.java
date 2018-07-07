@@ -41,7 +41,6 @@ public class PositionableLabel extends Positionable {
     }
 
     /**
-     * {@inheritDoc}
      * @param s text
      * @param editor where this label is displayed
      */
@@ -509,6 +508,11 @@ public class PositionableLabel extends Positionable {
             vOffSet += ascent;
             g.setColor(getForeground());
             g.drawString(_textString, hOffSet, vOffSet);             
+        }
+        long time = 0;
+        if (System.currentTimeMillis() - time > 1000) {
+            System.out.println("Paint " + getClass().getName());
+            time = System.currentTimeMillis();
         }
     }
 

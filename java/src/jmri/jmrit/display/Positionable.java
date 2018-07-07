@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright (c) 2002
  * @author Howard G. Penny copyright (C) 2005
- * @author Pete Cressman copyright (C) 2010 2017
+ * @author Pete Cressman copyright (C) 2010 2018
  * @version $Revision$
  */
 public class Positionable extends JComponent implements Cloneable {

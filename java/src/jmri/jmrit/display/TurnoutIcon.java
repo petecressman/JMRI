@@ -1,5 +1,6 @@
 package jmri.jmrit.display;
 
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -291,39 +292,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     /**
      * ****** popup AbstractAction method overrides ********
      */
-/*    @Override
-    protected void rotateOrthogonal() {
-        Iterator<Entry<Integer, NamedIcon>> it = _iconStateMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<Integer, NamedIcon> entry = it.next();
-            entry.getValue().setRotation(entry.getValue().getRotation() + 1, this);
-        }
-        displayState(turnoutState());
-        // bug fix, must repaint icons that have same width and height
-        repaint();
-    }
-
-    @Override
-    public void setScale(double s) {
-        _scale = s;
-        Iterator<Entry<Integer, NamedIcon>> it = _iconStateMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<Integer, NamedIcon> entry = it.next();
-            entry.getValue().scale(s, this);
-        }
-        displayState(turnoutState());
-    }
-
-    @Override
-    public void rotate(int deg) {
-        Iterator<Entry<Integer, NamedIcon>> it = _iconStateMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<Integer, NamedIcon> entry = it.next();
-            entry.getValue().rotate(deg, this);
-        }
-        setDegrees(deg);
-        displayState(turnoutState());
-    }*/
 
     TableItemPanel _itemPanel;
 
@@ -524,6 +492,16 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         namedTurnout = null;
         _state2nameMap = null;
         super.dispose();
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        long time = 0;
+        if (System.currentTimeMillis() - time > 1000) {
+            System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
+            time = System.currentTimeMillis();
+        }
+        super.paintComponent(g);
     }
 
     private final static Logger log = LoggerFactory.getLogger(TurnoutIcon.class);

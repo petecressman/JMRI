@@ -1,5 +1,6 @@
 package jmri.jmrit.display;
 
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -476,6 +477,16 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             flashTimer.stop();
         }
         displayState(sensorState());
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        long time = 0;
+        if (System.currentTimeMillis() - time > 1000) {
+            System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
+            time = System.currentTimeMillis();
+        }
+        super.paintComponent(g);
     }
 
     private final static Logger log = LoggerFactory.getLogger(SensorIcon.class);

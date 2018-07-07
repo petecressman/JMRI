@@ -1,5 +1,6 @@
 package jmri.jmrit.display;
 
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -418,6 +419,16 @@ public class IndicatorTrackIcon extends PositionableIcon
             return namedOccSensor.getBean();
         }
         return null;
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        long time = 0;
+        if (System.currentTimeMillis() - time > 1000) {
+            System.out.println("Paint " + getClass().getName());
+            time = System.currentTimeMillis();
+        }
+        super.paintComponent(g);
     }
 
     private final static Logger log = LoggerFactory.getLogger(IndicatorTrackIcon.class);

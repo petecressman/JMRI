@@ -96,7 +96,7 @@ public class PositionableIconXml extends PositionableLabelXml {
 
         Element elem =element.getChild("states");
         if (elem == null) {
-            log.error("No state elements found for PositionableIcon {}", p.getNameString());
+            log.warn("No state elements found for PositionableIcon {}", p.getNameString());
             return false;
         }
         List<Element> stateList = elem.getChildren("state");

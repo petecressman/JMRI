@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import jmri.NamedBeanHandle;
 import jmri.Sensor;
 import jmri.Turnout;
+import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.IndicatorTurnoutIcon;
 import jmri.jmrit.display.PositionableIcon;
@@ -114,39 +115,43 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
         Editor ed = (Editor) o;
 
         IndicatorTurnoutIcon pi = new IndicatorTurnoutIcon(ed);
-        Element name = element.getChild("turnout");
+        Element elem = element.getChild("turnout");
+        String name;
 
-        if (name == null) {
+        if (elem == null) {
             log.error("incorrect information for turnout; must use turnout name");
+            ed.loadFailed();
+            return;
         } else {
-            pi.setTurnout(name.getText());
+            name = elem.getText();
+            pi.setTurnout(name);
         }
-        Element elem = element.getChild("iconmaps");
+        elem = element.getChild("iconmaps");
         if (elem != null) {
             List<Element> maps = elem.getChildren();
             for (Element status : maps) {
                 PositionableIcon p = (PositionableIcon)pi.getStateData(status.getName());
                 if (!loadPositionableIcon(status, p)) {
-                    log.debug("No loadable PositionableIcon for status {}", status);
-                    loadPre50(status, p, pi);
+                    log.debug("No loadable PositionableIcon for status {}", status.getName());
+                    loadPre50(status, p, name);
                 }
             }
         }
 
-        name = element.getChild("occupancyblock");
-        if (name != null) {
-            pi.setOccBlock(name.getText());
+        elem = element.getChild("occupancyblock");
+        if (elem != null) {
+            pi.setOccBlock(elem.getText());
         } else {        // only write sensor if no OBlock, don't write double sensing
-            name = element.getChild("occupancysensor");
-            if (name != null) {
-                pi.setOccSensor(name.getText());
+            elem = element.getChild("occupancysensor");
+            if (elem != null) {
+                pi.setOccSensor(elem.getText());
             }            
         }
 
         pi.setShowTrain(false);
-        name = element.getChild("showTrainName");
-        if (name != null) {
-            if ("yes".equals(name.getText())) {
+        elem = element.getChild("showTrainName");
+        if (elem != null) {
+            if ("yes".equals(elem.getText())) {
                 pi.setShowTrain(true);
             }
         }
@@ -170,17 +175,37 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
     /*
      * pre release 5.0 or something like that
      */
-    private void loadPre50(Element element, PositionableIcon p, IndicatorTurnoutIcon pi) {
-        String name = pi.getNameString();
+    private void loadPre50(Element status, PositionableIcon p, String name) {
+        Editor ed = p.getEditor();
 
         try {
-            int rotation = element.getAttribute("rotate").getIntValue();
-            doRotationConversion(rotation, pi);
+            int rotation = status.getAttribute("rotate").getIntValue();
+            doRotationConversion(rotation, p);
         } catch (org.jdom2.DataConversionException e) {
         } catch (NullPointerException e) {  // considered normal if the attributes are not present
         }
 
-        TurnoutIconXml.loadPre50(element, p, name);
+        List<Element> states = status.getChildren();
+        String statusName = status.getName();
+        if (states != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("status element {} has {} states", statusName, states.size());
+            }
+            for (int i = 0; i < states.size(); i++) {
+                String stateName = states.get(i).getName();
+                NamedIcon icon = PositionableLabelXml.loadIcon(p, stateName, status, 
+                        "IndicatorTurnoutIcon \"" + statusName + "\": icon \"" + stateName + "\" ", ed);
+                if (icon != null) {
+                    p.setStateIcon(stateName, icon);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Icon for  {}, {} loaded", statusName, stateName);
+                    }
+                } else {
+                    log.info("IndicatorTurnoutIcon \"{}\": icon for {}, {} removed", name, statusName, stateName);
+                    return;
+                }
+            }
+       }
     }
     
     private final static Logger log = LoggerFactory.getLogger(IndicatorTurnoutIconXml.class);
