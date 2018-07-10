@@ -86,28 +86,49 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
 
     @Override
     protected HashMap<String, PositionableLabel> makeDefaultMap() {
+        getValidKeys();
+        HashMap<String, PositionableLabel> oldMap = getIconMap();
         HashMap<String, PositionableLabel> map = new HashMap<>();
-        SignalHead h = getSignalHead();
-        if (h == null) {        // new mp made when getSignalHead is installed
+        log.debug("makeDefaultMap {} valid keys", (_validKey!=null?_validKey.length: "no"));
+        if (_validKey == null) {
+            if (oldMap != null) {
+                return oldMap;
+            }
+            // initialize state classes
+            for (Entry<String,String> entry : _nameMap.entrySet()) {
+                PositionableLabel pos = new PositionableLabel(getEditor());
+                pos.setText(entry.getKey());
+                map.put(entry.getValue(), pos);
+            }
             return map;
         }
-        _validKey = h.getValidStateNames();
         HashMap<String, NamedIcon> icons = _signalIconFamilies.get(getFamily());
-        HashMap<String, PositionableLabel> oldMap = getIconMap();
+        if (icons == null) {
+            log.warn("No Icon map for family \"{}\".", getFamily());
+        } else {
+            log.debug("Family \"{}\" has full map of {} icons.", getFamily(), icons.size());
+        }
         PositionableLabel pos;
         for (String key : _validKey) {
             String state = _nameMap.get(key);
-            if (oldMap != null && oldMap.get(key) != null) {
-                pos = oldMap.get(key);
+            NamedIcon icon = null;
+            if (oldMap != null && oldMap.get(state) != null) {
+                pos = oldMap.get(state);
+                icon = pos.getIcon();
             } else {
                 pos = new PositionableLabel(getEditor());
-                if (icons != null) {
-                    pos.setIcon(icons.get(key));
-                } else {
-                    setIcon(new NamedIcon(_redX, _redX));
-                    log.warn("Family \"{}\" did not find icons", getFamily());
-                }
+            }
+            if (icons != null) {
+                icon = icons.get(key);
+            }
+            if (icon != null) {
+                pos.setIcon(icon);
+                log.debug("Family \"{}\" key {} for state {} found icon {} ",
+                        getFamily(), key, state, icons.get(key).getURL());
                 pos.setText(state);
+            } else {
+                log.warn("Family \"{}\" key {} for state {} did not find icon.",
+                        getFamily(), key, state);
             }
             map.put(state, pos);
         }
@@ -188,12 +209,22 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         return getSignalHead();
     }
 
+    private void getValidKeys() {
+        SignalHead h = getSignalHead();
+        if (h == null) {
+            log.info("Valid keys unknown. no signal Head");
+            return;
+        }
+        _validKey = h.getValidStateNames();
+    }
     /**
      * Check that device supports the state valid state names returned by the
      * bean are localized
      */
     private boolean isValidState(String key) {
-        if (key == null || _validKey == null) {
+        getValidKeys();
+        if (_validKey == null) {
+            log.info("Valid keys unknown. _validKey is null");
             return false;
         }
         if (key.equals(Bundle.getMessage("SignalHeadStateDark"))
@@ -225,12 +256,10 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      */
     @Override
     public void setStateIcon(String state, NamedIcon icon) {
+        super.setStateIcon(state, icon);
         if (log.isDebugEnabled()) {
-            log.debug("setIcon for " + state);
-        }
-        if (isValidState(Bundle.getMessage(state))) {
-            super.setStateIcon(state, icon);
-//            displayState(headState());
+            log.debug("setStateIcon for {}, validation= {}",
+                    state, isValidState(Bundle.getMessage(state)));
         }
     }
 
@@ -294,6 +323,11 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             restoreConnectionDisplay();
         }
         String s = _nameMap.get(state);
+        if (log.isDebugEnabled()) {
+            PositionableLabel pos = getStateData(s);
+            log.debug("displayState of state= \"{}\" s = \"{}\" icon= {}",
+                    state, s, (pos.getIcon()!=null?pos.getIcon().getURL():"null"));
+        }
         setDisplayState(s);
         if (isText() && isIcon()) {  // Overlaid text
             setIcon(getIcon(state));
@@ -682,6 +716,16 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
         namedHead = null;
         super.dispose();
     }
+
+/*    @Override
+    public void paintComponent(java.awt.Graphics g) {
+        long time = 0;
+        if (System.currentTimeMillis() - time > 1000) {
+            System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
+            time = System.currentTimeMillis();
+        }
+        super.paintComponent(g);
+    }*/
 
     private final static Logger log = LoggerFactory.getLogger(SignalHeadIcon.class);
 }

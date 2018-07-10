@@ -1,6 +1,5 @@
 package jmri.jmrit.display;
 
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -142,7 +141,8 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     @Override
     public void setStateIcon(String name, NamedIcon icon) {
         if (log.isDebugEnabled()) {
-            log.debug("setIcon for name \"" + name);
+            log.debug("setStateIcon \"{}\" icon= {}",
+                    name, (icon!=null?icon.getURL():"null"));
         }
         super.setStateIcon(name, icon);
 //        displayState(turnoutState());
@@ -160,8 +160,8 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         } else {
             state = _state2nameMap.get(Turnout.UNKNOWN);
         }
-        if (log.isDebugEnabled()) 
-            log.debug("turnout= {}, state= {}", namedTurnout, state);
+//        if (log.isDebugEnabled())
+//            log.debug("turnout= {}, state= {}", namedTurnout, state);
         return state;
     }
 
@@ -492,16 +492,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         namedTurnout = null;
         _state2nameMap = null;
         super.dispose();
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-        long time = 0;
-        if (System.currentTimeMillis() - time > 1000) {
-            System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
-            time = System.currentTimeMillis();
-        }
-        super.paintComponent(g);
     }
 
     private final static Logger log = LoggerFactory.getLogger(TurnoutIcon.class);

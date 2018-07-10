@@ -33,8 +33,6 @@ public class PositionableLabel extends Positionable {
     private boolean _icon = false;
     private boolean _text = false;
 
-    static final public int MIN_SIZE = 10;
-
 
     public PositionableLabel(Editor editor) {
         super(editor);
@@ -509,11 +507,11 @@ public class PositionableLabel extends Positionable {
             g.setColor(getForeground());
             g.drawString(_textString, hOffSet, vOffSet);             
         }
-        long time = 0;
+/*        long time = 0;
         if (System.currentTimeMillis() - time > 1000) {
             System.out.println("Paint " + getClass().getName());
             time = System.currentTimeMillis();
-        }
+        }*/
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableLabel.class);

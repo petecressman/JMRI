@@ -1,6 +1,5 @@
 package jmri.jmrit.display;
 
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
 
     private IndicatorTrackPaths _pathUtil;
     private IndicatorTOItemPanel _TOPanel;
-    private String _status;
+    private String _status = "ClearTrack";
 
     public IndicatorTurnoutIcon(Editor editor) {
         super(editor);
@@ -67,7 +66,6 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         HashMap<String, PositionableLabel> map = new HashMap<> ();
         for (String status : STATUSNAME) {
             PositionableIcon pos = new TurnoutIcon(getEditor());
-            pos.setIconMap(pos. makeDefaultMap());  // each status needs state icons and text
             map.put(status, pos);
         }
         return map;
@@ -101,16 +99,26 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         return super.finishClone(pos);
     }
 
-/*    @Override
+    @Override
     public void setTurnout(NamedBeanHandle<Turnout> to) {
         super.setTurnout(to);
-        Iterator<PositionableLabel> iter = getIconMap().values().iterator();
-        while (iter.hasNext()) {
-            ((PositionableIcon)iter.next()).setTurnout(to);
-        }
+        displayState(_status, turnoutState());
+    }
 
-    }*/
+    @Override
+    public int getWidth() {
+        PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
+        PositionableLabel pos = turnoutIcon.getStateData(turnoutState());
+        return pos.getWidth();
+    }
 
+    @Override
+    public int getHeight() {
+        PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
+        PositionableLabel pos = turnoutIcon.getStateData(turnoutState());
+        return pos.getHeight();
+    }
+    
     /**
      * Attached a named sensor to display status from OBlocks
      *
@@ -255,14 +263,11 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
      */
     public void setStateIcon(String status, String stateName, NamedIcon icon) {
         if (log.isDebugEnabled()) {
-            log.debug("setIcon for status= \"{}\", state= \"{}\" icom= {}",
-                    status, stateName, icon.getURL());
+            log.debug("setStateIcon for status= \"{}\", state= \"{}\" icom= {}",
+                    status, stateName, (icon!=null?icon.getURL():"null"));
         }
         PositionableIcon statusMap = (PositionableIcon)getStateData(status);
         statusMap.setStateIcon(stateName, icon);
-        if (status == _status && stateName == turnoutState()) {
-            setIcon(icon);
-        }
     }
 
     public String getStatus() {
@@ -287,11 +292,11 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         setDisplayState(status);
         PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
         turnoutIcon.setDisplayState(state);
-        PositionableLabel pos = turnoutIcon.getStateData(state);
-        pos.updateSize();
         if (log.isDebugEnabled()) {
+            PositionableLabel pos = turnoutIcon.getStateData(state);
             log.debug("displayState of status= \"{}\", state= \"{}\" icon= {}",
-                    status, state, turnoutIcon.getIcon(state).getURL());
+                    status, state, (pos.getIcon()!=null?pos.getIcon().getURL():"null"));
+//            log.debug("Icon Size: ({}, {})", pos.getWidth(), pos.getHeight());
         }
 
 //        turnoutIcon.displayState(state);
@@ -323,25 +328,46 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
 
         Object source = evt.getSource();
         if (source instanceof Turnout) {
-            super.propertyChange(evt);
-        } else if (source instanceof OBlock) {
-            String property = evt.getPropertyName();
-            if ("state".equals(property) || "pathState".equals(property)) {
-                int now = ((Integer) evt.getNewValue()).intValue();
-                setStatus((OBlock) source, now);
-            } else if ("pathName".equals(property)) {
-                _pathUtil.removePath((String) evt.getOldValue());
-                _pathUtil.addPath((String) evt.getNewValue());
-            }
-        } else if (source instanceof Sensor) {
-            if (evt.getPropertyName().equals("KnownState")) {
-                int now = ((Integer) evt.getNewValue()).intValue();
-                if (source.equals(getOccSensor())) {
-                    _status = _pathUtil.getStatus(now);
+            // when there's feedback, transition through inconsistent icon for better
+            // animation
+            if (getTristate()
+                    && (getTurnout().getFeedbackMode() != Turnout.DIRECT)
+                    && (evt.getPropertyName().equals("CommandedState"))) {
+                if (getTurnout().getCommandedState() != getTurnout().getKnownState()) {
+                    int now = Turnout.INCONSISTENT;
+                    displayState(_status, _state2nameMap.get(now));
+                }
+                // this takes care of the quick double click
+                if (getTurnout().getCommandedState() == getTurnout().getKnownState()) {
+                    int now = ((Integer) evt.getNewValue()).intValue();
+                    displayState(_status, _state2nameMap.get(now));
                 }
             }
+
+            if (evt.getPropertyName().equals("KnownState")) {
+                int now = ((Integer) evt.getNewValue()).intValue();
+                displayState(_status, _state2nameMap.get(now));
+            }
+        } else {
+            if (source instanceof OBlock) {
+                String property = evt.getPropertyName();
+                if ("state".equals(property) || "pathState".equals(property)) {
+                    int now = ((Integer) evt.getNewValue()).intValue();
+                    setStatus((OBlock) source, now);
+                } else if ("pathName".equals(property)) {
+                    _pathUtil.removePath((String) evt.getOldValue());
+                    _pathUtil.addPath((String) evt.getNewValue());
+                }
+            } else if (source instanceof Sensor) {
+                if (evt.getPropertyName().equals("KnownState")) {
+                    int now = ((Integer) evt.getNewValue()).intValue();
+                    if (source.equals(getOccSensor())) {
+                        _status = _pathUtil.getStatus(now);
+                    }
+                }
+            }
+            displayState(_status, turnoutState());
         }
-        displayState(_status, turnoutState());
     }
 
     private void setStatus(OBlock block, int state) {
@@ -438,18 +464,6 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         }
         namedOccSensor = null;
         super.dispose();
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-
-        long time = 0;
-        if (System.currentTimeMillis() - time > 1000) {
-            System.out.println("Paint "+getClass().getName()+", _status= "+_status);
-            time = System.currentTimeMillis();
-        }
-       PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
-       turnoutIcon.paintComponent(g);
     }
 
     private final static Logger log = LoggerFactory.getLogger(IndicatorTurnoutIcon.class);

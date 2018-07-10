@@ -511,6 +511,8 @@ public class PositionableLabelXml extends PositionableJComponentXml {
                 l.setDegrees(deg);
             } catch (org.jdom2.DataConversionException dce) {
             }
+        } else {
+            log.error("Null icon from attribute \"{}\" from element {}, named= {} ", attrName, element.getName(), name);
         }
         return icon;
     }

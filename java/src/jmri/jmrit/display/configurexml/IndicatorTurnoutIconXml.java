@@ -166,7 +166,7 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
             pi.setPaths(paths);
         }
 
-//        l.updateSize();
+        pi.updateSize();
         ed.putItem(pi);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(pi, Editor.TURNOUTS, element);

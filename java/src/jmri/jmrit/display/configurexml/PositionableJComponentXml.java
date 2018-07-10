@@ -66,12 +66,14 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         element.setAttribute("size", "" + p.getFont().getSize());
         element.setAttribute("style", "" + p.getFont().getStyle());
 
-        // always write the foreground (text) color
-        element.setAttribute("red", "" + p.getForeground().getRed());
-        element.setAttribute("green", "" + p.getForeground().getGreen());
-        element.setAttribute("blue", "" + p.getForeground().getBlue());
+        Color foreGround = p.getForeground();
+        if (foreGround !=null) {
+            element.setAttribute("red", "" + foreGround.getRed());
+            element.setAttribute("green", "" + foreGround.getGreen());
+            element.setAttribute("blue", "" + foreGround.getBlue());
+        }
 
-        Color backGround = p.getBackgroundColor(); 
+        Color backGround = p.getBackgroundColor();
         if (backGround!=null) {
             element.setAttribute("redBack", "" + backGround.getRed());
             element.setAttribute("greenBack", "" + backGround.getGreen());
@@ -124,8 +126,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         element.setAttribute("positionable", p.isPositionable() ? "true" : "false");
         element.setAttribute("showtooltip", p.showToolTip() ? "true" : "false");
         element.setAttribute("editable", p.isEditable() ? "true" : "false");
-        ToolTip tip = p.getToolTip();
-        String txt = tip.getText();
+        String txt = p.getToolTipText();
         if (txt != null) {
             Element elem = new Element("tooltip").addContent(txt); // was written as "toolTip" 3.5.1 and before
             element.addContent(elem);
@@ -390,6 +391,8 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
             ToolTip tip = l.getToolTip();
             if (tip != null) {
                 tip.setText(elem.getText());
+            } else {
+                l.setToolTipText(elem.getText());
             }
         }
     }

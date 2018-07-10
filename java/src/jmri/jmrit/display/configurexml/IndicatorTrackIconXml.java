@@ -132,7 +132,7 @@ public class IndicatorTrackIconXml extends PositionableIconXml {
         }
 
 //        l.displayState(l.getStatus());
-//        l.updateSize();
+        l.updateSize();
         ed.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.TURNOUTS, element);

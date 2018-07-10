@@ -64,12 +64,11 @@ public class SignalHeadIconXml extends PositionableIconXml {
         } else {
             name = attr.getValue();
         }
+        SignalHead sh = jmri.InstanceManager.getDefault(jmri.SignalHeadManager.class).getSignalHead(name);
 
         if (!loadPositionableIcon(element, l)) {
             loadPre50(element, l, name);
         }
-
-        SignalHead sh = jmri.InstanceManager.getDefault(jmri.SignalHeadManager.class).getSignalHead(name);
 
         if (sh != null) {
             l.setSignalHead(name);
@@ -96,6 +95,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
             log.error("Failed on litmode attribute: " + e);
         }
 
+        l.updateSize();
         ed.putItem(l);
         // load individual item's option settings after editor has set its global settings
         loadCommonAttributes(l, Editor.SIGNALS, element);
@@ -129,6 +129,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
         Editor ed = l.getEditor();
 
         List<Element> aspects = element.getChildren();
+        log.debug("Found {} children of element {}", aspects.size(), element.getName());
         if (aspects.size() > 0) {
             Element icons = element.getChild("icons");
             Element elem = element;

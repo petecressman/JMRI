@@ -307,7 +307,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
                 }
                 if (icon != null) {
                     iconMap.put(iconName, icon);
-                    InstanceManager.getDefault(CatalogTreeManager.class).indexChanged(true);
+//                    InstanceManager.getDefault(CatalogTreeManager.class).indexChanged(true);
                     if (log.isDebugEnabled()) {
                         log.debug("Add {} icon to family \"{}\"", iconName, familyName);
                     }

@@ -80,7 +80,7 @@ public class Positionable extends JComponent implements Cloneable {
 
     private double _scale = 1.0;         // user's scaling factor
     private int _degree;
-    private Dimension _displayDim = new Dimension(0, 0);
+    private Dimension _displayDim = new Dimension(MIN_SIZE, MIN_SIZE);
     private int _flip;
     public final static int NOFLIP = 0X00;
     public final static int HORIZONTALFLIP = 0X01;
@@ -97,6 +97,8 @@ public class Positionable extends JComponent implements Cloneable {
     static public final int LEFT = 0x00;
     static public final int RIGHT = 0x02;
     static public final int CENTRE = 0x04;
+
+    static final public int MIN_SIZE = 10;
 
     protected PositionablePropertiesUtil _propertiesUtil;
 
@@ -1009,7 +1011,7 @@ public class Positionable extends JComponent implements Cloneable {
         if (bds!=null && _displayDim!=null) {
             return new Rectangle(bds.x, bds.y, _displayDim.width, _displayDim.height);            
         } else {
-            return bds;
+            return new Rectangle(getX(), getY(), _displayDim.width, _displayDim.height);
         }
     }
     
@@ -1021,7 +1023,7 @@ public class Positionable extends JComponent implements Cloneable {
             bds.height = _displayDim.height;
             return bds;
         } else {
-            return bds;
+            return new Rectangle(getX(), getY(), _displayDim.width, _displayDim.height);
         }
     }
     

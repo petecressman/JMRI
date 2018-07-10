@@ -232,8 +232,17 @@ public class PositionableIcon extends PositionableLabel {
      * @param icon NamedIcon representing the state of the bean 
      */
     public void setStateIcon(@Nonnull String state, NamedIcon icon) {
-        _iconMap.get(state).setIcon(icon);
-        _iconMap.get(state).setIsIcon(icon != null);
+        if (log.isDebugEnabled()) {
+            log.debug("setStateIcon state= \"{}\" icon= {}",
+                    state, (icon!=null?icon.getURL():"null"));
+        }
+        PositionableLabel p = _iconMap.get(state);
+        if (p ==null) {
+            log.error("Invalid state \"{}\"!", state);
+            return;
+        }
+        p.setIcon(icon);
+        p.setIsIcon(icon != null);
     }
 
     /**
@@ -404,19 +413,19 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public void paintComponent(Graphics g) {
 
-        long time = 0;
+/*        long time = 0;
         if (System.currentTimeMillis() - time > 1000) {
             System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
             time = System.currentTimeMillis();
-        }
+        }*/
         PositionableLabel pos = _iconMap.get(_displayState);
         if (isIcon() && isText()) { // overlaid
             super.paintComponent(g);
         } else {
-            time = 0;
+            long time = 0;
             if (pos == null) {
                 if (System.currentTimeMillis() - time > 1000) {
-                    log.error("Paint {} - {}, displayState= {}, _iconMap {}", getClass().getName(), 
+                    log.error("Paint {} - {}, displayState= {}, _iconMapSize {}", getClass().getName(), 
                             getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
                     time = System.currentTimeMillis();
                 }
