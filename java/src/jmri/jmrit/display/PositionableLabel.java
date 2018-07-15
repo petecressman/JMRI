@@ -65,18 +65,20 @@ public class PositionableLabel extends Positionable {
      }
 
     /**
-     * Answers whether icon should be displayed
+     * Answers whether icon should be displayed when
+     * paintComponent(Graphics g)
      * @return display icon
      */
-    public final boolean isIcon() {
+    public boolean isIcon() {
         return _icon;
     }
 
     /**
-     * Answers whether text should be displayed
+     * Answers whether text should be displayed when
+     * paintComponent(Graphics g) is called
      * @return display text
      */
-    public final boolean isText() {
+    public boolean isText() {
         return _text;
     }
     

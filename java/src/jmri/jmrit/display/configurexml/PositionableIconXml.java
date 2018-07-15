@@ -39,11 +39,11 @@ public class PositionableIconXml extends PositionableLabelXml {
         storeCommonLabelAttributes(p, element);
         storeFontInfo(p, element);
 
+        Element elem = new Element("family");
         if (p.getFamily() != null) {
-            element.setAttribute("family", p.getFamily());
+            element.setAttribute("familyname", p.getFamily());
         }
         
-        Element elem = new Element("states");
         Iterator<Entry<String, PositionableLabel>> it = p.getIconMap().entrySet().iterator();
         while (it.hasNext()) {
             Entry<String, PositionableLabel> entry = it.next();
@@ -94,10 +94,14 @@ public class PositionableIconXml extends PositionableLabelXml {
         }
         loadFontInfo(p, element);
 
-        Element elem =element.getChild("states");
+        Element elem =element.getChild("family");
         if (elem == null) {
             log.warn("No state elements found for PositionableIcon {}", p.getNameString());
             return false;
+        }
+        Attribute attr = elem.getAttribute("familyname");
+        if (attr !=null) {
+            p.setFamily(attr.getValue());
         }
         List<Element> stateList = elem.getChildren("state");
         if (log.isDebugEnabled()) {

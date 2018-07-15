@@ -145,7 +145,6 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
                     name, (icon!=null?icon.getURL():"null"));
         }
         super.setStateIcon(name, icon);
-//        displayState(turnoutState());
     }
 
     /**
@@ -176,7 +175,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
      */
     protected void displayState(String state) {
         if (getNamedTurnout() == null) {
-            setDisconnectedText("disconnected");
+            setDisconnectedText("BeanDisconnected");
         } else {
             restoreConnectionDisplay();
        }

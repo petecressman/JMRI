@@ -108,15 +108,13 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     @Override
     public int getWidth() {
         PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
-        PositionableLabel pos = turnoutIcon.getStateData(turnoutState());
-        return pos.getWidth();
+        return turnoutIcon.getWidth();
     }
 
     @Override
     public int getHeight() {
         PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
-        PositionableLabel pos = turnoutIcon.getStateData(turnoutState());
-        return pos.getHeight();
+        return turnoutIcon.getHeight();
     }
     
     /**
@@ -285,7 +283,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
      */
     private void displayState(String status, String state) {
         if (getNamedTurnout() == null) {
-            setDisconnectedText("disconnected");
+            setDisconnectedText("BeanDisconnected");
         } else {
             restoreConnectionDisplay();
         }

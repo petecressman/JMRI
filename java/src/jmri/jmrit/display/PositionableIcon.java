@@ -18,13 +18,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The common ancestor of Namedbeans having multiple states and displays
- * each state as either an icon or a text string.
+ * Any common ancestor of Namedbeans having multiple states needs to have multiple
+ * displays when represented on graphically on a panel. Such Namedbeans may also 
+ * have a state controlling feature included in their associated widget.
+ * Each state may have either an icon or a text string or both to display.
  * Gather common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
- * Also used for items that use display modes to show status, e.g. IndicatorTrack.
+ * This class also used for items that use display modes to show status, e.g. IndicatorTrack.
  * IndicatorTrack currently is the only descendant that is not a controlling widget.
  * <p>
- * Flags, _iconDisplay and _textDisplay, determine the display mode.
+ * The flags, _iconDisplay and _textDisplay, determine the current display mode.
  * When both are true, display mode is icon overlaid with text.
  * In text display mode, text and decoration can be individually edited.
  * In Overlay mode, the text is a common (decorated) label for all states.
@@ -86,6 +88,30 @@ public class PositionableIcon extends PositionableLabel {
     }
 
     /**
+     * Answers whether icon should be displayed when
+     * conditions are normal, i.e. NamedBean is connected
+     * and state is known.  Otherwise, super.isIcon() is
+     * set to display the abnormal condition. 
+     * @return display icon
+     */
+    @Override
+    public boolean isIcon() {
+        return _iconDisplay;
+    }
+
+    /**
+     * Answers whether text should be displayed when
+     * conditions are normal, i.e. NamedBean is connected
+     * and state is known.  Otherwise, super.isText() is
+     * set to display the abnormal condition. 
+     * @return display text
+     */
+    @Override
+    public boolean isText() {
+        return _textDisplay;
+    }
+    
+    /**
      * Sets the state that should be displayed.
      * @param state state of text and/or icon to display
      */
@@ -96,6 +122,26 @@ public class PositionableIcon extends PositionableLabel {
         return _displayState;
     }
 
+    @Override
+    public int getWidth() {
+        PositionableLabel pos = getStateData(_displayState);
+        if (pos != null) {
+            return pos.getWidth();            
+        } else {
+            return super.getWidth();
+        }
+    }
+
+    @Override
+    public int getHeight() {
+        PositionableLabel pos = getStateData(_displayState);
+        if (pos != null) {
+            return pos.getHeight();            
+        } else {
+            return super.getHeight();
+        }
+    }
+    
     /**
      * Show bean disconnected.  This may be a temporary condition so
      * save the intended display mode for when case connection is restored.
@@ -110,8 +156,10 @@ public class PositionableIcon extends PositionableLabel {
     }
 
     protected void restoreConnectionDisplay() {
-        super.setIsText(_textDisplay);
-        super.setIsIcon(_iconDisplay);
+        setIsText(_textDisplay);
+        setIsIcon(_iconDisplay);
+        super.setIsText(false);
+        super.setIsIcon(false);
     }
 
     /**
@@ -121,7 +169,7 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public final void setIsIcon(boolean b) {
         _iconDisplay = b;
-        super.setIsIcon(b);
+//      Do not set  super.setIsIcon(b);
         for(PositionableLabel p : _iconMap.values()) {
             p.setIsIcon(b);
         }
@@ -134,7 +182,7 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public final void setIsText(boolean b) {
         _textDisplay = b;
-        super.setIsText(b);
+        // Do not set super.setIsText()
         for(PositionableLabel p : _iconMap.values()) {
             p.setIsText(b);
         }
@@ -304,7 +352,7 @@ public class PositionableIcon extends PositionableLabel {
      * Set the name for the family of icons in the icon map
      * @param family name
      */
-    public final void setFamily(String family) {
+    public void setFamily(String family) {
         _iconFamily = family;
     }
 
@@ -413,13 +461,13 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public void paintComponent(Graphics g) {
 
-/*        long time = 0;
-        if (System.currentTimeMillis() - time > 1000) {
+/*        long t = 0;
+        if (System.currentTimeMillis() - t > 1000) {
             System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
-            time = System.currentTimeMillis();
+            t = System.currentTimeMillis();
         }*/
         PositionableLabel pos = _iconMap.get(_displayState);
-        if (isIcon() && isText()) { // overlaid
+        if (super.isIcon() && super.isText()) { // overlaid
             super.paintComponent(g);
         } else {
             long time = 0;

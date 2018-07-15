@@ -87,6 +87,7 @@ import jmri.jmrit.roster.RosterEntry;
 import jmri.jmrit.roster.swing.RosterEntrySelectorPanel;
 import jmri.util.DnDStringImportHandler;
 import jmri.util.JmriJFrame;
+import jmri.util.swing.JmriColorChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -240,6 +241,14 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
 
     public Editor(String name) {
         this(name, true, true);
+    }
+
+    /**
+     * Set <strong>white</strong> as the default background color for panels created using the <strong>New Panel</strong> menu item.
+     * Overriden by LE to use a different default background color and set other initial defaults.
+     */
+    public void newPanelDefaults() {
+        setBackgroundColor(Color.WHITE);
     }
 
     public void loadFailed() {
@@ -465,6 +474,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     public void setBackgroundColor(Color col) {
         TargetPane tmp = (TargetPane) _targetPanel;
         tmp.setBackgroundColor(col);
+        JmriColorChooser.addRecentColor(col);
     }
 
     public void clearBackgroundColor() {
@@ -707,6 +717,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         public void setBackgroundColor(Color col) {
             setBackground(col);
             setOpaque(true);
+            JmriColorChooser.addRecentColor(col);
         }
 
         public void clearBackgroundColor() {

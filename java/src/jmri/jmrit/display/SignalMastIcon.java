@@ -35,6 +35,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
     public SignalMastIcon(Editor editor) {
         // super ctor call to make sure this is an icon label
         super(editor);
+        super.setFamily("default");
         setIsIcon(true);
         setDisplayState("$dark");
     }
@@ -59,7 +60,6 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         }
         pos.setClickMode(getClickMode());
         pos.setLitMode(getLitMode());
-        pos.useIconSet(useIconSet());
         return super.finishClone(pos);
     }
 
@@ -89,7 +89,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
     }
 
     private NamedIcon getAspectIcon(String aspect) {
-        String s = getSignalMast().getAppearanceMap().getImageLink(aspect, useIconSet);
+        String s = getSignalMast().getAppearanceMap().getImageLink(aspect, getFamily());
         if (s.equals("")) {
             if (aspect.startsWith("$")) {
                 log.debug("No icon found for specific appearance " + aspect);
@@ -97,19 +97,34 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
                 log.error("No icon found for appearance " + aspect);
             }
             return null;
-        } else {
-            if (!s.contains("preference:")) {
-                s = s.substring(s.indexOf("resources"));
-            }
-            NamedIcon icon = null;
-            try {
-                icon = new NamedIcon(s, s);
-            } catch (java.lang.NullPointerException e) {
-                JOptionPane.showMessageDialog(null, Bundle.getMessage("SignalMastIconLoadError2", new Object[]{aspect, s, getNameString()}), Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
-                log.error(Bundle.getMessage("SignalMastIconLoadError2", aspect, s, getNameString()));
-            }
-            return icon;
         }
+        if (!s.contains("preference:")) {
+            s = s.substring(s.indexOf("resources"));
+        }
+        NamedIcon icon = null;
+        try {
+            icon = new NamedIcon(s, s);
+        } catch (java.lang.NullPointerException e) {
+            JOptionPane.showMessageDialog(null, Bundle.getMessage("SignalMastIconLoadError2", new Object[]{aspect, s, getNameString()}),
+                    Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
+            log.error(Bundle.getMessage("SignalMastIconLoadError2", aspect, s, getNameString()));
+        }
+        log.debug("getAspectIcon for aspect= {}, icon= {}", aspect, (icon!=null ? icon.getURL() : "null"));
+        return icon;
+    }
+    
+    @Override
+    public void setFamily(String fam) {
+        if (fam == null) {
+            fam = "default";
+        }
+        if (getFamily() == fam) {
+            return;
+        }
+        super.setFamily(fam);
+        setIconMap(makeDefaultMap());
+        displayState(mastState());
+        _editor.getTargetPanel().repaint();
     }
 
     /**
@@ -274,11 +289,11 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         im.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                useIconSet(item);
+                setFamily(item);
             }
         });
         iconTypeGroup.add(im);
-        if (useIconSet.equals(item)) {
+        if (getFamily().equals(item)) {
             im.setSelected(true);
         } else {
             im.setSelected(false);
@@ -492,32 +507,6 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         }
     }
 
-    String useIconSet = "default";
-
-    public void useIconSet(String icon) {
-        if (icon == null) {
-            icon = "default";
-        }
-        if (useIconSet.equals(icon)) {
-            return;
-        }
-        //clear the old icon map out.
-        useIconSet = icon;
-//        setIconMap(makeDefaultMap());
-        if (!isIconMapOK()) {
-            JOptionPane.showMessageDialog(_editor.getTargetFrame(),
-                    java.text.MessageFormat.format(Bundle.getMessage("SignalMastIconLoadError"),
-                            new Object[]{getSignalMast().getDisplayName()}),
-                    Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
-        }
-        displayState(mastState());
-        _editor.getTargetPanel().repaint();
-    }
-
-    public String useIconSet() {
-        return useIconSet;
-    }
-
     @Override
     public void displayState() {
         displayState(mastState());
@@ -530,58 +519,20 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
      * @param state the state to display
      */
     private void displayState(String state) {
-        if (state == null) {
-            if (getSignalMast() == null) {
-                setDisconnectedText("disconnected");
-            } else {
-                setDisconnectedText("BeanStateUnknown");
-            }
+        if (getSignalMast() == null) {
+            setDisconnectedText("BeanDisconnected");
+        } else if (state == null) {
+            setDisconnectedText("BeanStateUnknown");
         } else {
             restoreConnectionDisplay();
         }
         log.debug("Display state= {}, isText()= {} isIcon()= {}", state, isText(), isIcon());
-        /*
-        if (isText()) {
-            if (getSignalMast().getHeld()) {
-                super.setText(Bundle.getMessage("Held"));
-                return;
-            } else if (getLitMode() && !getSignalMast().getLit()) {
-                super.setText(Bundle.getMessage("Dark"));
-                return;
-            }
-            setText(getText(state));
-        }
-        if (isIcon()) {
-            if ((state != null) && (getSignalMast() != null)) {
-                String s = getSignalMast().getAppearanceMap().getImageLink(state, useIconSet);
-                if ((getSignalMast().getHeld()) && (getSignalMast().getAppearanceMap().getSpecificAppearance(jmri.SignalAppearanceMap.HELD) != null)) {
-                    s = getSignalMast().getAppearanceMap().getImageLink("$held", useIconSet);
-                } else if (getLitMode() && !getSignalMast().getLit() && (getSignalMast().getAppearanceMap().getImageLink("$dark", useIconSet) != null)) {
-                    s = getSignalMast().getAppearanceMap().getImageLink("$dark", useIconSet);
-                }
-                if (s.equals("")) {
-                    /*We have no appearance to set, therefore we will exit at this point.
-                     This can be considered normal if we are requesting an appearance
-                     that is not support or configured, such as dark or held */
-/*                    return;
-                }
-                if (!s.contains("preference:")) {
-                    s = s.substring(s.indexOf("resources"));
-                }
-
-                setIcon(getIcon(state));
-                updateSize();
-            }
-        } else {
-            setIcon(null);
-        }*/
         setDisplayState(state);
-        if (isText() && isIcon()) {  // Overlaid text
+/*        if (isText() && isIcon()) {  // Overlaid text
             if (state != null) {
                 setIcon(getIcon(state));
             }
-        }
-        updateSize();
+        }*/
         return;
     }
 

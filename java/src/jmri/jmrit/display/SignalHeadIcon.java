@@ -124,7 +124,7 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
             if (icon != null) {
                 pos.setIcon(icon);
                 log.debug("Family \"{}\" key {} for state {} found icon {} ",
-                        getFamily(), key, state, icons.get(key).getURL());
+                        (getFamily()!=null ? getFamily() : "no family"), key, state, icon.getURL());
                 pos.setText(state);
             } else {
                 log.warn("Family \"{}\" key {} for state {} did not find icon.",
@@ -312,17 +312,14 @@ public class SignalHeadIcon extends PositionableIcon implements java.beans.Prope
      * </UL>
      */
     private void displayState(String state) {
-        updateSize();
-        if (state == null) {
-            if (getSignalHead() == null) {
-                setDisconnectedText("disconnected");
-            } else {
-                setDisconnectedText("BeanStateUnknown");
-            }
+        String s = _nameMap.get(state);
+        if (getSignalHead() == null) {
+            setDisconnectedText("BeanDisconnected");
+        } else if (s == null) {
+            setDisconnectedText("BeanStateUnknown");
         } else {
             restoreConnectionDisplay();
-        }
-        String s = _nameMap.get(state);
+       }
         if (log.isDebugEnabled()) {
             PositionableLabel pos = getStateData(s);
             log.debug("displayState of state= \"{}\" s = \"{}\" icon= {}",

@@ -23,7 +23,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JColorChooser;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -49,6 +48,7 @@ import jmri.jmrit.display.ToolTip;
 import jmri.util.ColorUtil;
 import jmri.util.ConnectionNameFromSystemName;
 import jmri.util.JmriJFrame;
+import jmri.util.swing.JmriColorChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -592,7 +592,7 @@ public class SwitchboardEditor extends Editor {
         _optionMenu.add(backgroundColorMenuItem);
 
         backgroundColorMenuItem.addActionListener((ActionEvent event) -> {
-            Color desiredColor = JColorChooser.showDialog(this,
+            Color desiredColor = JmriColorChooser.showDialog(this,
                                  Bundle.getMessage("SetBackgroundColor", ""),
                                  defaultBackgroundColor);
             if (desiredColor!=null && !defaultBackgroundColor.equals(desiredColor)) {
@@ -619,7 +619,7 @@ public class SwitchboardEditor extends Editor {
         _optionMenu.add(textColorMenuItem);
 
         textColorMenuItem.addActionListener((ActionEvent event) -> {
-            Color desiredColor = JColorChooser.showDialog(this,
+            Color desiredColor = JmriColorChooser.showDialog(this,
                                  Bundle.getMessage("DefaultTextColor", ""),
                                  defaultTextColor);
             if (desiredColor!=null && !defaultTextColor.equals(desiredColor)) {
@@ -637,6 +637,7 @@ public class SwitchboardEditor extends Editor {
                defaultTextColor = desiredColor;
                setDirty(true);
                switchboardLayeredPane.repaint();
+               JmriColorChooser.addRecentColor(desiredColor);
             }
         });
 
@@ -680,6 +681,7 @@ public class SwitchboardEditor extends Editor {
 
     public void setDefaultTextColor(String color) {
         defaultTextColor = ColorUtil.stringToColor(color);
+        JmriColorChooser.addRecentColor(ColorUtil.stringToColor(color));
     }
 
     public String getDefaultTextColor() {

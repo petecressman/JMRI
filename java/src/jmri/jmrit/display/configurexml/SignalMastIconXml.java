@@ -37,7 +37,7 @@ public class SignalMastIconXml extends PositionableIconXml {
         element.setAttribute("signalmast", "" + p.getNamedSignalMast().getName());
         element.setAttribute("clickmode", "" + p.getClickMode());
         element.setAttribute("litmode", "" + p.getLitMode());
-        element.setAttribute("imageset", p.useIconSet());
+        element.setAttribute("family", p.getFamily());
         element.setAttribute("class", "jmri.jmrit.display.configurexml.SignalMastIconXml");
         return element;
     }
@@ -67,9 +67,6 @@ public class SignalMastIconXml extends PositionableIconXml {
                 log.debug("Load SignalMast " + name);
             }
         }
-        if (!loadPositionableIcon(element, l)) {
-            loadPre50(element, l, name);
-        }
         
         SignalMast sh = jmri.InstanceManager.getDefault(jmri.SignalMastManager.class).getSignalMast(name);
 
@@ -81,7 +78,10 @@ public class SignalMastIconXml extends PositionableIconXml {
             //    return;
         }
 
-        /*
+        if (!loadPositionableIcon(element, l)) {
+            loadPre50(element, l, name);
+        }
+       /*
          * We need to set the rotation and scaling first, prior to setting the
          * signalmast, otherwise we end up in a situation where by the icons do
          * not get rotated or scaled correctly.
@@ -115,7 +115,7 @@ public class SignalMastIconXml extends PositionableIconXml {
 
         attr = element.getAttribute("imageset");
         if (attr != null) {
-            l.useIconSet(attr.getValue());
+            l.setFamily(attr.getValue());
         }
 
         try {
@@ -136,6 +136,7 @@ public class SignalMastIconXml extends PositionableIconXml {
             log.error("Failed on litmode attribute: " + e);
         }
 
+        l.updateSize();
         ed.putItem(l);
 
         // load individual item's option settings after editor has set its global settings
@@ -158,6 +159,7 @@ public class SignalMastIconXml extends PositionableIconXml {
         Attribute attr = element.getAttribute("imageset");
         if (attr != null) {
             l.setFamily(attr.getValue());
+            log.debug("imageset= \"{}\" set as family", attr.getValue());
         }
 
     }

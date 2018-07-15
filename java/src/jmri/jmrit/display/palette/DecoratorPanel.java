@@ -39,11 +39,12 @@ import jmri.jmrit.display.PositionableJPanel;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.palette.TextItemPanel.DragDecoratorLabel;
 import jmri.util.swing.ImagePanel;
+import jmri.util.swing.JmriColorChooser;
 
 /**
  * Panel for positionables with text and/or colored margins and borders.
  * @see ItemPanel palette class diagram
- * 
+ *
  * @author PeteCressman Copyright (C) 2009, 2015
  */
 public class DecoratorPanel extends JPanel implements ChangeListener, ItemListener {
@@ -259,12 +260,13 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
     private void finishInit(boolean addBgCombo) {
         _chooser.getSelectionModel().addChangeListener(this);
         _chooser.setPreviewPanel(new JPanel());
+        _chooser = JmriColorChooser.extendColorChooser(_chooser);
         add(_chooser);
         _previewPanel.add(_samplePanel, BorderLayout.CENTER);
 
         // add a SetBackground combo
         if (addBgCombo) {
-            add(add(makeBgButtonPanel(_previewPanel, null, _backgrounds))); // no listener on this variant            
+            add(add(makeBgButtonPanel(_previewPanel, null, _backgrounds))); // no listener on this variant
         }
         add(_previewPanel);
         _previewPanel.setImage(_backgrounds[0]);
@@ -312,7 +314,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
         _fontBox = new AJComboBox(fonts, FONT);
         fontPanel.add(makeBoxPanel("EditFont", _fontBox)); // NOI18N
         _fontBox.setSelectedItem(defaultFont);
-        
+
         _fontSizeBox = new AJComboBox(FONTSIZE, SIZE);
         fontPanel.add(makeBoxPanel("FontSize", _fontSizeBox)); // NOI18N
         int row = 4;
@@ -391,7 +393,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                     updateSamples();
                 }
             }.init(sample));
-            p.add(textField);            
+            p.add(textField);
         }
         panel.add(p);
 
@@ -422,7 +424,6 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                     _selectedState = button._state;
                 }
             }
-
         });
         _buttonGroup.add(button);            
         return button;
@@ -438,7 +439,6 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                     _selectedState = button._state;
                 }
             }
-
         });
         _buttonGroup.add(button);            
         return button;
@@ -454,7 +454,6 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
                     _selectedState = button._state;
                 }
             }
-
         });
         _buttonGroup.add(button);            
         return button;
@@ -478,11 +477,27 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
 
     protected void updateSamples() {
         if (_previewPanel == null) {
-            return;            
+            return;
         }
 /*        
         Iterator<Map.Entry<String, PositionableLabel>> it = _sample.entrySet().iterator();
+=======
+
+        int mar = _util.getMargin();
+        int bor = _util.getBorderSize();
+        Border outlineBorder;
+        if (bor == 0) {
+            outlineBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
+        } else {
+            outlineBorder = new LineBorder(_util.getBorderColor(), bor);
+        }
+        Font font = _util.getFont();
+        int just = _util.getJustification();
+
+        Iterator<PositionableLabel> it = _sample.values().iterator();
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
         while (it.hasNext()) {
+<<<<<<< HEAD
             Map.Entry<String, PositionableLabel> entry = it.next();
             PositionableLabel pos = _componentMap.get(entry.getKey());
             PositionableLabel sam = entry.getValue();
@@ -494,6 +509,33 @@ public class DecoratorPanel extends JPanel implements ChangeListener, ItemListen
             sam.setBorderColor(pos.getBorderColor());
             sam.setBackgroundColor(pos.getBackgroundColor());
             sam.setForeground(pos.getForeground());
+=======
+            PositionableLabel sam = it.next();
+            PositionablePopupUtil util = sam.getPopupUtility();
+            sam.setFont(font);
+            util.setFixedWidth(_util.getFixedWidth());
+            util.setFixedHeight(_util.getFixedHeight());
+            util.setMargin(mar);
+            util.setBorderSize(bor);
+            Border borderMargin;
+            if (sam.isOpaque()) {
+                borderMargin = new LineBorder(sam.getBackground(), mar);
+            } else {
+                borderMargin = BorderFactory.createEmptyBorder(mar, mar, mar, mar);
+            }
+            sam.setBorder(new CompoundBorder(outlineBorder, borderMargin));
+
+            switch (just) {
+                case PositionablePopupUtil.LEFT:
+                    sam.setHorizontalAlignment(JLabel.LEFT);
+                    break;
+                case PositionablePopupUtil.RIGHT:
+                    sam.setHorizontalAlignment(JLabel.RIGHT);
+                    break;
+                default:
+                    sam.setHorizontalAlignment(JLabel.CENTER);
+            }
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
             sam.updateSize();
         }*/
         for (Map.Entry<String, PositionableLabel> entry : _sample.entrySet()) {

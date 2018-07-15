@@ -132,9 +132,11 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
             element.addContent(elem);
         }
         if (p.getDegrees() != 0) {
-            element.setAttribute("degrees", "" + p.getDegrees());
+            Element elem = new Element("degrees").addContent(String.valueOf(p.getDegrees()));
+            element.addContent(elem);
         }
-        element.setAttribute("scale", String.valueOf(p.getScale()));
+        Element elem = new Element("scale").addContent(String.valueOf(p.getScale()));
+        element.addContent(elem);
     }
 
     @Override
@@ -374,15 +376,6 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
             // considered normal if the attribute not present
         }
 
-        Attribute a = element.getAttribute("degrees");
-        if (a != null && l instanceof Positionable) {
-            try {
-                int deg = a.getIntValue();
-                l.setDegrees(deg);
-            } catch (org.jdom2.DataConversionException dce) {
-            }
-        }
-
         Element elem = element.getChild("tooltip");
         if (elem == null) {
             elem = element.getChild("toolTip"); // pre JMRI 3.5.2
@@ -395,30 +388,17 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
                 l.setToolTipText(elem.getText());
             }
         }
+
+        elem = element.getChild("degrees");
+        if (elem != null) {
+            l.setDegrees(Integer.parseInt(elem.getText()));
+        }
+
+        elem = element.getChild("scale");
+        if (elem != null) {
+            l.setScale(Float.parseFloat(elem.getText()));
+        }
     }
-
-
-    /**
-     * Use general rotation code for orthogonal rotations.
-     * @param rotation
-     * @param l
-     *
-    protected void doRotationConversion(int rotation, PositionableJComponent l) {
-        switch(rotation) {
-            case 1:
-                l.setDegrees(90);
-                break;
-            case 2:
-                l.setDegrees(180);
-                break;
-            case 3:
-                l.setDegrees(270);
-                break;
-            default:
-                l.setDegrees(0);
-                break;
-        }        
-    }*/
 
     private final static Logger log = LoggerFactory.getLogger(PositionableJComponentXml.class);
 }
