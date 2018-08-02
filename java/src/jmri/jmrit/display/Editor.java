@@ -774,7 +774,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
         }
     }
 
-    protected void deselectSelectionGroup() {
+    public void deselectSelectionGroup() {
         if (_selectionGroup == null) {
             return;
         }
@@ -2975,17 +2975,19 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     protected boolean setTextAttributes(Positionable p, JPopupMenu popup) {
         popup.add(new AbstractAction(Bundle.getMessage("TextAttributes")) {
             Positionable comp;
+            Editor ed;
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 (new TextAttrDialog(comp)).setVisible(true);
             }
 
-            AbstractAction init(Positionable pos) {
+            AbstractAction init(Positionable pos, Editor e) {
                 comp = pos;
+                ed = e;
                 return this;
             }
-        }.init(p));
+        }.init(p, this));
         return true;
     }
 
@@ -3008,8 +3010,8 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             dim = new Dimension(dim.width +10, dim.height + 10);
             sp.setPreferredSize(dim);
             setContentPane(sp);
+            setLocation(jmri.util.PlaceWindow.nextTo(_pos.getEditor(), _pos, this));
             pack();
-            setLocationRelativeTo(_pos);
         }
 
         protected JPanel makeDoneButtonPanel() {
@@ -3019,6 +3021,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             doneButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent a) {
+                    _decorator.setSuppressRecentColor(false);
                     _decorator.setAttributes(_pos);
                     if (_selectionGroup != null) {
                         setSelectionsAttributes(_pos);
@@ -3032,6 +3035,7 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             cancelButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent a) {
+                    _decorator.setSuppressRecentColor(false);
                     dispose();
                 }
             });

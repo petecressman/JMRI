@@ -473,7 +473,7 @@ public class CatalogPanel extends JPanel {
         previewPanel.add(_iconPane);
         // _preview.setMaximumSize(new Dimension(200,200));
         _iconPane.setMinimumSize(new Dimension(30, 100));
-        _iconPane.setPreferredSize(new Dimension(2*ICON_WIDTH, 2*ICON_HEIGHT));
+//        _iconPane.setPreferredSize(new Dimension(2*ICON_WIDTH, 2*ICON_HEIGHT));
         return previewPanel;
     }
 

@@ -67,8 +67,10 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             _decorator = new DecoratorPanel(_editor, _paletteFrame);
             _decorator.initDecoratorPanel(sample);
             add(_decorator);
-            initLinkPanel();
             _paletteFrame.pack();
+            if (log.isDebugEnabled()) {
+                log.debug("end init: TextItemPanel size {}", getPreferredSize());
+            }
             super.init();
         }
         if (_decorator != null) {
@@ -112,6 +114,14 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
     
     public void updateAttributes(PositionableLabel l) {
         _decorator.setAttributes(l);
+    }
+
+    @Override
+    public void closeDialogs() {
+        if (_decorator != null) {
+            _decorator.setSuppressRecentColor(false);
+        }
+        super.closeDialogs();
     }
 
     /**

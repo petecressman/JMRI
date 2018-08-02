@@ -147,8 +147,6 @@ public class SignalMastIconXml extends PositionableIconXml {
      * pre release 5.0 or something like that
      */
     static protected  void loadPre50(Element element, PositionableIcon l, String name) {
-        Editor ed = l.getEditor();
-
         try {
             int rotation = element.getAttribute("rotate").getIntValue();
             PositionableLabelXml.doRotationConversion(rotation, l);

@@ -106,7 +106,6 @@ public class SignalHeadIconXml extends PositionableIconXml {
      */
     private void loadPre50(Element element, SignalHeadIcon l, String name) {
         // map previous stored 'English' names to names found in the file jmri.NamedBeanBundle.properties
-        java.util.ResourceBundle rbean = java.util.ResourceBundle.getBundle("jmri.NamedBeanBundle");
         HashMap<String, String> nameMap = new HashMap<>();
         nameMap.put("red", "SignalHeadStateRed");
         nameMap.put("yellow", "SignalHeadStateYellow");

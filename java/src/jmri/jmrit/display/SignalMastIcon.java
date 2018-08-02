@@ -73,26 +73,30 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         java.util.Enumeration<String> e = m.getAppearanceMap().getAspects();
         while (e.hasMoreElements()) {
             String aspect = e.nextElement();
-            loadIcon(map, aspect);
+            loadIcon(map, aspect, aspect);
         }
-        loadIcon(map, "$dark");
-        loadIcon(map, "$held");
+        loadIcon(map, "$dark", Bundle.getMessage("Dark"));
+        loadIcon(map, "$held", Bundle.getMessage("Held"));
         return map;
     }
     
-    private void loadIcon(HashMap<String, PositionableLabel> map, String aspect) {
+    private void loadIcon(HashMap<String, PositionableLabel> map, String aspect, String text) {
         NamedIcon icon  = getAspectIcon(aspect);
-        PositionableLabel pos = new PositionableLabel(getEditor());
-        pos.setText(aspect);
-        pos.setIcon(icon);
-        map.put(aspect, pos);
+        if (icon != null) {
+            PositionableLabel pos = new PositionableLabel(getEditor());
+            pos.setText(text);
+            pos.setIcon(icon);
+            map.put(aspect, pos);
+        } else {
+            log.error("No icon found for aspect " + aspect);
+        }
     }
 
     private NamedIcon getAspectIcon(String aspect) {
         String s = getSignalMast().getAppearanceMap().getImageLink(aspect, getFamily());
         if (s.equals("")) {
             if (aspect.startsWith("$")) {
-                log.debug("No icon found for specific appearance " + aspect);
+                log.warn("No icon found for specific appearance " + aspect);
             } else {
                 log.error("No icon found for appearance " + aspect);
             }
@@ -139,12 +143,12 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         namedMast = sh;
         if (namedMast != null) {
             setIconMap(makeDefaultMap());
-            if (!isIconMapOK()) {
+/*            if (!isIconMapOK()) {
                 JOptionPane.showMessageDialog(_editor.getTargetFrame(),
                         java.text.MessageFormat.format(Bundle.getMessage("SignalMastIconLoadError"),
                                 new Object[]{getSignalMast().getDisplayName()}),
                         Bundle.getMessage("SignalMastIconLoadErrorTitle"), JOptionPane.ERROR_MESSAGE);
-            }
+            }*/
             displayState(mastState());
             getSignalMast().addPropertyChangeListener(this, namedMast.getName(), "SignalMast Icon");
         }
@@ -516,23 +520,27 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
      * Drive the current state of the display from the state of the underlying
      * SignalMast object.
      *
-     * @param state the state to display
+     * @param s the state (= mastState()) to display
      */
-    private void displayState(String state) {
-        if (getSignalMast() == null) {
+    private void displayState(String s) {
+        String state = s;
+        SignalMast mast = getSignalMast();
+        if (mast == null) {
             setDisconnectedText("BeanDisconnected");
+            return;
         } else if (state == null) {
             setDisconnectedText("BeanStateUnknown");
         } else {
             restoreConnectionDisplay();
         }
         log.debug("Display state= {}, isText()= {} isIcon()= {}", state, isText(), isIcon());
+        if (mast.getHeld()) {
+            state = "$held";
+        }
+        if (getLitMode() && !mast.getLit()) {
+            state = "$dark";
+        }
         setDisplayState(state);
-/*        if (isText() && isIcon()) {  // Overlaid text
-            if (state != null) {
-                setIcon(getIcon(state));
-            }
-        }*/
         return;
     }
 

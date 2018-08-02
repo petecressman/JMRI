@@ -27,6 +27,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.border.Border;
 import jmri.util.MenuScroller;
 import jmri.util.SystemType;
+import jmri.util.swing.JmriColorChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +91,7 @@ public class Positionable extends JComponent implements Cloneable {
     private int _borderSize = 0;
     private Color _borderColor = null;
     private Color _backgroundColor = null;
+    private boolean _suppressRecentColor = false;
     
     private int _fixedWidth = 0;
     private int _fixedHeight = 0;
@@ -134,17 +136,21 @@ public class Positionable extends JComponent implements Cloneable {
         return pos;
     }
 
+    /**
+     * Copy this Positionables attributes to argument
+     * @param pos the Positionable whose attributes are being set 
+     */
     public void setAttributesOf(Positionable pos) {
         pos.setFont(getFont());
         pos.setFontSize(getFont().getSize());
         pos.setFontStyle(getFont().getStyle());
         pos.setJustification(_justification);
-        pos.setOpaque(isOpaque());
         pos._borderSize = _borderSize;
         pos._borderColor = _borderColor;
         pos._marginSize = _marginSize;
         pos.setFixedSize(_fixedWidth, _fixedHeight);
         pos.setBackgroundColor(_backgroundColor);
+        pos.setOpaque(isOpaque());
 //        pos.setBackground(getBackground());
         pos.setForeground(getForeground());
 
@@ -267,6 +273,9 @@ public class Positionable extends JComponent implements Cloneable {
 
     public final void setBorderColor(Color color) {
         _borderColor = color;
+        if (!_suppressRecentColor) {
+            JmriColorChooser.addRecentColor(color);
+        }
         updateSize();
     }
 
@@ -285,11 +294,27 @@ public class Positionable extends JComponent implements Cloneable {
 
     public final void setBackgroundColor(Color color) {
         _backgroundColor = color;
+        if (!_suppressRecentColor) {
+            JmriColorChooser.addRecentColor(color);
+        }
         updateSize();
     }
 
     public Color getBackgroundColor() {
         return _backgroundColor;
+    }
+
+    @Override
+    public void setForeground(Color c) {
+        super.setForeground(c);
+        if (!_suppressRecentColor) {
+            JmriColorChooser.addRecentColor(c);
+        }
+        updateSize();
+    }
+
+    public void setSuppressRecentColor(boolean b) {
+        _suppressRecentColor = b;
     }
 
     /*    public void setBackground(Color c) {
@@ -984,8 +1009,9 @@ public class Positionable extends JComponent implements Cloneable {
             _editor.getTargetPanel().repaint();
         }
         setBorder();
-//        System.out.println("updateSize: displayWidth="+displayWidth+" displayHeight="+displayHeight+
-//                " NameString="+" \""+getNameString()+"\"");
+        if (log.isDebugEnabled()) {
+            log.debug("updateSize: displayWidth= {} displayHeight= {}", displayWidth, displayHeight);
+        }
         repaint();
     }
     

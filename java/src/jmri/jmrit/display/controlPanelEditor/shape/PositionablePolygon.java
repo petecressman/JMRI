@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 public class PositionablePolygon extends PositionableShape {
 
     private ArrayList<Rectangle> _vertexHandles;
+    private boolean _editing = false;   // during popUp or create, allows override of drawHandles etc.
 //    protected boolean _isClosed;
 
     // there is no default PositionablePolygon
@@ -73,22 +74,28 @@ public class PositionablePolygon extends PositionableShape {
         return super.finishClone(pos);
     }
 
+    protected void editing(boolean edit) {
+        _editing = edit;
+        log.debug("set _editing = {}", _editing);
+    }
+
     @Override
     public boolean showPopUp(JPopupMenu popup) {
         String txt = Bundle.getMessage("editShape", Bundle.getMessage("Polygon"));
         popup.add(new javax.swing.AbstractAction(txt) {
             @Override
             public void actionPerformed(ActionEvent e) {
-                makeEditFrame();
+                makeEditFrame(false);
             }
         });
         return true;
     }
-    private void makeEditFrame() {
-        if (_editFrame == null) {
-            _editFrame = new DrawPolygon("editShape", "Polygon", this);
-            setEditParams();
-        }
+
+    @Override
+    protected DrawFrame makeEditFrame(boolean create) {
+        _editFrame = new DrawPolygon("editShape", "Polygon", this, getEditor(), create);
+        _editFrame.setDisplayParams(this);
+        return _editFrame;
     }
 
     @Override
@@ -140,6 +147,7 @@ public class PositionablePolygon extends PositionableShape {
                     }
                 }
             }
+            log.debug("doMousePressed _editing = {}, _hitIndex= {}", _editing, _hitIndex);
         } else {
             super.doMousePressed(event);
         }
@@ -153,7 +161,8 @@ public class PositionablePolygon extends PositionableShape {
                 Rectangle rect = _vertexHandles.get(_hitIndex);
                 rect.x += pt.x;
                 rect.y += pt.y;
-                if (_editFrame != null) {
+                DrawPolygon editFrame = (DrawPolygon) getEditFrame();
+                if (editFrame != null) {
                     if (event.getX() - getX() < 0) {
                         _editor.moveItem(this, event.getX() - getX(), 0);
                     } else if (isLeftMost(rect.x)) {
@@ -165,7 +174,7 @@ public class PositionablePolygon extends PositionableShape {
                         _editor.moveItem(this, 0, event.getY() - _lastY);
                     }
 
-                    ((DrawPolygon) _editFrame).doHandleMove(_hitIndex, pt);
+                    editFrame.doHandleMove(_hitIndex, pt);
                 }
                 _lastX = event.getX();
                 _lastY = event.getY();
@@ -215,6 +224,7 @@ public class PositionablePolygon extends PositionableShape {
             updateSize();
             _lastX = event.getX();
             _lastY = event.getY();
+            log.debug("doHandleMove _editing = {}, _hitIndex= {}", _editing, _hitIndex);
             return true;
         }
         return false;
