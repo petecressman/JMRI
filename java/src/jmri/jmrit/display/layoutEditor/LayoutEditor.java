@@ -126,6 +126,7 @@ import jmri.jmrit.display.LocoIcon;
 import jmri.jmrit.display.MultiSensorIcon;
 import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
+import jmri.jmrit.display.PositionableIcon;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ReporterIcon;
 import jmri.jmrit.display.SensorIcon;
@@ -5749,8 +5750,10 @@ public class LayoutEditor extends PanelEditor implements MouseWheelListener {
                 if (p instanceof PositionableLabel) {
                     PositionableLabel pl = (PositionableLabel)p;
                     popupSet = pl.setEditIconMenu(popup);
-                    popupSet = pl.setTextEditMenu(popup);                    
-                    pl.setDisableControlMenu(popup);
+                    popupSet = pl.setTextEditMenu(popup);
+                    if (p instanceof PositionableIcon) {
+                        ((PositionableIcon)p).setDisableControlMenu(popup);
+                    }
                 }
 
                 p.setFixedTextMenu(popup);

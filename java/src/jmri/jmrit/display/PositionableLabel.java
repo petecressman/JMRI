@@ -88,6 +88,9 @@ public class PositionableLabel extends Positionable {
      */
     public void setIsIcon(boolean b) {
         log.debug("setIsIcon = {}", b);
+        if (_namedIcon == null) {
+            _namedIcon = new NamedIcon(PositionableIcon._redX, PositionableIcon._redX);
+        }
         _icon = b;
     }
 
@@ -98,10 +101,15 @@ public class PositionableLabel extends Positionable {
     public void setIsText(boolean b) {
         log.debug("setIsText = {}", b);
         _text = b;
+        if (_text == true) {
+            setBordered(true);
+        }
     }
     
     public void setIcon(NamedIcon icon) {
-        _namedIcon = icon;
+        if (icon != null) {
+            _namedIcon = icon;
+        }
         updateSize();
     }
     
@@ -111,6 +119,7 @@ public class PositionableLabel extends Positionable {
 
     public void setText(String text) {
         _textString = text;
+        updateSize();
     }
     
     public String getText() {
@@ -158,7 +167,9 @@ public class PositionableLabel extends Positionable {
     @Override
     public int getWidth() {
         int width = Math.max(getIconWidth(), getTextWidth());
-        width += (getBorderSize() + getMarginSize()) * 2;            
+        if (isBordered()) {
+            width += (getBorderSize() + getMarginSize()) * 2;            
+        }
         if (log.isTraceEnabled()) {
             log.trace("width= " + width + " preferred width= " + getPreferredSize().width);
         }
@@ -168,7 +179,9 @@ public class PositionableLabel extends Positionable {
     @Override
     public int getHeight() {
         int height = Math.max(getIconHeight(), getTextHeight());
-        height += (getBorderSize() + getMarginSize()) * 2;
+        if (isBordered()) {
+            height += (getBorderSize() + getMarginSize()) * 2;
+        }
         if (log.isTraceEnabled()) {
             log.trace("height= " + height + " preferred height= " + getPreferredSize().height);
         }
@@ -176,19 +189,27 @@ public class PositionableLabel extends Positionable {
     }
     
     public int getIconWidth() {
-        int width = 0;
-        if (_icon && _namedIcon != null) {
-            width = _namedIcon.getIconWidth();
+        if (!_icon) {
+            return 0;
         }
-        return width;
+        if (_namedIcon != null) {
+            return _namedIcon.getIconWidth();
+        } else {
+            log.error("No icon!");
+        }
+        return 0;
     }
     
     public int getIconHeight() {
-        int height = 0;
-        if (_icon && _namedIcon != null) {
-            height = _namedIcon.getIconHeight();
+        if (!_icon) {
+            return 0;
         }
-        return height;
+        if (_namedIcon != null) {
+            return _namedIcon.getIconHeight();
+        } else {
+            log.error("No icon!");
+        }
+        return 0;
     }
     
     private int getTextWidth() {
@@ -199,16 +220,23 @@ public class PositionableLabel extends Positionable {
         if (width == 0) {
             if (_textString != null && getFont()!=null) {
                 width = getFontMetrics(getFont()).stringWidth(_textString);
+            } else {
+                log.error("No text or font");
             }
         }
         return width;
     }
     
     private int getTextHeight() {
+        if (!_text) {
+            return 0;
+        }
         int height = getFixedHeight();
         if (height == 0) {
-            if (_text && _textString != null && getFont()!=null) {
+            if (_textString != null && getFont()!=null) {
                 height = Math.max(height, getFontMetrics(getFont()).getHeight());
+            } else {
+                log.error("No text or font");
             }
         }
         return height;
@@ -244,10 +272,6 @@ public class PositionableLabel extends Positionable {
     }
 
     ///////////////////////////// popup methods ////////////////////////////
-
-    /**
-     * ********** Methods for Item Popups in Panel editor ************************
-     */
 
     public boolean setEditIconMenu(JPopupMenu popup) {
         if (_icon && !_text) {
@@ -303,18 +327,19 @@ public class PositionableLabel extends Positionable {
         jmri.jmrit.display.palette.ItemPalette.loadIcons(_editor);
 
         DisplayFrame paletteFrame = new DisplayFrame(title, false, false);
-        paletteFrame.setLocationRelativeTo(this);
-        paletteFrame.toFront();
+//        paletteFrame.setLocationRelativeTo(this);
+//        paletteFrame.toFront();
         return paletteFrame;
     }
 
     public void initPaletteFrame(DisplayFrame paletteFrame, ItemPanel itemPanel) {
         Dimension dim = itemPanel.getPreferredSize();
         JScrollPane sp = new JScrollPane(itemPanel);
-        dim = new Dimension(dim.width +25, dim.height + 25);
+        dim = new Dimension(dim.width + 25, dim.height + 25);
         sp.setPreferredSize(dim);
         paletteFrame.add(sp);
         paletteFrame.pack();
+        paletteFrame.setLocation(jmri.util.PlaceWindow.nextTo(_editor, this, paletteFrame));
         paletteFrame.setVisible(true);
     }
 
@@ -407,42 +432,46 @@ public class PositionableLabel extends Positionable {
         cbi.addActionListener((ActionEvent e) -> {
             setIsIcon(cbi.isSelected());
             setIsText(!cbi.isSelected());
+            setBordered(false);
+            displayState();
         });
-        cbi.setSelected(_icon);
+        cbi.setSelected(_icon && !_text);
         edit.add(cbi);
+        final JCheckBoxMenuItem cbib = new JCheckBoxMenuItem(Bundle.getMessage("BorderedIcons"));
+        cbi.addActionListener((ActionEvent e) -> {
+            setIsIcon(cbib.isSelected());
+            setIsText(!cbib.isSelected());
+            setBordered(true);
+            displayState();
+        });
+        cbib.setSelected(_icon && !_text);
+        edit.add(cbib);
         final JCheckBoxMenuItem cbt = new JCheckBoxMenuItem(Bundle.getMessage("Texts"));
         cbt.addActionListener((ActionEvent e) -> {
             setIsIcon(!cbt.isSelected());
             setIsText(cbt.isSelected());
+            displayState();
         });
-        cbt.setSelected(_text);
+        cbt.setSelected(_text  && !_icon);
         edit.add(cbt);
         final JCheckBoxMenuItem cb = new JCheckBoxMenuItem(Bundle.getMessage("OverlayText"));
         cb.addActionListener((ActionEvent e) -> {
             setIsIcon(cb.isSelected());
             setIsText(cb.isSelected());
+            displayState();
         });
-        cb.setSelected(_icon);
+        cb.setSelected(_icon && _text);
         edit.add(cb);
+        popup.add(edit);
         return true;
     }
     
-    public boolean setDisableControlMenu(JPopupMenu popup) {
-        return false;
-    }
-
-    public JCheckBoxMenuItem displayMode() {
-        JCheckBoxMenuItem cb = new JCheckBoxMenuItem();
-        return cb;
-    }
-
     public boolean setTextEditMenu(JPopupMenu popup) {
-        if (isIcon()) {
-            popup.add(CoordinateEdit.getTextEditAction(this, "OverlayText"));
-        } else {
-            popup.add(CoordinateEdit.getTextEditAction(this, "EditText"));                
+        if (isText()) {
+            popup.add(CoordinateEdit.getTextEditAction(this, "EditText"));
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override
@@ -482,7 +511,7 @@ public class PositionableLabel extends Positionable {
                     vOffSet += Math.max(0, (fixedHeight - height)/2);
                 } else {
                     ascent -= (height-fixedHeight)/2;
-                    height = fixedHeight;                    
+                    height = fixedHeight;
                 }
             }
             if (fixedWidth > 0) {

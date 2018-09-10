@@ -37,7 +37,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         super(editor);
         super.setFamily("default");
         setIsIcon(true);
-        setDisplayState("$dark");
+        setDisplayState("BeanStateUnknown");
     }
 
     private NamedBeanHandle<SignalMast> namedMast;
@@ -64,8 +64,8 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
     }
 
     @Override
-    protected HashMap<String, PositionableLabel> makeDefaultMap() {
-        HashMap<String, PositionableLabel> map = new HashMap<>();
+    protected HashMap<String, DisplayState> makeDefaultMap() {
+        HashMap<String, DisplayState> map = new HashMap<>();
         SignalMast m = getSignalMast();
         if (m == null) {    // new map made when Mast is installed
             return map;
@@ -80,10 +80,10 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         return map;
     }
     
-    private void loadIcon(HashMap<String, PositionableLabel> map, String aspect, String text) {
+    private void loadIcon(HashMap<String, DisplayState> map, String aspect, String text) {
         NamedIcon icon  = getAspectIcon(aspect);
         if (icon != null) {
-            PositionableLabel pos = new PositionableLabel(getEditor());
+            DisplayState pos = new DisplayState();
             pos.setText(text);
             pos.setIcon(icon);
             map.put(aspect, pos);
@@ -444,7 +444,7 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         };
         // _iconMap keys with local names
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<String> iter = getIconStateNames();
+        Iterator<String> iter = getStateNames();
         while (iter.hasNext()) {
             String  state = iter.next();
             NamedIcon oldIcon = getIcon(state);
@@ -540,7 +540,11 @@ public class SignalMastIcon extends PositionableIcon implements java.beans.Prope
         if (getLitMode() && !mast.getLit()) {
             state = "$dark";
         }
-        setDisplayState(state);
+        if (state != null) {
+            getDisplayState(state).setDisplayParameters(this);
+            setDisplayState(state);
+        }
+        updateSize();
         return;
     }
 

@@ -3,8 +3,8 @@ package jmri.jmrit.display.configurexml;
 import java.awt.Color;
 import java.util.List;
 import jmri.jmrit.catalog.NamedIcon;
+import jmri.jmrit.display.DisplayState;
 import jmri.jmrit.display.Editor;
-import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.SensorIcon;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
@@ -219,10 +219,11 @@ public class SensorIconXml extends PositionableIconXml {
             }
         }
 
-        PositionableLabel pos = si.getStateData(state); 
+        DisplayState pos = si.getDisplayState(state);
         pos.setText(name);
         pos.setForeground(clrText);
-        pos.setBackgroundColor(clrBackground);
+        pos.setBackground(clrBackground);
+        log.debug("loadSensorTextState: text= {}, foreGround= {}, backGround= {}", name, clrText, clrBackground);
     }
 
     private final static Logger log = LoggerFactory.getLogger(SensorIconXml.class);

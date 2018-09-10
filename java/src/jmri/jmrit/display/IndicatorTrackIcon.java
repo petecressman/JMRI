@@ -65,15 +65,15 @@ public class IndicatorTrackIcon extends PositionableIcon
     }
 
     @Override
-    protected HashMap<String, PositionableLabel> makeDefaultMap() {
-        HashMap<String, PositionableLabel> map = new HashMap<>();
-        HashMap<String, PositionableLabel> oldMap = getIconMap();
+    protected HashMap<String, DisplayState> makeDefaultMap() {
+        HashMap<String, DisplayState> map = new HashMap<>();
+        HashMap<String, DisplayState> oldMap = getDisplayStateMap();
         for (String status : IndicatorTurnoutIcon.STATUSNAME) {
-            PositionableLabel pos;
+            DisplayState pos;
             if (oldMap != null) {
                 pos = oldMap.get(status);
             } else {
-                pos = new PositionableLabel(getEditor());
+                pos = new DisplayState();
                 pos.setText(Bundle.getMessage(status));
             }
             map.put(status, pos);
@@ -306,10 +306,9 @@ public class IndicatorTrackIcon extends PositionableIcon
         if (log.isDebugEnabled()) {
             log.debug(getNameString() + " displayStatus " + status);
         }
+        getDisplayState(status).setDisplayParameters(this);
         setDisplayState(status);
-        if (isText() && isIcon()) {  // Overlaid text
-            setIcon(getIcon(status));
-        }
+        updateSize();
     }
 
     @Override
@@ -337,7 +336,7 @@ public class IndicatorTrackIcon extends PositionableIcon
         };
         // duplicate _iconMap map
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<String> iter = getIconStateNames();
+        Iterator<String> iter = getStateNames();
         while (iter.hasNext()) {
             String  state = iter.next();
             NamedIcon oldIcon = getIcon(state);

@@ -1,6 +1,7 @@
 package jmri.jmrit.display.palette;
 
 import java.awt.GraphicsEnvironment;
+import jmri.*;
 import jmri.jmrit.display.DisplayFrame;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.EditorScaffold;
@@ -21,10 +22,10 @@ public class SignalHeadIconDialogTest {
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        PickListModel tableModel = PickListModel.turnoutPickModelInstance(); // N11N
+        PickListModel tableModel = PickListModel.turnoutPickModelInstance(); // NOI18N
         DisplayFrame df = new DisplayFrame("Indicator TO Icon Dialog Test");
         Editor editor = new EditorScaffold();
-        SignalHeadItemPanel sip = new SignalHeadItemPanel(df,"IS01","",tableModel,editor);
+        SignalHeadItemPanel sip = new SignalHeadItemPanel(df,"IS01","",tableModel,editor);  // tableModel is turnouts, but this should be SignalHeads?
         SignalHeadIconDialog t = new SignalHeadIconDialog("SignalHead","SignalHead",sip,null);
         Assert.assertNotNull("exists",t);
         JUnitUtil.dispose(df);
@@ -34,6 +35,7 @@ public class SignalHeadIconDialogTest {
     @Before
     public void setUp() {
         JUnitUtil.setUp();
+        JUnitUtil.resetProfileManager();
     }
 
     @After

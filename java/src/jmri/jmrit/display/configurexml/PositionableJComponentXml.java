@@ -73,7 +73,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
             element.setAttribute("blue", "" + foreGround.getBlue());
         }
 
-        Color backGround = p.getBackgroundColor();
+        Color backGround = p.getBackground();
         if (backGround!=null) {
             element.setAttribute("redBack", "" + backGround.getRed());
             element.setAttribute("greenBack", "" + backGround.getGreen());
@@ -139,6 +139,15 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         element.addContent(elem);
     }
 
+    public Element storeColor(String name, Color color) {
+        Element element = new Element(name);
+        element.setAttribute("red", "" + color.getRed());
+        element.setAttribute("green", "" + color.getGreen());
+        element.setAttribute("blue", "" + color.getBlue());
+        element.setAttribute("alpha", "" + color.getAlpha());
+        return element;
+    }
+
     @Override
     public boolean load(Element shared, Element perNode) {
         log.error("Invalid method called");
@@ -179,7 +188,7 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
 
     protected void loadFontInfo(Positionable l, Element element) {
         if (log.isDebugEnabled()) {
-            log.debug("loadTextInfo");
+            log.debug("loadFontInfo");
         }
         Attribute a = element.getAttribute("size");
         try {
@@ -235,11 +244,11 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
             int red = element.getAttribute("redBack").getIntValue();
             int blue = element.getAttribute("blueBack").getIntValue();
             int green = element.getAttribute("greenBack").getIntValue();
-            l.setBackgroundColor(new Color(red, green, blue));
+            l.setBackground(new Color(red, green, blue));
         } catch (org.jdom2.DataConversionException e) {
             log.warn("Could not parse background color attributes!");
         } catch (NullPointerException e) {
-            l.setBackgroundColor(null);
+            l.setBackground(null);
         }            
         
         int fixedWidth = 0;
@@ -398,6 +407,39 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
         if (elem != null) {
             l.setScale(Float.parseFloat(elem.getText()));
         }
+    }
+
+    Color loadColor(Element elem, String childName, String name) {
+        Element element = elem.getChild(childName);
+        if (element == null) {
+            log.warn("Could not find color {} for item {}!", childName, name);
+        }
+        try {
+            int red = 0;
+            int blue = 0;
+            int green = 0;
+            int alpha = 255;
+            try {
+                red = element.getAttribute("red").getIntValue();
+            } catch (NullPointerException e) {
+            }            
+            try {
+                blue = element.getAttribute("blue").getIntValue();;
+            } catch (NullPointerException e) {
+            }            
+            try {
+                green = element.getAttribute("green").getIntValue();
+            } catch (NullPointerException e) {
+            }            
+            try {
+                alpha = element.getAttribute("alpha").getIntValue();
+            } catch (NullPointerException e) {
+            }            
+            return new Color(red, green, blue, alpha);
+        } catch (org.jdom2.DataConversionException e) {
+            log.warn("Could not parse color attributes of {} for Item {}!", childName, name);
+        }
+        return null;
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableJComponentXml.class);

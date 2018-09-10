@@ -34,6 +34,7 @@ import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -57,11 +58,14 @@ import jmri.jmrit.display.IndicatorTrack;
 import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.LocoIcon;
 import jmri.jmrit.display.Positionable;
+import jmri.jmrit.display.PositionableIcon;
 import jmri.jmrit.display.PositionableJPanel;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ToolTip;
 import jmri.jmrit.display.controlPanelEditor.shape.ShapeDrawer;
+import jmri.jmrit.display.palette.ColorDialog;
 import jmri.jmrit.display.palette.ItemPalette;
+//import jmri.jmrit.display.palette.DecoratorPanel.AJSpinner;
 import jmri.jmrit.logix.WarrantTableAction;
 import jmri.util.HelpUtil;
 import jmri.util.SystemType;
@@ -1095,6 +1099,10 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 }
                 _manualSelection = false;
             }
+        } else {
+            if (event.isControlDown() && (event.isPopupTrigger() || event.isMetaDown() || event.isAltDown())) {
+                new ColorDialog(this, getTargetPanel(), ColorDialog.ONLY, null);
+            }
         }
         if (!isEditable() && selection != null && selection.isHidden()) {
             selection = null;
@@ -1331,7 +1339,7 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
         setToolTip(null); // ends tooltip if displayed
 
         long time = System.currentTimeMillis();
-        if (time - _mouseDownTime < 50) {
+        if (time - _mouseDownTime < 200) {
             return;     // don't drag until sure mouse down was not just a select click
         }
 
@@ -1628,19 +1636,34 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
             p.propertyUtil(popup);
             
             popup.addSeparator();
+            if (p instanceof PositionableIcon) {
+                PositionableIcon pi = (PositionableIcon)p;
+                popupSet = pi.setDisplayModeMenu(popup);
+                popupSet |= pi.setDisableControlMenu(popup);
+            }
+            popup.addSeparator();
+            setColorMenu(popup, p, ColorDialog.BORDER);
+            setColorMenu(popup, p, ColorDialog.MARGIN);
             if (p instanceof PositionableLabel) {
                 PositionableLabel pl = (PositionableLabel)p;
-                popupSet = pl.setDisplayModeMenu(popup);
-                popupSet |= pl.setDisableControlMenu(popup);
-                popupSet |= pl.setTextEditMenu(popup);
-                popupSet |= setTextAttributes(p, popup);
-                popupSet |= pl.setEditIconMenu(popup);
-                popupSet |= pl.setIconEditMenu(popup);
-            } else {
-                popupSet = setTextAttributes(p, popup);
-            }
-            if (p instanceof PositionableJPanel) {
-                popupSet = ((PositionableJPanel)p).setIconEditMenu(popup);
+                if (pl.isText()) {
+                    setColorMenu(popup, p, ColorDialog.FONT);
+                    setColorMenu(popup, p, ColorDialog.TEXT);
+                    if (p instanceof PositionableIcon) {
+                        popupSet |= setTextAttributes(p, popup);
+                    } else {
+                        popupSet |= pl.setTextEditMenu(popup);
+                    }
+                }
+                if (pl.isIcon()) {
+                    popupSet |= pl.setEditIconMenu(popup);
+                    popupSet |= pl.setIconEditMenu(popup);
+                }
+            } else if (p instanceof PositionableJPanel) {
+                setColorMenu(popup, p, ColorDialog.FONT);
+                setColorMenu(popup, p, ColorDialog.TEXT);
+                PositionableJPanel pj = (PositionableJPanel)p;
+                popupSet |= pj.setIconEditMenu(popup);
             }
             if (popupSet) {
                 popupSet = false;
@@ -1667,6 +1690,32 @@ public class ControlPanelEditor extends Editor implements DropTargetListener, Cl
                 p.getHeight() / 2 + (int) ((getPaintScale() - 1.0) * p.getY()));
 
         _currentSelection = null;
+    }
+
+    public void setColorMenu(JPopupMenu popup, JComponent pos, int type) {
+        String title;
+        switch (type ) {
+            case ColorDialog.BORDER:
+                title = "SetBorderSizeColor";
+                break;
+            case ColorDialog.MARGIN:
+                title = "SetMarginSizeColor";
+                break;
+            case ColorDialog.FONT:
+                title = "SetFontSizeColor";
+                break;
+            case ColorDialog.TEXT:
+                title = "SetTextSizeColor";
+                break;
+            default:
+                title = "untitled";
+                return;
+        }
+        JMenuItem edit = new JMenuItem(Bundle.getMessage(title));
+        edit.addActionListener((ActionEvent event) -> {
+            new ColorDialog(this, pos, type, null);
+        });
+        popup.add(edit);
     }
 
     private HashMap<String, NamedIcon> _portalIconMap;

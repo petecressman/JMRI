@@ -59,11 +59,10 @@ public class PositionablePropertiesUtil {
         getCurrentValues();
         JPanel exampleHolder = new JPanel();
         //example = new JLabel(text);
-
-        for (int i = 0; i < _textMap.size(); i++) {
+        for (TextDetails detail: _textMap.values()) {
             JPanel p = new JPanel();
-            p.setBorder(BorderFactory.createTitledBorder(_textMap.get(i).getDescription()));
-            p.add(_textMap.get(i).getLabel()); // add a visual example for each
+            p.setBorder(BorderFactory.createTitledBorder(detail.getDescription()));
+            p.add(detail.getLabel()); // add a visual example for each
             exampleHolder.add(p);
         }
         //exampleHolder.add(example);
@@ -174,9 +173,7 @@ public class PositionablePropertiesUtil {
             preview();
         });
 
-        for (int i = 0; i < _textMap.size(); i++) { // repeat 4 times for sensor icons, or just once
-            final int x = i;
-
+        for (TextDetails detail: _textMap.values()) {
             JPanel txtPanel = new JPanel();
 
             JColorChooser txtColorChooser = new JColorChooser(defaultForeground);
@@ -186,7 +183,7 @@ public class PositionablePropertiesUtil {
             txtColorChooser.getSelectionModel().addChangeListener(previewChangeListener);
             txtPanel.add(txtColorChooser);
             txtColorChooser.getSelectionModel().addChangeListener((ChangeEvent ce) -> {
-                _textMap.get(x).setForeground(txtColorChooser.getColor());
+                detail.setForeground(txtColorChooser.getColor());
             });
 
             JPanel p = new JPanel();
@@ -203,13 +200,13 @@ public class PositionablePropertiesUtil {
             txtBackColorChooser.getSelectionModel().addChangeListener(previewChangeListener);
             txtPanel.add(txtBackColorChooser);
             txtBackColorChooser.getSelectionModel().addChangeListener((ChangeEvent ce) -> {
-                _textMap.get(x).setBackground(txtBackColorChooser.getColor());
+                detail.setBackground(txtBackColorChooser.getColor());
             });
             p = new JPanel();
             p.add(new JLabel(Bundle.getMessage("FontBackgroundColor") + ": "));
             p.add(txtBackColorChooser);
 
-            String _borderTitle = _textMap.get(i).getDescription();
+            String _borderTitle = detail.getDescription();
             if (_borderTitle.equals(Bundle.getMessage("TextExampleLabel"))) {
                 _borderTitle = Bundle.getMessage("TextDecoLabel"); // replace default label by an appropriate one for text decoration box on Font tab
             }
@@ -322,18 +319,17 @@ public class PositionablePropertiesUtil {
     void editText() {
         JPanel editText = new JPanel();
         editText.setLayout(new BoxLayout(editText, BoxLayout.Y_AXIS));
-        for (int i = 0; i < _textMap.size(); i++) {
-            final int x = i;
+        for (TextDetails detail: _textMap.values()) {
             JPanel p = new JPanel();
 
-            String _borderTitle = _textMap.get(i).getDescription();
+            String _borderTitle = detail.getDescription();
             if (_borderTitle.equals(Bundle.getMessage("TextExampleLabel"))) {
                 _borderTitle = Bundle.getMessage("TextBorderLabel"); // replace label provided by Ctor by an appropriate one for text string box on Contents tab
             }
             p.setBorder(BorderFactory.createTitledBorder(_borderTitle));
 
             JLabel txt = new JLabel(Bundle.getMessage("TextValueLabel") + ": ");
-            JTextField textField = new JTextField(_textMap.get(i).getText(), 20);
+            JTextField textField = new JTextField(detail.getText(), 20);
             textField.addKeyListener(new KeyListener() {
                 @Override
                 public void keyTyped(KeyEvent E) {
@@ -346,7 +342,7 @@ public class PositionablePropertiesUtil {
                 @Override
                 public void keyReleased(KeyEvent E) {
                     JTextField tmp = (JTextField) E.getSource();
-                    _textMap.get(x).setText(tmp.getText());
+                    detail.setText(tmp.getText());
                     preview();
                 }
             });
@@ -433,12 +429,12 @@ public class PositionablePropertiesUtil {
                 TextDetails det = _textMap.get("parent");
                 pi.setText(det.getText());
                 pi.setForeground(det.getForeground());
-                pi.setBackgroundColor(det.getBackground());
+                pi.setBackground(det.getBackground());
             } else {
-                for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                for (Map.Entry<String, DisplayState> entry : pi.getDisplayStateMap().entrySet()) {
                     String state = entry.getKey();
                     TextDetails det = _textMap.get(state);
-                    PositionableLabel p = entry.getValue();
+                    DisplayState p = entry.getValue();
                     p.setText(det.getText());
                     p.setForeground(det.getForeground());
                     p.setBackground(det.getBackground());
@@ -528,8 +524,8 @@ public class PositionablePropertiesUtil {
                 break;
         }
 
-        for (int i = 0; i < _textMap.size(); i++) {
-            JLabel tmp = _textMap.get(i).getLabel();
+        for (TextDetails detail: _textMap.values()) {
+            JLabel tmp = detail.getLabel();
             if (tmp.isOpaque()) {
                 borderMargin = new LineBorder(tmp.getBackground(), margin);
             } else {
@@ -583,12 +579,12 @@ public class PositionablePropertiesUtil {
                 TextDetails det = _textMap.get("parent");
                 pi.setText(det.getOrigText());
                 pi.setForeground(det.getOrigForeground());
-                pi.setBackgroundColor(det.getOrigBackground());
+                pi.setBackground(det.getOrigBackground());
             } else {
-                for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                for (Map.Entry<String, DisplayState> entry : pi.getDisplayStateMap().entrySet()) {
                     String state = entry.getKey();
                     TextDetails det = _textMap.get(state);
-                    PositionableLabel p = entry.getValue();
+                    DisplayState p = entry.getValue();
                     p.setText(det.getOrigText());
                     p.setForeground(det.getOrigForeground());
                     p.setBackground(det.getOrigBackground());
@@ -629,23 +625,23 @@ public class PositionablePropertiesUtil {
             PositionableIcon pi = (PositionableIcon) _parent;
             if (pi.isIcon() && pi.isText()) {   // text overlaid icon
                 // just 1 label Example
-                _textMap.put("parent", new TextDetails(Bundle.getMessage("TextExampleLabel"), pi.getText(), pi.getForeground(), pi.getBackgroundColor()));
+                _textMap.put("parent", new TextDetails(Bundle.getMessage("TextExampleLabel"), pi.getText(), pi.getForeground(), pi.getBackground()));
             } else {
-                for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
+                for (Map.Entry<String, DisplayState> entry : pi.getDisplayStateMap().entrySet()) {
                     String state = entry.getKey();
-                    PositionableLabel p = entry.getValue();
-                    _textMap.put(state, new TextDetails(Bundle.getMessage(state), p.getText(), p.getForeground(), p.getBackgroundColor()));                    
+                    DisplayState p = entry.getValue();
+                    _textMap.put(state, new TextDetails(Bundle.getMessage(state), p.getText(), p.getForeground(), p.getBackground()));                    
                 }
             }
         } else if (_parent instanceof PositionableLabel) {
             PositionableLabel p = (PositionableLabel)_parent;
-            _textMap.put("parent", new TextDetails(Bundle.getMessage("TextExampleLabel"), p.getText(), p.getForeground(), p.getBackgroundColor()));
+            _textMap.put("parent", new TextDetails(Bundle.getMessage("TextExampleLabel"), p.getText(), p.getForeground(), p.getBackground()));
         } else if (_parent instanceof PositionableJPanel) {
             PositionableJPanel pj = (PositionableJPanel)_parent;
-            _textMap.put("noText", new TextDetails(Bundle.getMessage("TextExampleLabel"), pj.getText(), pj.getForeground(), pj.getBackgroundColor()));
+            _textMap.put("noText", new TextDetails(Bundle.getMessage("TextExampleLabel"), pj.getText(), pj.getForeground(), pj.getBackground()));
         } else {
             // just 1 label Example
-            _textMap.put("noText", new TextDetails(Bundle.getMessage("TextExampleLabel"), null, _parent.getForeground(), _parent.getBackgroundColor()));
+            _textMap.put("noText", new TextDetails(Bundle.getMessage("TextExampleLabel"), null, _parent.getForeground(), _parent.getBackground()));
         }
 
         fixedWidth = _parent.getFixedWidth();

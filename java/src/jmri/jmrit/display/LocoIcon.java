@@ -226,6 +226,9 @@ public class LocoIcon extends PositionableLabel {
 
     public void setRosterEntry(RosterEntry entry) {
         _entry = entry;
+        if (_entry != null) {
+            setText(_entry.getDccAddress());
+        }
     }
 
     public RosterEntry getRosterEntry() {
@@ -318,9 +321,6 @@ public class LocoIcon extends PositionableLabel {
     @Override
     public void doMouseReleased(MouseEvent event) {
         List<Positionable> selections = _editor.getSelectedItems(event);
-        if (selections == null) {
-            return;
-        }
         for (int i = 0; i < selections.size(); i++) {
             if (selections.get(i) instanceof IndicatorTrack) {
                 IndicatorTrack t = (IndicatorTrack) selections.get(i);

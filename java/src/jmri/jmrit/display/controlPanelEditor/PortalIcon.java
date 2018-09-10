@@ -1,5 +1,6 @@
 package jmri.jmrit.display.controlPanelEditor;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -133,6 +134,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
         return _portalHdl.getBean();
     }
 
+    @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Portals always have userNames")
     public void setPortal(Portal portal) {
         if (portal == null) {
             return;
@@ -145,6 +147,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
                 port.removePropertyChangeListener(this);
             }
         }
+        // Portals always have userNames
         _portalHdl = InstanceManager.getDefault(NamedBeanHandleManager.class)
                 .getNamedBeanHandle(portal.getUserName(), portal);
         portal.addPropertyChangeListener(this);

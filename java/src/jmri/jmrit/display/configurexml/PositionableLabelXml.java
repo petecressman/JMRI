@@ -35,16 +35,6 @@ public class PositionableLabelXml extends PositionableJComponentXml {
         storeCommonLabelAttributes(p, element);
         storeFontInfo(p, element);
 
-        if (p.isText()) {
-            if (p.getText() != null) {
-                element.setAttribute("text", p.getText());
-            }
-        }
-
-        if (p.isIcon() && p.getIcon() != null) {
-            element.setAttribute("icon", "yes");
-            element.addContent(storeIcon("icon", p.getIcon()));
-        }
         element.setAttribute("class", "jmri.jmrit.display.configurexml.PositionableLabelXml");
         return element;
     }

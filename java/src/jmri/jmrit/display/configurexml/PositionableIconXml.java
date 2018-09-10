@@ -3,10 +3,9 @@ package jmri.jmrit.display.configurexml;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import jmri.jmrit.catalog.NamedIcon;
+import jmri.jmrit.display.DisplayState;
 import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.PositionableIcon;
-import jmri.jmrit.display.PositionableLabel;
 import org.jdom2.Attribute;
 import org.jdom2.DataConversionException;
 import org.jdom2.Element;
@@ -39,35 +38,40 @@ public class PositionableIconXml extends PositionableLabelXml {
         storeCommonLabelAttributes(p, element);
         storeFontInfo(p, element);
 
-        Element elem = new Element("family");
+        Element elem = new Element("stateMaps");
         if (p.getFamily() != null) {
-            element.setAttribute("familyname", p.getFamily());
+            element.setAttribute("family", p.getFamily());
         }
         
-        Iterator<Entry<String, PositionableLabel>> it = p.getIconMap().entrySet().iterator();
+        Iterator<Entry<String, DisplayState>> it = p.getDisplayStateMap().entrySet().iterator();
         while (it.hasNext()) {
-            Entry<String, PositionableLabel> entry = it.next();
+            Entry<String, DisplayState> entry = it.next();
             elem.addContent(storeStateData(entry.getKey(), entry.getValue()));
         }
         return true;
     }
 
-    public Element storeStateData(String key, PositionableLabel p) {
-        Element element = new Element("state");
-        element.setAttribute("stateKey", key);
+    public Element storeStateData(String key, DisplayState ds) {
+        Element element = new Element("displaystate");
+        element.setAttribute("state", key);
 
-        Element elem = new Element("stateAttributes");
-        if (p.getText() != null) {
-            elem.setAttribute("text", p.getText());
+        if (ds.getText() != null) {
+            Element elem = new Element("text");
+            elem.setText(ds.getText());
         }
-        if (p.getIcon() != null) {
-            elem.addContent(storeIcon(key, p.getIcon()));
+        if (ds.getIcon() != null) {
+            element.addContent(storeIcon("icon", ds.getIcon()));
         }       
-        storeCommonLabelAttributes(p, elem);
-        storeFontInfo(p, elem);
-
-        element.addContent(elem);
-        return element;
+        if (ds.getForeground() != null) {
+            element.addContent(storeColor("foreground", ds.getForeground()));
+        }
+        if (ds.getBackground() != null) {
+            element.addContent(storeColor("background", ds.getBackground()));
+        }
+        if (ds.getBorderColor() != null) {
+            element.addContent(storeColor("border", ds.getBorderColor()));
+        }
+      return element;
     }
 
     /**
@@ -94,30 +98,6 @@ public class PositionableIconXml extends PositionableLabelXml {
         }
         loadFontInfo(p, element);
 
-        Element elem =element.getChild("family");
-        if (elem == null) {
-            log.warn("No state elements found for PositionableIcon {}", p.getNameString());
-            return false;
-        }
-        Attribute attr = elem.getAttribute("familyname");
-        if (attr !=null) {
-            p.setFamily(attr.getValue());
-        }
-        List<Element> stateList = elem.getChildren("state");
-        if (log.isDebugEnabled()) {
-            log.debug("Found {} OBlock objects", stateList.size());
-        }
-        if (stateList == null || stateList.size() < 4) {
-            log.error("Not enough state elements found for PositionableIcon {}", p.getNameString());
-            return false;
-        }
-        boolean loaded = true;
-        for (Element state : stateList) {
-            if (!loadStateData(state, p)) {
-                loaded = false;
-            }
-        }
-
         try {
             p.setIsText(element.getAttribute("isText").getBooleanValue());
         } catch (DataConversionException ex) {
@@ -133,6 +113,31 @@ public class PositionableIconXml extends PositionableLabelXml {
             log.warn("PositionableIcon \"isIcon\" attribute not found");
         }
 
+        Element elem =element.getChild("stateMaps");
+        if (elem == null) {
+            log.warn("No state elements found for PositionableIcon {}", p.getNameString());
+            return false;
+        }
+        Attribute attr = elem.getAttribute("family");
+        if (attr !=null) {
+            p.setFamily(attr.getValue());
+        }
+
+        List<Element> stateList = elem.getChildren("displaystate");
+        if (log.isDebugEnabled()) {
+            log.debug("Found {} displaystate objects", stateList.size());
+        }
+        if (stateList == null || stateList.size() < 4) {
+            log.error("Not enough state elements found for PositionableIcon {}", p.getNameString());
+            return false;
+        }
+        boolean loaded = true;
+        for (Element state : stateList) {
+            if (!loadStateData(state, p)) {
+                loaded = false;
+            }
+        }
+/*
         if (element.getAttribute("text") != null) {
             p.setText(element.getAttribute("text").getValue());
         }
@@ -140,44 +145,41 @@ public class PositionableIconXml extends PositionableLabelXml {
         if (element.getAttribute("icon") != null) {
             String name = element.getAttribute("icon").getValue();
             p.setIcon(NamedIcon.getIconByName(name));
-        }
+        }*/
 
         return loaded;
     }
 
     public boolean loadStateData(Element element, PositionableIcon pi) {
         
-        Attribute attr = element.getAttribute("stateKey");
+        Attribute attr = element.getAttribute("state");
         if (attr == null) {
-            log.error("No stateKey for element: {}", element.getName());
+            log.error("No state name for element: {}", element.getName());
             return false;
         }
         String state = attr.getValue();
-        
-        Element elem = element.getChild("stateAttributes");
-        if (elem == null) {
-            log.error("No \"stateAttributes\" child for state {} in element: {}", state, element.getName());
-            return false;
-        }
 
-        PositionableLabel p = pi.getStateData(state);
-        if (p == null) {
-            log.error("No state class for state {} in element: {}", state, element.getName());
+        DisplayState ds = pi.getStateData(state);
+        if (ds == null) {
+            log.error("No DisplayState class \"{}\" in PositionableIcon: {}", state, pi.getName());
             return false;
         }
         
-        if (elem.getAttribute("text") != null) {
-            p.setText(elem.getAttribute("text").getValue());
+        Element elem = element.getChild("text");
+        if (elem != null) {
+            ds.setText(elem.getText());
         }
-
-        if (elem.getAttribute("icon") != null) {
-            String name = elem.getAttribute("icon").getValue();
-            p.setIcon(NamedIcon.getIconByName(name));
-        }
-        loadFontInfo(p, elem);
-        loadCommonAttributes(p, Editor.SENSORS, elem);
         
+        ds.setIcon(getNamedIcon("icon", element, "pi.getName() ", pi.getEditor()));
+
+        ds.setBackground(loadColor(element, "foreground", state));
+        ds.setBackground(loadColor(element, "background", state));
+        ds.setBackground(loadColor(element, "borderColor", state));
         return true;
+    }
+    
+    public void loadDisplayState(Element element, DisplayState ds) {
+        
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableIconXml.class);

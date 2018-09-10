@@ -47,6 +47,7 @@ import jmri.jmrit.display.Editor;
 import jmri.jmrit.display.LinkingObject;
 import jmri.jmrit.display.PanelMenu;
 import jmri.jmrit.display.Positionable;
+import jmri.jmrit.display.PositionableIcon;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.ToolTip;
 import jmri.util.JmriJFrame;
@@ -675,7 +676,9 @@ public class PanelEditor extends Editor implements ItemListener {
             if (p instanceof PositionableLabel) {
                 PositionableLabel pl = (PositionableLabel)p;
                 popupSet = pl.setDisplayModeMenu(popup);
-                popupSet |= pl.setDisableControlMenu(popup);
+                if (p instanceof PositionableIcon) {
+                    ((PositionableIcon)p).setDisableControlMenu(popup);
+                }
                 popupSet |= pl.setTextEditMenu(popup);
                 popupSet |= setTextAttributes(p, popup);
                 popupSet |= pl.setEditIconMenu(popup);

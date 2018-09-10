@@ -1119,7 +1119,8 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             ed.setName(getName());
             ed.init(getName());
 
-            ed._contents = (ArrayList<Positionable>) _contents.clone();
+            ed._contents = new ArrayList<>(_contents);
+
             for (Positionable p : _contents) {
                 p.setEditor(ed);
                 ed.addToTarget(p);
@@ -2975,16 +2976,14 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     protected boolean setTextAttributes(Positionable p, JPopupMenu popup) {
         popup.add(new AbstractAction(Bundle.getMessage("TextAttributes")) {
             Positionable comp;
-            Editor ed;
 
             @Override
             public void actionPerformed(ActionEvent e) {
                 (new TextAttrDialog(comp)).setVisible(true);
             }
 
-            AbstractAction init(Positionable pos, Editor e) {
+            AbstractAction init(Positionable pos, Editor e) { // e unused?
                 comp = pos;
-                ed = e;
                 return this;
             }
         }.init(p, this));
@@ -3045,7 +3044,8 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
     }
 
     /**
-     * Set attributes of a Positionable list
+     * Set margin, border sizes and colors, font parameters attributes of a Positionable list.
+     * Sets as many attributes found that match an attribute of the "master".  
      *
      * @param pMaster    the item whose attributes should be copied
      *
@@ -3055,28 +3055,73 @@ abstract public class Editor extends JmriJFrame implements MouseListener, MouseM
             return;
         }
         for (Positionable p : _selectionGroup) {
-            if (p instanceof IndicatorTrack) {
-                PositionableIcon pi = (PositionableIcon)p;
-                if (pMaster instanceof IndicatorTrack) {
-                    PositionableIcon pmi = (PositionableIcon)pMaster;
-                    for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
-                        pmi.getStateData(entry.getKey()).setAttributesOf(entry.getValue());
+            // 
+            pMaster.setAttributesOf(p);     // matches all the size parameters
+            
+            // the rest of this is merely to match the colors when possible
+            if (pMaster instanceof IndicatorTurnoutIcon) {
+                IndicatorTurnoutIcon pmas = (IndicatorTurnoutIcon)pMaster;
+                HashMap<String, HashMap<String, DisplayState>> masMaps = pmas.getDisplayMaps();
+                if (p instanceof IndicatorTurnoutIcon) {
+                    // status and states should match for both
+                    IndicatorTurnoutIcon piti = (IndicatorTurnoutIcon)p;
+                    for (Map.Entry<String, HashMap<String, DisplayState>> ent : piti.getDisplayMaps().entrySet()) {
+                        HashMap<String, DisplayState> masMap = masMaps.get(ent.getKey());
+                        HashMap<String, DisplayState> itiMap =  ent.getValue();
+                        for (Map.Entry<String, DisplayState> entry : itiMap.entrySet()) {
+                            masMap.get(entry.getKey()).setParametersOf(entry.getValue(), false);
+                        }
                     }
-                } else { 
-                    pMaster.setAttributesOf(p);
-                }
-            } else if (p instanceof PositionableIcon) {
-                PositionableIcon pi = (PositionableIcon)p;
-                if (pMaster instanceof PositionableIcon) {
-                    PositionableIcon pmi = (PositionableIcon)pMaster;
-                    for (Map.Entry<String, PositionableLabel> entry : pi.getIconMap().entrySet()) {
-                        pmi.getStateData(entry.getKey()).setAttributesOf(entry.getValue());
+                } else if (p instanceof IndicatorTrackIcon) {
+                    // status should match use "closed" status of masMaps
+                    IndicatorTrackIcon piti = (IndicatorTrackIcon)p;
+                    for (Map.Entry<String, DisplayState> entry : piti.getDisplayStateMap().entrySet()) {
+                        DisplayState disStatus = masMaps.get(entry.getKey()).get("TurnoutStateClosed");
+                        disStatus.setParametersOf(entry.getValue(), false);
                     }
-                } else { 
-                    pMaster.setAttributesOf(p);
+                } else if (p instanceof PositionableIcon) {
+                    // state should match use "states" of "clear status of masMaps
+                    PositionableIcon pi = (PositionableIcon)p;
+                    HashMap<String, DisplayState> masMap = masMaps.get("ClearTrack");
+                    for (Map.Entry<String, DisplayState> entry : pi.getDisplayStateMap().entrySet()) {
+                        masMap.get(entry.getKey()).setParametersOf(entry.getValue(), false);
+                    }
                 }
+            } else if (pMaster instanceof IndicatorTrackIcon) {
+                IndicatorTrackIcon pmas = (IndicatorTrackIcon)pMaster;
+                HashMap<String, DisplayState> masMap = pmas.getDisplayStateMap();
+                if (p instanceof IndicatorTurnoutIcon) {
+                    // "closed" state of p can match status's of pMaster
+                    IndicatorTurnoutIcon piti = (IndicatorTurnoutIcon)p;
+                    for (Map.Entry<String, HashMap<String, DisplayState>> entry : piti.getDisplayMaps().entrySet()) {
+                        HashMap<String, DisplayState> itiMap =  entry.getValue();
+                        DisplayState disStatus = entry.getValue().get("TurnoutStateClosed");
+                        itiMap.get(entry.getKey()).setParametersOf(disStatus, false);
+                                            }
+                } else if (p instanceof IndicatorTrackIcon) {
+                    // status's should match for both
+                    IndicatorTrackIcon piti = (IndicatorTrackIcon)p;
+                    for (Map.Entry<String, DisplayState> entry : piti.getDisplayStateMap().entrySet()) {
+                        masMap.get(entry.getKey()).setParametersOf(entry.getValue(), false);
+                    }
+                } else if (p instanceof PositionableIcon) {
+                    // "closed" state of p can have status of pMaster "ClearTrack"
+                    PositionableIcon pi = (PositionableIcon)p;
+                    for (Map.Entry<String, DisplayState> entry : pi.getDisplayStateMap().entrySet()) {
+                        masMap.get(entry.getKey()).setParametersOf(entry.getValue(), false);
+                    }
+                }
+            } else if (pMaster instanceof PositionableIcon) {
+                PositionableIcon pmas = (PositionableIcon)pMaster;
+                HashMap<String, DisplayState> masMap = pmas.getDisplayStateMap();
+                if (p instanceof PositionableIcon) {
+                    PositionableIcon pi = (PositionableIcon)p;
+                    for (Map.Entry<String, DisplayState> entry : pi.getDisplayStateMap().entrySet()) {
+                        masMap.get(entry.getKey()).setParametersOf(entry.getValue(), false);
+                    }
+                } 
             }
-            pMaster.setAttributesOf(p);
+            p.displayState();
         }
     }
 

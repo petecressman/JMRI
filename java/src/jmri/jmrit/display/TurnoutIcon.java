@@ -113,18 +113,18 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
     }
 
     @Override
-    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+    protected HashMap<String, DisplayState> makeDefaultMap() {
         makeStateNameMap();
-        HashMap<String, PositionableLabel> oldMap = getIconMap();
-        HashMap<String, PositionableLabel> map = new HashMap<>();
+        HashMap<String, DisplayState> oldMap = getDisplayStateMap();
+        HashMap<String, DisplayState> map = new HashMap<>();
         Iterator <String> iter = _state2nameMap.values().iterator();
         while (iter.hasNext()) {
             String state = iter.next();
-            PositionableLabel pos;
+            DisplayState pos;
             if (oldMap != null && oldMap.get(state) != null) {
                 pos = oldMap.get(state);
             } else {
-                pos = new PositionableLabel(getEditor());
+                pos = new DisplayState();
                 pos.setText(Bundle.getMessage(state));
             }
             map.put(state, pos);
@@ -178,11 +178,10 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
             setDisconnectedText("BeanDisconnected");
         } else {
             restoreConnectionDisplay();
-       }
-       setDisplayState(state);
-       if (isText() && isIcon()) {  // Overlaid text
-           setIcon(getIcon(state));
-       }
+        }
+        getDisplayState(state).setDisplayParameters(this);
+        setDisplayState(state);
+        updateSize();
     }
 
     // update icon as state of turnout changes
@@ -340,7 +339,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
         };
         // duplicate icon map with state names rather than int states and unscaled and unrotated
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<String> iter = getIconStateNames();
+        Iterator<String> iter = getStateNames();
         while (iter.hasNext()) {
             String  state = iter.next();
             NamedIcon oldIcon = getIcon(state);

@@ -41,8 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack {
 
-    // Replaces _iconMap of PositionableIcon ancestor
-    //HashMap<String, HashMap<String, NamedIcon>> _iconMaps;      // state icons for each status
+    private HashMap<String, HashMap<String, DisplayState>> _displayMaps;      // state maps for each status
 
     private NamedBeanHandle<Sensor> namedOccSensor = null;
     private NamedBeanHandle<OBlock> namedOccBlock = null;
@@ -62,13 +61,17 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
     static final String[] STATUSNAME = {"ClearTrack", "OccupiedTrack", "PositionTrack", "AllocatedTrack", "DontUseTrack", "ErrorTrack"};
 
     @Override
-    protected HashMap<String, PositionableLabel> makeDefaultMap() {
-        HashMap<String, PositionableLabel> map = new HashMap<> ();
+    protected HashMap<String, DisplayState> makeDefaultMap() {
+        HashMap<String, HashMap<String, DisplayState>> _displayMaps = new HashMap<> ();
         for (String status : STATUSNAME) {
-            PositionableIcon pos = new TurnoutIcon(getEditor());
-            map.put(status, pos);
+            HashMap<String, DisplayState> map = super.makeDefaultMap();
+            _displayMaps.put(status, map);
         }
-        return map;
+        return null;
+    }
+    
+    public HashMap<String, HashMap<String, DisplayState>> getDisplayMaps() {
+        return _displayMaps;
     }
 
 //    @Override
@@ -105,18 +108,6 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         displayState(_status, turnoutState());
     }
 
-    @Override
-    public int getWidth() {
-        PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
-        return turnoutIcon.getWidth();
-    }
-
-    @Override
-    public int getHeight() {
-        PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
-        return turnoutIcon.getHeight();
-    }
-    
     /**
      * Attached a named sensor to display status from OBlocks
      *
@@ -264,8 +255,9 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             log.debug("setStateIcon for status= \"{}\", state= \"{}\" icom= {}",
                     status, stateName, (icon!=null?icon.getURL():"null"));
         }
-        PositionableIcon statusMap = (PositionableIcon)getStateData(status);
-        statusMap.setStateIcon(stateName, icon);
+        HashMap<String, DisplayState> statusMap = _displayMaps.get(status);
+        DisplayState ds = statusMap.get(stateName);
+        ds.setIcon(icon);
     }
 
     public String getStatus() {
@@ -287,21 +279,13 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         } else {
             restoreConnectionDisplay();
         }
-        setDisplayState(status);
-        PositionableIcon turnoutIcon = (PositionableIcon)getStateData(_status);
-        turnoutIcon.setDisplayState(state);
-        if (log.isDebugEnabled()) {
-            PositionableLabel pos = turnoutIcon.getStateData(state);
-            log.debug("displayState of status= \"{}\", state= \"{}\" icon= {}",
-                    status, state, (pos.getIcon()!=null?pos.getIcon().getURL():"null"));
-//            log.debug("Icon Size: ({}, {})", pos.getWidth(), pos.getHeight());
-        }
 
-//        turnoutIcon.displayState(state);
-        if (isText() && isIcon()) {  // Overlaid text
-            setIcon(turnoutIcon.getIcon(state));
-        }
-        repaint();
+        HashMap<String, DisplayState> statusMap = _displayMaps.get(status);
+        DisplayState displayState = statusMap.get(status);
+        displayState.setDisplayParameters(this);
+        setDisplayState(state);
+
+        updateSize();
     }
 
     @Override
@@ -395,12 +379,14 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
         // Convert _iconMaps state (ints) to Palette's bean names
         HashMap<String, HashMap<String, NamedIcon>> iconMaps = new HashMap<>();
         for (String status : STATUSNAME) {
-            PositionableIcon pos = (PositionableIcon)getStateData(status);
+            HashMap<String, DisplayState> statusMap = _displayMaps.get(status);
+
             HashMap<String, NamedIcon> map = new HashMap<>();
-            Iterator<String> iter = pos.getIconStateNames();    // state names for this status name
+            Iterator<String> iter = getStateNames();    // state names for this status name
             while (iter.hasNext()) {
                 String state  = iter.next();
-                NamedIcon oldIcon = pos.getIcon(state);
+                DisplayState displayState = statusMap.get(state);
+                NamedIcon oldIcon = displayState.getIcon();
                 NamedIcon newIcon = new NamedIcon(oldIcon);
                 map.put(state, newIcon);
             }
@@ -436,7 +422,7 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
             while (it.hasNext()) {
                 Entry<String, HashMap<String, NamedIcon>> entry = it.next();
                 String status = entry.getKey();
-                PositionableIcon pos = (PositionableIcon)getStateData(status);
+                HashMap<String, DisplayState> statusMap = _displayMaps.get(status);
                 Iterator<Entry<String, NamedIcon>> iter = entry.getValue().entrySet().iterator();
                 while (iter.hasNext()) {
                     Entry<String, NamedIcon> ent = iter.next();
@@ -444,7 +430,8 @@ public class IndicatorTurnoutIcon extends TurnoutIcon implements IndicatorTrack 
                         log.debug("key= " + ent.getKey());
                     }
                     NamedIcon icon = new NamedIcon(ent.getValue());
-                    pos.setStateIcon(ent.getKey(), icon);
+                    DisplayState displayState = statusMap.get(ent.getKey());
+                    displayState.setIcon(icon);
                 }
             }
         }   // otherwise retain current map

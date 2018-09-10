@@ -124,18 +124,18 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     }
 
     @Override
-    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+    protected HashMap<String, DisplayState> makeDefaultMap() {
         makeStateNameMap();
-        HashMap<String, PositionableLabel> oldMap = getIconMap();
-        HashMap<String, PositionableLabel> map = new HashMap<>();
+        HashMap<String, DisplayState> oldMap = getDisplayStateMap();
+        HashMap<String, DisplayState> map = new HashMap<>();
         Iterator <String> iter = _state2nameMap.values().iterator();
         while (iter.hasNext()) {
             String state = iter.next();
-            PositionableLabel pos;
+            DisplayState pos;
             if (oldMap != null) {
                 pos = oldMap.get(state);
             } else {
-                pos = new PositionableLabel(getEditor());
+                pos = new DisplayState();
                 pos.setText(Bundle.getMessage(state));
             }
             map.put(state, pos);
@@ -236,10 +236,9 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         } else {
             restoreConnectionDisplay();
         }
+        getDisplayState(state).setDisplayParameters(this);
         setDisplayState(state);
-        if (isText() && isIcon()) {  // Overlaid text
-            setIcon(getIcon(state));
-        }
+        updateSize();
     }
 
     TableItemPanel _itemPanel;
@@ -273,7 +272,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         };
         // duplicate _iconMap map
         HashMap<String, NamedIcon> map = new HashMap<>();
-        Iterator<String> iter = getIconStateNames();
+        Iterator<String> iter = getStateNames();
         while (iter.hasNext()) {
             String  state = iter.next();
             NamedIcon oldIcon = getIcon(state);

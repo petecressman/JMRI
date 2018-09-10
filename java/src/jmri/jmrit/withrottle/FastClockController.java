@@ -48,13 +48,8 @@ public class FastClockController extends AbstractController {
             }
         };
         
-        if (fastClock == null) {
-            log.info("No fast clock manager instance.");
-            isValid = false;
-            return;
-        } else {
-            isValid = true;
-        }
+        isValid = true;
+        
         updateMinsSetpoint = (short)(fastClock.userGetRate() * UPDATE_MINUTES);
         setReSyncSetpoint();
         // request callback to update time
@@ -68,7 +63,7 @@ public class FastClockController extends AbstractController {
     }
 
     @Override
-    void handleMessage(String message) {
+    void handleMessage(String message, DeviceServer deviceServer) {
         throw new UnsupportedOperationException("Not used.");
     }
 

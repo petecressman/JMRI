@@ -90,8 +90,9 @@ public class Positionable extends JComponent implements Cloneable {
     private int _marginSize = 0;
     private int _borderSize = 0;
     private Color _borderColor = null;
-    private Color _backgroundColor = null;
-    private boolean _suppressRecentColor = false;
+    private boolean _suppressRecentColor = false;   // do not notify ColorChooser a color has been set
+    private boolean _bordered = false;      // paint borders and margins      
+
     
     private int _fixedWidth = 0;
     private int _fixedHeight = 0;
@@ -142,18 +143,16 @@ public class Positionable extends JComponent implements Cloneable {
      */
     public void setAttributesOf(Positionable pos) {
         pos.setFont(getFont());
-        pos.setFontSize(getFont().getSize());
-        pos.setFontStyle(getFont().getStyle());
+        pos.setFontSize(getFontSize());
+        pos.setFontStyle(getFontStyle());
         pos.setJustification(_justification);
         pos._borderSize = _borderSize;
-        pos._borderColor = _borderColor;
         pos._marginSize = _marginSize;
         pos.setFixedSize(_fixedWidth, _fixedHeight);
-        pos.setBackgroundColor(_backgroundColor);
+        pos._borderColor = _borderColor;
         pos.setOpaque(isOpaque());
-//        pos.setBackground(getBackground());
+        pos.setBackground(getBackground());
         pos.setForeground(getForeground());
-
     }
 
     public void displayState() {
@@ -262,6 +261,9 @@ public class Positionable extends JComponent implements Cloneable {
         return _degree;
     }
 
+    /*
+     * *****************Borders & Margins ************************
+     */
     public final void setBorderSize(int border) {
         _borderSize = border;
         updateSize();
@@ -292,16 +294,18 @@ public class Positionable extends JComponent implements Cloneable {
         return _marginSize;
     }
 
-    public final void setBackgroundColor(Color color) {
-        _backgroundColor = color;
-        if (!_suppressRecentColor) {
-            JmriColorChooser.addRecentColor(color);
+    @Override
+    public final void setBackground(Color color) {
+        if (color == null) {
+            setOpaque(false);
+        } else {
+            setOpaque(true);
+            super.setBackground(color);
+            if (!_suppressRecentColor) {
+                JmriColorChooser.addRecentColor(color);
+            }
         }
         updateSize();
-    }
-
-    public Color getBackgroundColor() {
-        return _backgroundColor;
     }
 
     @Override
@@ -358,6 +362,23 @@ public class Positionable extends JComponent implements Cloneable {
         updateSize();
     }
     
+    protected void setBordered(boolean b) {
+        _bordered = b;
+        log.debug("_bordered= {}", _bordered);
+    }
+
+    protected boolean isBordered() {
+        return _bordered;
+    }
+    /*
+     **************************** Fonts *****************************
+     */
+    @Override
+    public void setFont(Font font) {
+        super.setFont(font);
+        updateSize();
+    }
+
     @Override
     public Font getFont() {
         Font f = super.getFont();
@@ -372,10 +393,18 @@ public class Positionable extends JComponent implements Cloneable {
         updateSize();
     }
 
+    public int getFontStyle() {
+        return getFont().getStyle();
+    }
+
     public void setFontSize(float newSize) {
         Font f = getFont();
         setFont(f.deriveFont(newSize));
         updateSize();
+    }
+
+    public int getFontSize() {
+        return getFont().getSize();
     }
 
     public void setJustification(int just) {
@@ -385,7 +414,7 @@ public class Positionable extends JComponent implements Cloneable {
     }
 
     public int getJustification() {
-        log.debug("getJustification: justification ={}", _justification);
+//        log.debug("getJustification: justification ={}", _justification);
         return _justification;
     }
 
@@ -492,10 +521,8 @@ public class Positionable extends JComponent implements Cloneable {
         edit.addActionListener((ActionEvent event) -> {
             Color desiredColor = JColorChooser.showDialog(this,
                                  Bundle.getMessage("FontBackgroundColor"),
-                                 this.getBackgroundColor());
-            if (desiredColor!=null ) {
-                this.setBackgroundColor(desiredColor);
-           }
+                                 this.getBackground());
+            setBackground(desiredColor);
         });
  
         popup.add(edit);
@@ -613,7 +640,7 @@ public class Positionable extends JComponent implements Cloneable {
             setFontSize(size);
         });
         fontButtonGroup.add(r);
-        r.setSelected(getFont().getSize() == size);
+        r.setSelected(getFontSize() == size);
         menu.add(r);
     }
     JMenuItem italic = null;
@@ -658,16 +685,16 @@ public class Positionable extends JComponent implements Cloneable {
         c.addActionListener(a);
         if (log.isDebugEnabled()) { // Avoid action lookup unless needed
             log.debug("When creating style item {} mask was {} state was {}",
-                     a.getValue(AbstractAction.NAME), mask, getFont().getStyle());
+                     a.getValue(AbstractAction.NAME), mask, getFontStyle());
         }
-        if ((mask & getFont().getStyle()) == mask) {
+        if ((mask & getFontStyle()) == mask) {
             c.setSelected(true);
         }
         return c;
     }
 
     public void setFontStyle(int addStyle, int dropStyle) {
-        int styleValue = (getFont().getStyle() & ~dropStyle) | addStyle;
+        int styleValue = (getFontStyle() & ~dropStyle) | addStyle;
         log.debug("setFontStyle: addStyle={}, dropStyle={}, net styleValue is {}", addStyle, dropStyle, styleValue);
         if (bold != null) {
             bold.setSelected((styleValue & Font.BOLD) != 0);
@@ -1004,13 +1031,13 @@ public class Positionable extends JComponent implements Cloneable {
         _displayDim = new Dimension(displayWidth, displayHeight);
         setPreferredSize(_displayDim);
         setSize(_displayDim);
+        setBorder();
 
         if (_editor!=null && _editor.getTargetPanel()!=null) {
             _editor.getTargetPanel().repaint();
         }
-        setBorder();
         if (log.isDebugEnabled()) {
-            log.debug("updateSize: displayWidth= {} displayHeight= {}", displayWidth, displayHeight);
+            log.debug("updateSize: ({}) displayWidth= {} displayHeight= {}", getName(), displayWidth, displayHeight);
         }
         repaint();
     }
@@ -1055,11 +1082,10 @@ public class Positionable extends JComponent implements Cloneable {
     
 
     public void setBorder() {
-        Color color = getBackgroundColor();
-        setOpaque(color != null);
-        super.setBackground(color);
+        Color color;
         Border borderMargin;        
         if (isOpaque()) {
+            color = getBackground();
             borderMargin = BorderFactory.createLineBorder(color, _marginSize);
         } else {
             borderMargin = BorderFactory.createEmptyBorder(_marginSize, _marginSize, _marginSize, _marginSize);
@@ -1128,15 +1154,14 @@ public class Positionable extends JComponent implements Cloneable {
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
 
-        java.awt.Color backgroundColor = getBackgroundColor();
-        if (backgroundColor!=null) {
-            setOpaque(true);
-            g2d.setColor(backgroundColor);
-            g2d.fillRect(0, 0, getWidth(), getHeight());
-        } else {
-            setOpaque(false);
+        if (_bordered) {
+            if (isOpaque()) {
+                java.awt.Color backgroundColor = getBackground();
+                g2d.setColor(backgroundColor);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+            super.paintBorder(g2d);
         }
-        super.paintBorder(g2d);
         super.paint(g2d);
         g2d.dispose();
     }

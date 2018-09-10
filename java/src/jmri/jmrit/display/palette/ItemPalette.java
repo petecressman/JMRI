@@ -148,7 +148,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
     static HashMap<String, HashMap<String, HashMap<String, NamedIcon>>> _iconMaps;
     // for now, special case 4 level maps since IndicatorTO is the only case.
     static HashMap<String, HashMap<String, HashMap<String, HashMap<String, NamedIcon>>>> _indicatorTOMaps;
-    static protected ItemPanel _currentItemPanel;
+    private ItemPanel _currentItemPanel;
 
     /**
      * Store palette icons in preferences file catalogTrees.xml
@@ -447,21 +447,18 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
         ItemPalette instance = InstanceManager.getOptionalDefault(ItemPalette.class).orElseGet(() -> {
             return InstanceManager.setDefault(ItemPalette.class, new ItemPalette(title, ed));
         });
-        Iterator<Entry<String, ItemPanel>> iter = _tabIndex.entrySet().iterator();
+        Iterator<ItemPanel> iter = _tabIndex.values().iterator();
         while (iter.hasNext()) {
-            Entry<String, ItemPanel> entry = iter.next();
-            ItemPanel tab = entry.getValue();
-//            log.debug("setEditor for \"{}\" added", entry.getKey());
-            tab.setEditor(ed);            
+            iter.next().setEditor(ed);
         }
         String name = ed.getName();
         if (name == null || name.equals("")) {
             name = Bundle.getMessage("untitled");
         }
         instance.setTitle(Bundle.getMessage("MenuItemItemPalette") + " - " + name);
-        // Either of these positioning calls puts the instance on the primary monitor. ???
-        instance.setLocation(jmri.util.PlaceWindow.nextTo(ed, null, instance));
+        // pack before setLocation
         instance.pack();
+        instance.setLocation(jmri.util.PlaceWindow.nextTo(ed, null, instance));
         instance.setVisible(true);
         return instance;
     }
@@ -486,11 +483,10 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
 
         setLayout(new BorderLayout(5, 5));
         add(_tabPane, BorderLayout.CENTER);
-        setLocation(10, 10);
         JScrollPane sp = (JScrollPane) _tabPane.getSelectedComponent();
         _currentItemPanel = (ItemPanel) sp.getViewport().getView();
         if (!jmri.util.ThreadingUtil.isGUIThread()) log.error("Not on GUI thread", new Exception("traceback"));
-        pack();
+//        pack();
     }
 
     /*
@@ -568,6 +564,17 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
     }
 
     @Override
+    public void updateBackground0(java.awt.image.BufferedImage im) {
+        int bgIdx = getPreviewBg();
+        Iterator<ItemPanel> iter = _tabIndex.values().iterator();
+        while (iter.hasNext()) {
+            ItemPanel panel = iter.next();
+            panel.updateBackground0(im);
+            panel.setPreviewBg(bgIdx);
+        }
+    }
+
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (!jmri.util.ThreadingUtil.isGUIThread()) log.error("Not on GUI thread", new Exception("traceback"));
         // long t = System.currentTimeMillis();
@@ -598,7 +605,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
         if (deltaDim.height < 50) { // at least 2 rows of tabs
             deltaDim.height = 50;
         }
-        reSize(_tabPane, deltaDim, newTabDim);
+        reSize(_tabPane, deltaDim, newTabDim, p._editor);
         if (p._bgColorBox != null) {
             p._bgColorBox.setSelectedIndex(getPreviewBg());
         }

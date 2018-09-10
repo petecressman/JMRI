@@ -1,7 +1,6 @@
 package jmri.jmrit.display;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 public class PositionableIcon extends PositionableLabel {
 
-    private HashMap<String, PositionableLabel> _iconMap;
+    private HashMap<String, DisplayState> _displayStateMap;
     private String _iconFamily;
     private String _displayState;       // current state or status of the bean/item
     private boolean _iconDisplay;       // Icons display mode 
@@ -47,17 +46,22 @@ public class PositionableIcon extends PositionableLabel {
     public PositionableIcon(Editor editor) {
         super(editor);
         _controlling = true;
-        _iconMap = makeDefaultMap();
+        _displayStateMap = makeDefaultMap();
         _displayState = Bundle.getMessage("BeanStateUnknown");
+        setName(getClass().getSimpleName());
         if (log.isDebugEnabled()) {
-            if (_iconMap != null) {
-                for (Map.Entry<String, PositionableLabel> e : _iconMap.entrySet()) {
-                    PositionableLabel pos = e.getValue();
-                    log.debug("state = {}, text= {}, icon= {}", e.getKey(), pos.getText(),
-                            (pos.getIcon()==null?"null": pos.getIcon().getName()));
+            String name = getClass().getSimpleName();
+            setName(name);
+            if (_displayStateMap != null) {
+                for (Map.Entry<String, DisplayState> e : _displayStateMap.entrySet()) {
+                    DisplayState state = e.getValue();
+                    log.debug("{} state = {}, text= {}, icon= {}", 
+                            name, e.getKey(), state.getText(),
+                            (state.getIcon()==null?"null": state.getIcon().getName()));
                 }
+                
             } else {
-                log.debug("_iconMap == null, {}", getClass().getName());
+                log.debug("{}) null DisplayStateMap", name);
             }
         }
     }
@@ -82,7 +86,12 @@ public class PositionableIcon extends PositionableLabel {
     protected Positionable finishClone(PositionableIcon pos) {
         pos._iconFamily = _iconFamily;
         pos._displayState = _displayState;
-        pos._iconMap = cloneMap(_iconMap, pos);
+        pos._displayStateMap = new HashMap<>();
+        Iterator<Entry<String, DisplayState>> it = _displayStateMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Entry<String, DisplayState> entry = it.next();
+            pos._displayStateMap.put(entry.getKey(), entry.getValue().deepClone());
+        }
         pos._controlling = _controlling;
         return super.finishClone(pos);
     }
@@ -118,30 +127,14 @@ public class PositionableIcon extends PositionableLabel {
     protected void setDisplayState(String state) {
         _displayState  = state;
     }
-    protected String getDisplayState() {
+    public String getState() {
         return _displayState;
     }
 
-    @Override
-    public int getWidth() {
-        PositionableLabel pos = getStateData(_displayState);
-        if (pos != null) {
-            return pos.getWidth();            
-        } else {
-            return super.getWidth();
-        }
+    public DisplayState getDisplayState(String state) {
+        return _displayStateMap.get(state);
     }
 
-    @Override
-    public int getHeight() {
-        PositionableLabel pos = getStateData(_displayState);
-        if (pos != null) {
-            return pos.getHeight();            
-        } else {
-            return super.getHeight();
-        }
-    }
-    
     /**
      * Show bean disconnected.  This may be a temporary condition so
      * save the intended display mode for when case connection is restored.
@@ -156,10 +149,8 @@ public class PositionableIcon extends PositionableLabel {
     }
 
     protected void restoreConnectionDisplay() {
-        setIsText(_textDisplay);
-        setIsIcon(_iconDisplay);
-        super.setIsText(false);
-        super.setIsIcon(false);
+        super.setIsText(_textDisplay);
+        super.setIsIcon(_iconDisplay);
     }
 
     /**
@@ -169,10 +160,6 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public final void setIsIcon(boolean b) {
         _iconDisplay = b;
-//      Do not set  super.setIsIcon(b);
-        for(PositionableLabel p : _iconMap.values()) {
-            p.setIsIcon(b);
-        }
     }
 
     /**
@@ -182,10 +169,6 @@ public class PositionableIcon extends PositionableLabel {
     @Override
     public final void setIsText(boolean b) {
         _textDisplay = b;
-        // Do not set super.setIsText()
-        for(PositionableLabel p : _iconMap.values()) {
-            p.setIsText(b);
-        }
     }
     
     /**
@@ -193,31 +176,31 @@ public class PositionableIcon extends PositionableLabel {
      * names for their states.
      * @return mapping of state names as found in jmri.NamedBeanBundle.properties
      */
-    protected HashMap<String, PositionableLabel> makeDefaultMap() {
+    protected HashMap<String, DisplayState> makeDefaultMap() {
         return null;
     }
-    public HashMap<String, PositionableLabel> getIconMap() {
-        return _iconMap;
+    public HashMap<String, DisplayState> getDisplayStateMap() {
+        return _displayStateMap;
     }
-    protected void  setIconMap(HashMap<String, PositionableLabel> map) {
-        _iconMap = map;
+    protected void  setIconMap(HashMap<String, DisplayState> map) {
+        _displayStateMap = map;
         if (log.isDebugEnabled()) {
-            for (Map.Entry<String, PositionableLabel> e : _iconMap.entrySet()) {
-                PositionableLabel pos = e.getValue();
+            for (Map.Entry<String, DisplayState> e : _displayStateMap.entrySet()) {
+                DisplayState pos = e.getValue();
                 log.debug("state = {}, text= {}, icon= {}", e.getKey(), pos.getText(),
                         (pos.getIcon()==null?"null": pos.getIcon().getName()));
             }
         }
     }
-    public PositionableLabel getStateData(String state) {
-        return _iconMap.get(state);
+    public DisplayState getStateData(String state) {
+        return _displayStateMap.get(state);
     }
 
     /**
      * Verify that there is non-null default text and icon for each state
-     * in _iconMap
+     * in _displayStateMap
      * @return true if all states are OK
-     */
+     *
     public boolean isIconMapOK() {
         Iterator<String> iter = getIconStateNames();
         if (iter == null) {
@@ -225,14 +208,14 @@ public class PositionableIcon extends PositionableLabel {
         }
         if (isIcon()) {
             while (iter.hasNext()) {
-                PositionableLabel pos = _iconMap.get(iter.next());
+                PositionableLabel pos = _displayStateMap.get(iter.next());
                 if (pos.getIcon()== null) {
                     return false;
                 }
             }
         } else {
             while (iter.hasNext()) {
-                PositionableLabel pos = _iconMap.get(iter.next());
+                PositionableLabel pos = _displayStateMap.get(iter.next());
                 if (pos.getText()== null) {
                     return false;
                 }
@@ -244,13 +227,12 @@ public class PositionableIcon extends PositionableLabel {
     /**
      * Get an iterator of state names of the NameBean 
      * as found in jmri.NamedBeanBundle.properties
-     * @return Iterator for the state names
      */
-    public Iterator<String> getIconStateNames() {
-        if (_iconMap.keySet() == null) {
+    public Iterator<String> getStateNames() {
+        if (_displayStateMap.keySet() == null) {
             return null;
         }
-        return _iconMap.keySet().iterator();
+        return _displayStateMap.keySet().iterator();
     }
 
     /**
@@ -260,7 +242,7 @@ public class PositionableIcon extends PositionableLabel {
      * @return NamedIcon icon representing the state of the bean
      */
     public NamedIcon getIcon(String state) {
-        return _iconMap.get(state).getIcon();
+        return _displayStateMap.get(state).getIcon();
     }
 
     /**
@@ -270,7 +252,7 @@ public class PositionableIcon extends PositionableLabel {
      * @return String text representing the state of the bean
      */
     public String getText(String state) {
-        return _iconMap.get(state).getText();
+        return _displayStateMap.get(state).getText();
     }
 
     /**
@@ -284,13 +266,12 @@ public class PositionableIcon extends PositionableLabel {
             log.debug("setStateIcon state= \"{}\" icon= {}",
                     state, (icon!=null?icon.getURL():"null"));
         }
-        PositionableLabel p = _iconMap.get(state);
+        DisplayState p = _displayStateMap.get(state);
         if (p ==null) {
             log.error("Invalid state \"{}\"!", state);
             return;
         }
         p.setIcon(icon);
-        p.setIsIcon(icon != null);
     }
 
     /**
@@ -300,8 +281,7 @@ public class PositionableIcon extends PositionableLabel {
      * @param text text representing the state of the bean 
      */
     public void setStateText(@Nonnull String state, String text) {
-        _iconMap.get(state).setText(text);
-        _iconMap.get(state).setIsText(text != null);
+        _displayStateMap.get(state).setText(text);
     }
 
     /**
@@ -310,7 +290,7 @@ public class PositionableIcon extends PositionableLabel {
      * @param color Color for the state
     */
     public void setFontColor(String state, Color color) {
-        _iconMap.get(state).setForeground(color);
+        _displayStateMap.get(state).setForeground(color);
     }
 
     /**
@@ -319,7 +299,7 @@ public class PositionableIcon extends PositionableLabel {
      * @return color for the state
     */
     public Color getFontColor(String state) {
-        return _iconMap.get(state).getForeground();
+        return _displayStateMap.get(state).getForeground();
     }
 
     /**
@@ -328,7 +308,7 @@ public class PositionableIcon extends PositionableLabel {
      * @param color Color for the state
     */
     public void setBackgroundColor(String state, Color color) {
-        _iconMap.get(state).setBackground(color);
+        _displayStateMap.get(state).setBackground(color);
     }
 
     /**
@@ -337,7 +317,7 @@ public class PositionableIcon extends PositionableLabel {
      * @return color for the state
     */
     public Color getBackgroundColor(String state) {
-        return _iconMap.get(state).getBackground();
+        return _displayStateMap.get(state).getBackground();
     }
 
     /**
@@ -366,7 +346,6 @@ public class PositionableIcon extends PositionableLabel {
 
     //////// popup Menu method overrides ////////
 
-    @Override
     public boolean setDisableControlMenu(JPopupMenu popup) {
         JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
         disableItem.setSelected(!_controlling);
@@ -380,22 +359,22 @@ public class PositionableIcon extends PositionableLabel {
     /**
      * @param popup the menu to display
      * @return true when text is to be displayed
-     */
+     *
     @Override
     public boolean setTextEditMenu(JPopupMenu popup) {
         log.debug("setTextEditMenu isIcon={}, isText={}", isIcon(), isText());
         if (isText()) {
             if (!isIcon()) {
                 JMenu stateText = new JMenu(Bundle.getMessage("SetSensorText"));
-                Iterator<String> iter = getIconStateNames();
+                Iterator<String> iter = getStateNames();
                 while (iter.hasNext()) {
                     String state = iter.next();
-                    stateText.add(CoordinateEdit.getTextEditAction(_iconMap.get(state), state));
+                    stateText.add(CoordinateEdit.getTextEditAction(this, state));
                 }
                 popup.add(stateText);
                 
                 JMenu stateColor = new JMenu(Bundle.getMessage("StateColors"));
-                iter = getIconStateNames();
+                iter = getStateNames();
                 while (iter.hasNext()) {
                     stateColor.add(stateColorMenu(iter.next()));
                 }
@@ -441,10 +420,11 @@ public class PositionableIcon extends PositionableLabel {
 
     @Override
     public void dispose() {
-        _iconMap = null;
+        _displayStateMap = null;
         super.dispose();
     }
 
+/*
     public static HashMap<String, PositionableLabel> cloneMap(HashMap<String, PositionableLabel> map,
             PositionableIcon pos) {
         HashMap<String, PositionableLabel> clone = new HashMap<>();
@@ -456,32 +436,7 @@ public class PositionableIcon extends PositionableLabel {
             }
         }
         return clone;
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-
-/*        long t = 0;
-        if (System.currentTimeMillis() - t > 1000) {
-            System.out.println("Paint "+getClass().getName()+", _displayState= "+getDisplayState());
-            t = System.currentTimeMillis();
-        }*/
-        PositionableLabel pos = _iconMap.get(_displayState);
-        if (super.isIcon() && super.isText()) { // overlaid
-            super.paintComponent(g);
-        } else {
-            long time = 0;
-            if (pos == null) {
-                if (System.currentTimeMillis() - time > 1000) {
-                    log.error("Paint {} - {}, displayState= {}, _iconMapSize {}", getClass().getName(), 
-                            getNameString(), _displayState, (_iconMap==null ? "null" : _iconMap.size()));
-                    time = System.currentTimeMillis();
-                }
-            } else {
-                pos.paintComponent(g);
-            }
-        }
-    }
+    }*/
 
     private final static Logger log = LoggerFactory.getLogger(PositionableIcon.class);
 }
