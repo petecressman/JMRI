@@ -22,9 +22,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import jmri.CatalogTree;
-import jmri.CatalogTreeManager;
-import jmri.InstanceManager;
+import javax.swing.tree.TreeNode;
+
+import jmri.*;
 import jmri.jmrit.catalog.CatalogTreeLeaf;
 import jmri.jmrit.catalog.CatalogTreeNode;
 import jmri.jmrit.catalog.ImageIndexEditor;
@@ -237,10 +237,9 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
         CatalogTree tree = manager.getBySystemName("NXPI");
         if (tree != null) {
             CatalogTreeNode root = tree.getRoot();
-            @SuppressWarnings("unchecked") // root.children() is still unchecked in JDOM2
-            Enumeration<CatalogTreeNode> e = root.children();
+            Enumeration<TreeNode> e = root.children();
             while (e.hasMoreElements()) {
-                CatalogTreeNode node = e.nextElement();
+                CatalogTreeNode node = (CatalogTreeNode)e.nextElement();
                 String typeName = (String) node.getUserObject();
                 // detect this is a 4 level map collection.
                 // not very elegant (i.e. extensible), but maybe all that's needed.
@@ -271,10 +270,9 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
             loadIndicatorFamilyMap(CatalogTreeNode node, Editor ed) {
         HashMap<String, HashMap<String, HashMap<String, NamedIcon>>> familyMap
                 = new HashMap<>();
-        @SuppressWarnings("unchecked") // node.children() is still unchecked in JDOM2
-        Enumeration<CatalogTreeNode> ee = node.children();
+        Enumeration<TreeNode> ee = node.children();
         while (ee.hasMoreElements()) {
-            CatalogTreeNode famNode = ee.nextElement();
+            CatalogTreeNode famNode = (CatalogTreeNode)ee.nextElement();
             String name = (String) famNode.getUserObject();
             familyMap.put(name, loadFamilyMap(famNode, ed));
             Thread.yield();
@@ -285,10 +283,9 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
     static HashMap<String, HashMap<String, NamedIcon>> loadFamilyMap(CatalogTreeNode node, Editor ed) {
         HashMap<String, HashMap<String, NamedIcon>> familyMap
                 = new HashMap<>();
-        @SuppressWarnings("unchecked") // node.children() is still unchecked in JDOM2
-        Enumeration<CatalogTreeNode> ee = node.children();
+        Enumeration<TreeNode> ee = node.children();
         while (ee.hasMoreElements()) {
-            CatalogTreeNode famNode = ee.nextElement();
+            CatalogTreeNode famNode = (CatalogTreeNode)ee.nextElement();
             String familyName = (String) famNode.getUserObject();
             HashMap<String, NamedIcon> iconMap = new HashMap<>();
             List<CatalogTreeLeaf> list = famNode.getLeaves();
@@ -496,12 +493,12 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
         _tabPane = new JTabbedPane();
         _tabIndex = new HashMap<>();
 
-        ItemPanel itemPanel = new TableItemPanel(palette, "Turnout", null,
+        ItemPanel itemPanel = new TableItemPanel<Turnout>(palette, "Turnout", null,
                 PickListModel.turnoutPickModelInstance(), editor);
         addItemTab(itemPanel, "Turnout", "BeanNameTurnout");
         itemPanel.init();  // show panel on start
 
-        itemPanel = new TableItemPanel(palette, "Sensor", null,
+        itemPanel = new TableItemPanel<Sensor>(palette, "Sensor", null,
                 PickListModel.sensorPickModelInstance(), editor);
         addItemTab(itemPanel, "Sensor", "BeanNameSensor");
 
@@ -521,7 +518,7 @@ public class ItemPalette extends DisplayFrame implements ChangeListener {
                 PickListModel.reporterPickModelInstance(), editor);
         addItemTab(itemPanel, "Reporter", "BeanNameReporter");
 
-        itemPanel = new TableItemPanel(palette, "Light", null,
+        itemPanel = new TableItemPanel<Light>(palette, "Light", null,
                 PickListModel.lightPickModelInstance(), editor);
         addItemTab(itemPanel, "Light", "BeanNameLight");
 

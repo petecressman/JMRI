@@ -59,6 +59,9 @@ import org.slf4j.LoggerFactory;
  * This is the root class for all panel display objects.  It holds the data needed for
  * transforming the position of the object.
  *
+ * <a href="doc-files/Heirarchy.png"><img src="doc-files/Heirarchy.png" alt="UML class diagram for package" height="33%" width="33%"></a>
+ * @see PositionableJComponent
+ * @see PositionableLabel
  * @author Bob Jacobsen Copyright (c) 2002
  * @author Howard G. Penny copyright (C) 2005
  * @author Pete Cressman copyright (C) 2010 2018

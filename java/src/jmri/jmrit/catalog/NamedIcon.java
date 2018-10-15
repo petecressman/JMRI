@@ -21,7 +21,13 @@ import org.slf4j.LoggerFactory;
  *
  * @see jmri.jmrit.display.configurexml.PositionableLabelXml
  * @author Bob Jacobsen Copyright 2002, 2008
+<<<<<<< HEAD
  * @author Pete Cressman Copyright: Copyright (c) 2009, 2010, 2017
+=======
+ * @author Pete Cressman Copyright (c) 2009, 2010
+ *
+ * Modified by Joe Comuzzi and Larry Allen to rotate animated GIFs
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
  */
 public class NamedIcon extends ImageIcon {
 
@@ -54,6 +60,7 @@ public class NamedIcon extends ImageIcon {
      *
      * @param pUrl  URL of image file to load
      * @param pName Human-readable name for the icon
+     * @param pGifState  Breakdown of GIF Image metadata and frames
      */
     public NamedIcon(String pUrl, String pName) {
         super(FileUtil.findURL(pUrl));
@@ -78,6 +85,11 @@ public class NamedIcon extends ImageIcon {
         this(pUrl.toString(), pName);
     }
 
+    /**
+     * Create a named icon from an Image. N.B. NamedIcon's create
+     * using this constructor can NOT be animated GIFs
+     * @param im Image to use
+     */
     public NamedIcon(Image im) {
         super(im);
     }

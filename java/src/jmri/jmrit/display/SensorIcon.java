@@ -244,7 +244,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     TableItemPanel _itemPanel;
     JCheckBoxMenuItem momentaryItem = new JCheckBoxMenuItem(Bundle.getMessage("Momentary"));
 
-
     @Override
     public boolean setIconEditMenu(JPopupMenu popup) {
         String txt = java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameSensor"));

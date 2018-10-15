@@ -27,7 +27,7 @@
 
 <body>
   <div id="mBody">
-    <!--#include virtual="Sidebar" -->
+    <!--#include virtual="Sidebar.shtml" -->
 
     <div id="mainContent">
       <h1>JMRI Code: Unit testing with JUnit</h1>
@@ -169,6 +169,34 @@
     runs a specific test or test suite.<br>
     (Hint: How to set this up <a href="IntelliJ.shtml#test">using IntelliJ</a>)
 
+      <h3><a name="I18N" id="I18N">A Note on Internationalization (I18N)</a></h3>
+      
+      Tests check the correctness of text in GUI elements, warning messages, and 
+      other places. Many of these are 
+      <a href="I8N.shtml">internationalized</a>,
+      varying depending on the computer's Locale.
+      
+      <p>To avoid false failures, the 
+      <a href="Ant.shtml">Ant</a> and
+      <a href="Ant.shtml#maven">Maven</a>
+      build control files set the locale to en_US 
+      before running tests.  This covers 
+      <a href="ContinuousIntegration.shtml">continuous integration</a> running,
+      and running locally using e.g. "ant headlesstest" or "ant alltest".
+      <p>
+      The ./runtest.csh mechanism does <u>not</u>
+      automatically set the locale.  To do that, the easiest approach
+      is to set the JMRI_OPTIONS environment variable via one of:
+
+<pre style="font-family: monospace;">
+   setenv JMRI_OPTIONS "-Duser.language=en -Duser.region=US"
+   export JMRI_OPTIONS="-Duser.language=en -Duser.region=US"
+</pre>   
+
+      depending on what kind of OS and shell you're using.  
+      For more on how this works, see the page on
+      <a href="StartUpScripts.shtml">startup scripts</a>. 
+      
       <h2><a name="Continuous" id="Continuous">Continuous
       Integration Test Execution</a></h2>The <a href=
       "ContinuousIntegration.shtml">continuous integration
@@ -489,13 +517,8 @@
           log.error(...) message is produced that isn't matched to
           a JUnitAppender.assertWarnMessage(...) call.</p>
         </li>
-      </ol>In any case, all of your main() routines should start
-      with
-<pre style="font-family: monospace;">
-    apps.tests.Log4JFixture.initLogging();
-</pre>
-    so that they can be run independently.
-
+      </ol>
+      
       <p>Note: Our <a href="ContinuousIntegration.shtml">CI
       test</a> executables are configured to fail if any FATAL or
       ERROR messages are emitted instead of being handled. This
@@ -629,7 +652,7 @@
       or you should add code to terminate them.
       <p>
       You can check whether you've left any threads running by
-      editing the <code>java/test/apps/tests/Log4JFixture.java</code>
+      editing the <code>java/test/jmri/util/JUnitUtil.java</code> file
       and finding a line like:
 <pre style="font-family: monospace;">
         // checkThreads(false);  // true means stop on 1st extra thread
@@ -677,15 +700,16 @@
     <p>
         You then reference "folder" in your test code:
 <pre style="font-family: monospace;">
-        // create a file in "temp"
-        File rosterDir = folder.newFolder();
-        File backupDir = folder.newFolder();
+        // create a temporary file
+        File randomNameFile = folder.newFile();
+        // create a temporary directory
+        File randomNameDir = folder.newFolder();
 </pre>
 
     
       JUnit4 will make sure the file or folder is removed afterwards regardless of whether the 
       test succeeds or fails. For more information on this, see the 
-      <a href="http://junit.org/junit4/javadoc/latest/org/junit/rules/TemporaryFolder.html">Javadoc for TemporaryFolderTest</a>.
+      <a href="http://junit.org/junit4/javadoc/latest/org/junit/rules/TemporaryFolder.html">Javadoc for TemporaryFolder</a>.
      
      <p>
      If you're not using JUnit4, consider converting the 
@@ -921,10 +945,22 @@
       <p>Here are a few tips for locating items with Jemmy:</p>
 
       <ul>
-      <li>Some of the Jemmy Operator Constructors allow leaving off an identifier.  If there is only one object of a given type on the screen at any time, it is acceptable to use this version of the constructor, but the test may be fragile.</li>
-      <li>It is easiest to find objects if they have a unique identifier.  In the case where no unique identifier exists, Jemmy provides a version of most searches that allows you to specify an ordinal index.  Using these may result in tests that break when GUI elements are added or removed from the frame.</li>
-      <li>If an item contains its own text (Buttons, for example), it is recommended you use the text to search for a component.</li>
-      <li>If an item does not contain its own description, but the GUI contains a JLabel describing that component, be certain the JLabel's LabelFor property is set.  A Jemmy JLabelOperator can then be used to find the label, and retrieve the object.</li>
+      <li>Some of the Jemmy Operator Constructors allow leaving off an identifier.  
+            If there is only one object of a given type on the screen at any time, 
+            it is acceptable to use this version of the constructor, 
+            but the test may be fragile.</li>
+      <li>It is easiest to find objects if they have a unique identifier.  
+            In the case where no unique identifier exists, 
+            Jemmy provides a version of most searches that allows you to specify an ordinal index.  
+            Using these may result in tests that break when GUI elements are 
+            added or removed from the frame.</li>
+      <li>If an item contains its own text (Buttons, for example), 
+            it is recommended you use the text to search for a component.</li>
+      <li>If an item does not contain its own description,
+            but the GUI contains a JLabel describing that component, 
+            be certain the JLabel's LabelFor property is set.  
+            A Jemmy JLabelOperator can then be used to find the label,
+            and retrieve the object.</li>
       </ul>
 
       <h4>Example of Closing a Dialog Box</h4>
@@ -997,7 +1033,10 @@
 <pre style="font-family: monospace;">
         new org.netbeans.jemmy.QueueTool().waitEmpty(20);
 </pre>
-            on the test thread.
+            on the test thread. The argument (in this example 20) is
+            how many milliseconds the queue has to remain empty before 
+            proceeding.  We're not sure what the best value is; see
+            <a href="https://github.com/JMRI/JMRI/issues/5321">Issue #5321</a> for some background discussion.
       </ul>
       
       <h3><a id="jfcunit" name="jfcunit">Using JFCUnit</a></h3>
@@ -1123,9 +1162,9 @@
       </ul>
 
       <p><a href=
-      "https://github.com/rhwood/JMRI/blob/12a4b433fb704c3454480fdc576def16f0271b2c/java/test/jmri/server/json/roster/JsonRosterHttpServiceTest.java">
+      "https://github.com/JMRI/JMRI/blob/master/java/test/jmri/server/json/roster/JsonRosterHttpServiceTest.java">
       Example of JUnit4 test</a> and <a href=
-      "https://github.com/rhwood/JMRI/blob/12a4b433fb704c3454480fdc576def16f0271b2c/java/test/jmri/server/json/roster/PackageTest.java">
+      "https://github.com/JMRI/JMRI/blob/master/java/test/jmri/server/json/roster/PackageTest.java">
       corresponding PackageTest.java file</a>; note lack of main()
       procedure and other traditional boilerplate code. These files
       are the result of this <a href=
@@ -1174,6 +1213,16 @@ import org.junit.Test;
 </pre>
         </li>
 
+        <li>If you have bare <code>assert</code> calls, like
+<pre style="font-family: monospace;">
+    assertEquals(k, ind);
+</pre>
+    change them to the JUnit4 form:
+<pre style="font-family: monospace;">
+    Assert.assertEquals(k, ind);
+</pre>
+        </li>
+        
         <li>More of our Test classes have a "from here down is
         testing infrastructure" comment, followed by setup code.
         Some of that can be removed. First, remove the class
@@ -1219,6 +1268,12 @@ import org.junit.Test;
         the useful way:  First the @Before of the super class, then
         the @Before of your class, then the test, then the @After of your class,
         and finally the @After of the superclass.
+        <p>In rare cases, you might want to use <code>@BeforeClass</code>
+            and <code>@AfterClass</code> methods to wrap the entire
+            test class.  These have to be <code>static</code>
+            and are invoked around (i.e. before and after) anything else
+            in the test class. This can be used to e.g. wrap
+            static initializers in the class under test.
         </li>
 
         <li>Finally, replace the test suite definition. JUnit3 was

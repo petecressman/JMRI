@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
-import jmri.NamedBean;
 import jmri.SignalHead;
 import jmri.jmrit.catalog.DragJLabel;
 import jmri.jmrit.catalog.NamedIcon;
@@ -28,14 +27,14 @@ import jmri.jmrit.picker.PickListModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelectionListener {
+public class SignalHeadItemPanel extends TableItemPanel<SignalHead> { 
 
     public SignalHeadItemPanel(DisplayFrame parentFrame, String type, String family, PickListModel<SignalHead> model, Editor editor) {
         super(parentFrame, type, family, model, editor);
     }
 
     @Override
-    protected JPanel initTablePanel(PickListModel model) {
+    protected JPanel initTablePanel(PickListModel<SignalHead> model) {
         _table = model.makePickTable();
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BorderLayout());
@@ -136,7 +135,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
             return allIconsMap;
         }
 
-        SignalHead sh = (SignalHead) getDeviceNamedBean();
+        SignalHead sh = getDeviceNamedBean();
         if (sh != null) {
             String[] states = sh.getValidStateNames();
             if (states.length == 0) {
@@ -188,7 +187,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
 
         @Override
         protected boolean okToDrag() {
-            NamedBean bean = getDeviceNamedBean();
+            SignalHead bean = getDeviceNamedBean();
             if (bean == null) {
                 JOptionPane.showMessageDialog(this, Bundle.getMessage("noRowSelected"),
                         Bundle.getMessage("WarningTitle"), JOptionPane.WARNING_MESSAGE);
@@ -202,7 +201,7 @@ public class SignalHeadItemPanel extends TableItemPanel { //implements ListSelec
             if (!isDataFlavorSupported(flavor)) {
                 return null;
             }
-            NamedBean bean = getDeviceNamedBean();
+            SignalHead bean = getDeviceNamedBean();
             if (bean == null) {
                 return null;
             }

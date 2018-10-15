@@ -291,7 +291,7 @@ public class TurnoutIcon extends PositionableIcon implements java.beans.Property
      * ****** popup AbstractAction method overrides ********
      */
 
-    TableItemPanel _itemPanel;
+    TableItemPanel<Turnout> _itemPanel;
 
     @Override
     public boolean setIconEditMenu(JPopupMenu popup) {

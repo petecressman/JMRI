@@ -6,8 +6,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -217,7 +215,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
         sample.setSuppressRecentColor(true);
         _samples.put("Text", sample);
         _selectedState = "Text";
-        makeFontPanels(sample, true);
+        makeFontPanels(true);
         JPanel panel = makeTextPanel("Text", sample);
         panel.add(makeColorButtonPanel("Text"));
         add(panel);
@@ -232,7 +230,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
         if (pos instanceof PositionableIcon) {
             PositionableIcon pi = (PositionableIcon) pos;
             _selectedState = pi.getState();
-            makeFontPanels(pos, true);
+            makeFontPanels(true);
             if (pi.isText() && !pi.isIcon()) {
                 Iterator<Map.Entry<String, DisplayState>> iter = pi.getDisplayStateMap().entrySet().iterator();
                 while(iter.hasNext()) {
@@ -272,7 +270,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
                     log.error("Unknown Postionable Type {}", pos.getClass().getName());
                 }
             }
-            makeFontPanels(pos, addFixedField);
+            makeFontPanels(addFixedField);
             pos.setAttributesOf(sample);
             setSample("Text", sample, addTextField, addFixedField);
         }
@@ -324,36 +322,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
         _samplePanel.add(Box.createHorizontalStrut(STRUT));
     }
 
-    @SuppressWarnings("unchecked")
-    private void makeFontPanels(Positionable pos, boolean editFixed) {
-        _fontPanel = new FontPanel(this);
-        _fontJustBox = new AJComboBox(JUSTIFICATION, 4);
-       ItemListener listen = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                int just;
-                switch (_fontJustBox.getSelectedIndex()) {
-                    case 0:
-                        just = Positionable.LEFT;
-                        break;
-                    case 1:
-                        just = Positionable.CENTRE;
-                        break;
-                    case 2:
-                        just = Positionable.RIGHT;
-                        break;
-                    default:
-                        just = Positionable.CENTRE;
-                        break;
-                }
-                for (PositionableLabel p : _samples.values()) {
-                    p.setJustification(just);
-                }
-            }
-        };
-//        _fontPanel.add(Box.createHorizontalStrut(STRUT));
-        _fontPanel.add(FontPanel.makeBoxPanel("Justification", _fontJustBox, listen)); // NOI18N
-
+    private void makeFontPanels(boolean editFixed) {
+        _fontPanel = new FontPanel( this);
         add(_fontPanel);
 
         JPanel sizePanel = new JPanel();

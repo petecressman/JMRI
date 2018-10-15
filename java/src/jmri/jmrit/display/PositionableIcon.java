@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
  * In text display mode, text and decoration can be individually edited.
  * In Overlay mode, the text is a common (decorated) label for all states.
  *
+ * <a href="doc-files/Heirarchy.png"><img src="doc-files/Heirarchy.png" alt="UML class diagram for package" height="33%" width="33%"></a>
  * @author PeteCressman Copyright (C) 2011, 2018
  */
 public class PositionableIcon extends PositionableLabel {

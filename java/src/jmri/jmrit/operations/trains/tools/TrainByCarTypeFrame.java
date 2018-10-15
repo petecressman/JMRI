@@ -26,6 +26,7 @@ import jmri.jmrit.operations.routes.Route;
 import jmri.jmrit.operations.routes.RouteLocation;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
+import jmri.jmrit.operations.trains.timetable.TrainScheduleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -305,7 +306,7 @@ public class TrainByCarTypeFrame extends OperationsFrame implements java.beans.P
                                         !_car.getLoadName().equals(InstanceManager.getDefault(CarLoads.class).getDefaultLoadName()))) {
                     op.setText(Bundle.getMessage("X(TrainLocalMove)"));
                     // determine if spur can accept car with custom load
-                } else if (track.getTrackType().equals(Track.SPUR) &&
+                } else if (track.isSpur() &&
                         track.getSchedule() == null &&
                         _car != null &&
                         _car.getTrack() != track &&
@@ -366,7 +367,7 @@ public class TrainByCarTypeFrame extends OperationsFrame implements java.beans.P
             // check to see if schedule timetable allows delivery
             if (attribute.equals(TIMETABLE) &&
                     si.getTypeName().equals(carType) &&
-                    (si.getSetoutTrainScheduleId().equals("") || InstanceManager.getDefault(TrainManager.class).getTrainScheduleActiveId()
+                    (si.getSetoutTrainScheduleId().equals("") || InstanceManager.getDefault(TrainScheduleManager.class).getTrainScheduleActiveId()
                             .equals(si.getSetoutTrainScheduleId()))) {
                 return true;
             }
@@ -379,7 +380,7 @@ public class TrainByCarTypeFrame extends OperationsFrame implements java.beans.P
                             car == null ||
                             si.getRoadName().equals(car.getRoadName())) &&
                     (si.getSetoutTrainScheduleId().equals(ScheduleItem.NONE) ||
-                            InstanceManager.getDefault(TrainManager.class).getTrainScheduleActiveId()
+                            InstanceManager.getDefault(TrainScheduleManager.class).getTrainScheduleActiveId()
                                     .equals(si.getSetoutTrainScheduleId()))) {
                 return true;
             }
