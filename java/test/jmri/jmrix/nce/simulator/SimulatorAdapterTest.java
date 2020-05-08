@@ -8,7 +8,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class SimulatorAdapterTest {
         
@@ -34,11 +34,10 @@ public class SimulatorAdapterTest {
 
     @Test
     public void testBaudRates(){
-       Assert.assertNull("no baud rates for simulator",adapter.validBaudRates());
-       Assert.assertEquals("no currentbaud rate for simulator","",adapter.getCurrentBaudRate());
+       Assert.assertEquals("empty baud rates array for simulator", new String[]{}, adapter.validBaudRates());
+       Assert.assertEquals("no currentbaudrate set for simulator","", adapter.getCurrentBaudRate());
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

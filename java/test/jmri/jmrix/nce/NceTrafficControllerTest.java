@@ -5,18 +5,14 @@ import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * JUnit tests for the NceTrafficController class
  *
- * @author	Bob Jacobsen Copyright 2003, 2007
+ * @author Bob Jacobsen Copyright 2003, 2007
  */
 public class NceTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficControllerTest {
 
@@ -168,7 +164,7 @@ public class NceTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficContro
         m.setElement(1, '1');
         m.setElement(2, '2');
         c.sendNceMessage(m, l);
-		// that's already tested, so don't do here.
+        // that's already tested, so don't do here.
 
         // now send reply
         tistream.write('R');
@@ -195,12 +191,12 @@ public class NceTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficContro
         while (rcvdReply == null && i++ < 100) {
             try {
                 Thread.sleep(10);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("past loop, i=" + i
-                    + " reply=" + rcvdReply);
+            log.debug("past loop, i={} reply={}", i, rcvdReply);
         }
         return i < 100;
     }
@@ -245,7 +241,13 @@ public class NceTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficContro
 
         @Override
         public String[] validBaudRates() {
-            return null;
+            return new String[]{};
+        }
+
+        //@Override
+        @Override
+        public int[] validBaudNumbers() {
+            return new int[]{};
         }
 
         protected NcePortControllerScaffold() throws Exception {
@@ -283,21 +285,20 @@ public class NceTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficContro
     static DataOutputStream tistream; // tests write to this
     static DataInputStream istream;  // so the traffic controller can read from this
 
-    // The minimal setup for log4J
     @Override
     @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
-        tc  = new NceTrafficController();
+        tc = new NceTrafficController();
     }
 
     @Override
     @After
     public void tearDown() {
         tc = null;
+        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
-
 
     private final static Logger log = LoggerFactory.getLogger(NceTrafficControllerTest.class);
 

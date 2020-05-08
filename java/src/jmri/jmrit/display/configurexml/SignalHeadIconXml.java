@@ -64,16 +64,16 @@ public class SignalHeadIconXml extends PositionableIconXml {
         } else {
             name = attr.getValue();
         }
-        SignalHead sh = jmri.InstanceManager.getDefault(jmri.SignalHeadManager.class).getSignalHead(name);
 
         if (!loadPositionableIcon(element, l)) {
             loadPre50(element, l, name);
         }
 
+        SignalHead sh = jmri.InstanceManager.getDefault(jmri.SignalHeadManager.class).getSignalHead(name);
         if (sh != null) {
             l.setSignalHead(name);
         } else {
-            log.error("SignalHead named '" + attr.getValue() + "' not found.");
+            log.error("SignalHead named '{}' not found.", attr.getValue());
             //    ed.loadFailed();
             return;
         }
@@ -83,7 +83,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
                 l.setClickMode(attr.getIntValue());
             }
         } catch (org.jdom2.DataConversionException e) {
-            log.error("Failed on clickmode attribute: " + e);
+            log.error("Failed on clickmode attribute: ", e);
         }
 
         try {
@@ -92,7 +92,7 @@ public class SignalHeadIconXml extends PositionableIconXml {
                 l.setLitMode(attr.getBooleanValue());
             }
         } catch (org.jdom2.DataConversionException e) {
-            log.error("Failed on litmode attribute: " + e);
+            log.error("Failed on litmode attribute: ", e);
         }
 
         l.updateSize();
@@ -176,18 +176,19 @@ public class SignalHeadIconXml extends PositionableIconXml {
                 if (icon == null) {
                     icon = ed.loadFailed(msg, iconName);
                     if (icon == null) {
-                        log.info(msg + " removed for url= " + iconName);
+                        log.info("{} removed for url= {}", msg, iconName);
                     }
                 }
             } else {
-                log.info("did not load file aspect " + aspect + " for SignalHead " + name);
+                log.info("did not load file aspect {} for SignalHead {}", aspect, name);
             }
         }
         if (icon == null) {
-            log.info("SignalHead Icon \"" + name + "\": icon \"" + aspect + "\" removed");
+            log.info("SignalHead Icon \"{}\": icon \"{}\" removed", name, aspect);
         }
         l.setStateIcon(aspect, icon);
     }
 
     private final static Logger log = LoggerFactory.getLogger(SignalHeadIconXml.class);
+
 }

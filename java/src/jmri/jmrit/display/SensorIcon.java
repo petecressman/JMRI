@@ -3,9 +3,11 @@ package jmri.jmrit.display;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import javax.annotation.Nonnull;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
@@ -13,6 +15,8 @@ import javax.swing.Timer;
 import jmri.InstanceManager;
 import jmri.NamedBeanHandle;
 import jmri.Sensor;
+import jmri.Turnout;
+import jmri.NamedBean.DisplayOptions;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.palette.TableItemPanel;
 import jmri.jmrit.picker.PickListModel;
@@ -32,11 +36,14 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     boolean _momentary = false;
 
     //  Map state integer to state name found in jmri.NamedBeanBundle.properties to display
-    private HashMap<Integer, String> _state2nameMap;
+    private HashMap<Integer, String> _state2nameMap =  new HashMap<>(4);
 
     public SensorIcon(Editor editor) {
         super(editor);
+        makeStateNameMap();
         setIsIcon(true);
+        makeDisplayMap();
+        setDisplayState(Bundle.getMessage("BeanStateUnknown"));
     }
 
     public SensorIcon(NamedIcon s, Editor editor) {
@@ -58,7 +65,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         if (sensor != null) {
             pos.setSensor(sensor.getName());            
         }
-        pos.makeStateNameMap();
         pos.setMomentary(getMomentary());
         return super.finishClone(pos);
     }
@@ -74,7 +80,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
                 Sensor sensor = InstanceManager.sensorManagerInstance().provideSensor(pName);
                 setSensor(jmri.InstanceManager.getDefault(jmri.NamedBeanHandleManager.class).getNamedBeanHandle(pName, sensor));
             } catch (IllegalArgumentException ex) {
-                log.error("Sensor '" + pName + "' not available, icon won't see changes");
+                log.error("Sensor '{}' not available, icon won't see changes", pName);
             }
         } else {
             log.error("No SensorManager for this protocol, icon won't see changes");
@@ -90,7 +96,6 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         if (namedSensor != null) {
             getSensor().removePropertyChangeListener(this);
         }
-
         namedSensor = s;
         if (namedSensor != null) {
             getSensor().addPropertyChangeListener(this, s.getName(), "SensorIcon on Panel " + _editor.getName());
@@ -116,7 +121,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     }
 
     private void makeStateNameMap() {
-        _state2nameMap = new HashMap<>();
+        _state2nameMap.clear();
         _state2nameMap.put(Sensor.UNKNOWN, "BeanStateUnknown");
         _state2nameMap.put(Sensor.INCONSISTENT, "BeanStateInconsistent");
         _state2nameMap.put(Sensor.ACTIVE, "SensorStateActive");
@@ -124,50 +129,9 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     }
 
     @Override
-    protected HashMap<String, DisplayState> makeDefaultMap() {
-        makeStateNameMap();
-        HashMap<String, DisplayState> oldMap = getDisplayStateMap();
-        HashMap<String, DisplayState> map = new HashMap<>();
-        Iterator <String> iter = _state2nameMap.values().iterator();
-        while (iter.hasNext()) {
-            String state = iter.next();
-            DisplayState pos;
-            if (oldMap != null) {
-                pos = oldMap.get(state);
-            } else {
-                pos = new DisplayState();
-                pos.setText(Bundle.getMessage(state));
-            }
-            map.put(state, pos);
-        }
-        return map;
+    protected Collection<String> getStateNameCollection() {
+        return _state2nameMap.values();
     }
-
-    /**
-     * Place icon by its bean state name key found in 
-     * the properties file jmri.NamedBeanBundle.properties
-     *
-     * @param name sensor state name
-     * @param icon the icon to display the state
-     */
-    @Override
-    public void setStateIcon(String name, NamedIcon icon) {
-        if (log.isDebugEnabled()) {
-            log.debug("setStateIcon \"{}\" icon= {}",
-                    name, (icon!=null?icon.getURL():"null"));
-        }
-        super.setStateIcon(name, icon);
-    }
-
-    /**
-     * Get icon by its localized bean state name.
-     *
-     * @param state the state to get the icon for
-     * @return the icon or null if state not found
-     *
-    public NamedIcon getIcon(int state) {
-        return getIcon(_state2nameMap.get(state));
-    }*/
 
     /**
      * Get current state of attached sensor
@@ -176,7 +140,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      *
      * @return A state variable name from a Sensor
      */
-    protected String sensorState() {
+    private String sensorState() {
         if (namedSensor != null) {
             return  _state2nameMap.get(getSensor().getKnownState());
         } else {
@@ -196,14 +160,13 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     }
 
     @Override
+    @Nonnull
     public String getNameString() {
         String name;
         if (namedSensor == null) {
             name = Bundle.getMessage("NotConnected");
-        } else if (getSensor().getUserName() == null) {
-            name = getSensor().getSystemName();
         } else {
-            name = getSensor().getUserName() + " (" + getSensor().getSystemName() + ")";
+            name = getSensor().getDisplayName(DisplayOptions.USERNAME_SYSTEMNAME);
         }
         return name;
     }
@@ -216,7 +179,38 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
      */
     @Override
     public boolean showPopUp(JPopupMenu popup) {
-        setAdditionalViewPopUpMenu(popup);
+//<<<<<<< HEAD
+        if (isEditable()) {
+            popup.add(momentaryItem);
+            momentaryItem.setSelected(getMomentary());
+            momentaryItem.addActionListener((java.awt.event.ActionEvent e) -> setMomentary(momentaryItem.isSelected()));
+            setAdditionalViewPopUpMenu(popup);
+        }
+/*=======
+        if (isEditable()) {
+            if (isIcon()) {
+                popup.add(new AbstractAction(Bundle.getMessage("ChangeToText")) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        changeLayoutSensorType();
+                    }
+                });
+            } else {
+                popup.add(new AbstractAction(Bundle.getMessage("ChangeToIcon")) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        changeLayoutSensorType();
+                    }
+                });
+            }
+
+            popup.add(momentaryItem);
+            momentaryItem.setSelected(getMomentary());
+            momentaryItem.addActionListener((java.awt.event.ActionEvent e) -> setMomentary(momentaryItem.isSelected()));
+        } else if (getPopupUtility() != null) {
+            getPopupUtility().setAdditionalViewPopUpMenu(popup);
+        }
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI*/
         return true;
     }
 
@@ -225,23 +219,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         displayState(sensorState());
     }
 
-    /**
-     * Drive the current state of the display from the state of the sensor.
-     *
-     * @param state the sensor state
-     */
-    private void displayState(String state) {
-        if (getNamedSensor() == null) {
-            setDisconnectedText("BeanDisconnected");
-        } else {
-            restoreConnectionDisplay();
-        }
-        getDisplayState(state).setDisplayParameters(this);
-        setDisplayState(state);
-        updateSize();
-    }
-
-    TableItemPanel _itemPanel;
+    TableItemPanel<Sensor> _itemPanel;
     JCheckBoxMenuItem momentaryItem = new JCheckBoxMenuItem(Bundle.getMessage("Momentary"));
 
     @Override
@@ -264,12 +242,10 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
 
     protected void editItem() {
         _paletteFrame = makePaletteFrame(java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameSensor")));
-        _itemPanel = new TableItemPanel(_paletteFrame, "Sensor", getFamily(),
-                PickListModel.sensorPickModelInstance(), _editor); // NOI18N
-        ActionListener updateAction = (ActionEvent a) -> {
-            updateItem();
-        };
-        // duplicate _iconMap map
+        _itemPanel = new TableItemPanel<>(_paletteFrame, "Sensor", getFamily(),
+                PickListModel.sensorPickModelInstance()); // NOI18N
+        ActionListener updateAction = (ActionEvent a) -> updateItem();
+        // duplicate _iconMap map with unscaled and unrotated icons
         HashMap<String, NamedIcon> map = new HashMap<>();
         Iterator<String> iter = getStateNames();
         while (iter.hasNext()) {
@@ -291,11 +267,9 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         setFamily(_itemPanel.getFamilyName());
         HashMap<String, NamedIcon> iconMap = _itemPanel.getIconMap();
         if (iconMap != null) {
-            Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, NamedIcon> entry = it.next();
+            for (Entry<String, NamedIcon> entry : iconMap.entrySet()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("key= " + entry.getKey());
+                    log.debug("key= {}", entry.getKey());
                 }
                 NamedIcon newIcon = new NamedIcon(entry.getValue());
                 setStateIcon(entry.getKey(), newIcon);
@@ -320,18 +294,20 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     protected void edit() {
         makeIconEditorFrame(this, "Sensor", true, null);
         _iconEditor.setPickList(jmri.jmrit.picker.PickListModel.sensorPickModelInstance());
-        Iterator<String> e = _iconMap.keySet().iterator();
         int i = 0;
+<<<<<<< HEAD
         while (e.hasNext()) {
             String key = e.next();
             _iconEditor.setIcon(i++, /*_state2nameMap.get(key) key, _iconMap.get(key));
+=======
+        for (Entry<String, NamedIcon> entry : _iconMap.entrySet()) {
+            _iconEditor.setIcon(i++, entry.getKey(), entry.getValue());
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
         }
         _iconEditor.makeIconPanel(false);
 
         // set default icons, then override with this turnout's icons
-        ActionListener addIconAction = (ActionEvent a) -> {
-            updateSensor();
-        };
+        ActionListener addIconAction = (ActionEvent a) -> updateSensor();
         _iconEditor.complete(addIconAction, true, true, true);
         _iconEditor.setSelection(getSensor());
     }
@@ -341,12 +317,8 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
         setSensor(_iconEditor.getTableSelection().getDisplayName());
         Hashtable<String, NamedIcon> iconMap = _iconEditor.getIconMap();
 
-        Iterator<Entry<String, NamedIcon>> it = iconMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, NamedIcon> entry = it.next();
-            if (log.isDebugEnabled()) {
-                log.debug("key= " + entry.getKey());
-            }
+        for (Entry<String, NamedIcon> entry : iconMap.entrySet()) {
+            log.debug("key= {}", entry.getKey());
             NamedIcon newIcon = entry.getValue();
             setStateIcon(entry.getKey(), newIcon);
         }
@@ -380,7 +352,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             try {
                 getSensor().setKnownState(jmri.Sensor.ACTIVE);
             } catch (jmri.JmriException reason) {
-                log.warn("Exception setting momentary sensor: " + reason);
+                log.warn("Exception setting momentary sensor: {}", reason);
             }
         }
         super.doMousePressed(e);
@@ -393,7 +365,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
             try {
                 getSensor().setKnownState(jmri.Sensor.INACTIVE);
             } catch (jmri.JmriException reason) {
-                log.warn("Exception setting momentary sensor: " + reason);
+                log.warn("Exception setting momentary sensor: {}", reason);
             }
         }
         super.doMouseReleased(e);
@@ -411,7 +383,7 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
                         getSensor().setKnownState(jmri.Sensor.INACTIVE);
                     }
                 } catch (jmri.JmriException reason) {
-                    log.warn("Exception flipping sensor: " + reason);
+                    log.warn("Exception flipping sensor: {}", reason);
                 }
             }
         }
@@ -477,4 +449,5 @@ public class SensorIcon extends PositionableIcon implements java.beans.PropertyC
     }
 
     private final static Logger log = LoggerFactory.getLogger(SensorIcon.class);
+
 }

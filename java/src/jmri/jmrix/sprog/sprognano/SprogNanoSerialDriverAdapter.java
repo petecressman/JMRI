@@ -1,8 +1,6 @@
 package jmri.jmrix.sprog.sprognano;
 
 import jmri.jmrix.sprog.SprogConstants.SprogMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Implements SerialPortAdapter for the Sprog system.
@@ -13,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * The current implementation only handles the 9,600 baud rate, and does not use
  * any other options at configuration time.
  *
- * @author	Andrew Crosland Copyright (C) 2016
+ * @author Andrew Crosland Copyright (C) 2016
  */
 public class SprogNanoSerialDriverAdapter
         extends jmri.jmrix.sprog.serialdriver.SerialDriverAdapter {
@@ -30,7 +28,7 @@ public class SprogNanoSerialDriverAdapter
     /**
      * @deprecated JMRI Since 4.4 instance() shouldn't be used, convert to JMRI multi-system support structure
      */
-    @Deprecated
+    @Deprecated  // will be removed when superclass method is removed due to @Override
     static public SprogNanoSerialDriverAdapter instance() {
         return null;
     }

@@ -2,6 +2,11 @@ package jmri.jmrit.operations.rollingstock.cars.tools;
 
 import java.awt.GraphicsEnvironment;
 import java.util.ResourceBundle;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.rollingstock.cars.CarsTableFrame;
 import jmri.jmrit.operations.rollingstock.cars.tools.PrintCarRosterAction.CarPrintOptionFrame;
@@ -9,11 +14,6 @@ import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.JemmyUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -25,9 +25,10 @@ public class PrintCarRosterActionTest extends OperationsTestCase {
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         CarsTableFrame ctf = new CarsTableFrame(true, null, null);
-        PrintCarRosterAction t = new PrintCarRosterAction("Test Action", true, ctf);
+        PrintCarRosterAction t = new PrintCarRosterAction(true, ctf);
         Assert.assertNotNull("exists", t);
         JUnitUtil.dispose(ctf);
+        JUnitOperationsUtil.checkOperationsShutDownTask();
     }
 
     @Test
@@ -36,7 +37,7 @@ public class PrintCarRosterActionTest extends OperationsTestCase {
 
         JUnitOperationsUtil.initOperationsData();
         CarsTableFrame ctf = new CarsTableFrame(true, null, null);
-        PrintCarRosterAction pcra = new PrintCarRosterAction("Test Action", true, ctf);
+        PrintCarRosterAction pcra = new PrintCarRosterAction(true, ctf);
         Assert.assertNotNull("exists", pcra);
         
         CarPrintOptionFrame f = pcra.new CarPrintOptionFrame(pcra);
@@ -51,21 +52,11 @@ public class PrintCarRosterActionTest extends OperationsTestCase {
         JmriJFrame printPreviewFrame = JmriJFrame.getFrame(rb.getString("PrintPreviewTitle") + " " +Bundle.getMessage("TitleCarRoster"));
         Assert.assertNotNull("exists", printPreviewFrame);
         
+        JUnitUtil.dispose(f);
         JUnitUtil.dispose(printPreviewFrame);
         JUnitUtil.dispose(ctf);
-    }
+        JUnitOperationsUtil.checkOperationsShutDownTask();
 
-    // The minimal setup for log4J
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-    }
-
-    @Override
-    @After
-    public void tearDown() {
-        super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(PrintCarRosterActionTest.class);

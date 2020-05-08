@@ -5,6 +5,7 @@ import jmri.jmrit.blockboss.*;
 import jmri.implementation.*;
 import jmri.*;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 
 import org.junit.After;
@@ -17,7 +18,7 @@ import org.jdom2.*;
 /**
  * BlockBossLogicXmlTest.java
  *
- * Description: tests for the BlockBossLogicXml class
+ * Test for the BlockBossLogicXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -135,15 +136,27 @@ public class BlockBossLogicXmlTest {
         jmri.util.JUnitAppender.assertErrorMessage("Ignoring a <signalelement> element with no signal attribute value");
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
-        jmri.util.JUnitUtil.initInternalSensorManager();
+        JUnitUtil.resetInstanceManager();
+        JUnitUtil.initInternalSensorManager();
+        JUnitUtil.initInternalSignalHeadManager();
+        
+        // clear the BlockBossLogic static list
+        Enumeration<BlockBossLogic> en = BlockBossLogic.entries();
+        ArrayList<SignalHead> heads = new ArrayList<>();
+        while (en.hasMoreElements()) {
+            heads.add(en.nextElement().getDrivenSignalNamedBean().getBean());
+        }
+        for (SignalHead head : heads) {  // avoids ConcurrentModificationException
+            BlockBossLogic.getStoppedObject(head);
+        }
     }
 
     @After
     public void tearDown() {
+        JUnitUtil.clearBlockBossLogic();
         JUnitUtil.tearDown();
     }
 

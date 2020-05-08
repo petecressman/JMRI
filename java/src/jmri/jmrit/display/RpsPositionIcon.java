@@ -1,7 +1,6 @@
 package jmri.jmrit.display;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -79,12 +78,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
         if (showIdItem == null) {
             showIdItem = new JCheckBoxMenuItem("Show ID");
             showIdItem.setSelected(false);
-            showIdItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(java.awt.event.ActionEvent e) {
-                    toggleID(showIdItem.isSelected());
-                }
-            });
+            showIdItem.addActionListener(e -> toggleID(showIdItem.isSelected()));
         }
         popup.add(showIdItem);
 
@@ -126,7 +120,7 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
 
     /**
      * Internal class to show position in the popup menu.
-     * <P>
+     * <p>
      * This is updated before the menu is shown, and then appears in the menu.
      */
     class Notifier extends AbstractAction {
@@ -188,7 +182,6 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
 
         updateSize();
         revalidate();
-        return;
     }
 
     boolean momentary = false;
@@ -324,13 +317,13 @@ public class RpsPositionIcon extends PositionableLabel implements MeasurementLis
     }
 
     /**
-     * Matches the icon position on the screen to it's position in the RPS
+     * Matches the icon position on the screen to its position in the RPS
      * coordinate system.
-     * <P>
+     * <p>
      * Typically invoked from the popup menu, you move the icon (e.g. via drag
-     * and drop) to the correct position on the screen for it's current measured
+     * and drop) to the correct position on the screen for its current measured
      * position, and then invoke this method.
-     * <P>
+     * <p>
      * Requires the origin to have been set, and some other measurement to have
      * been made (and current).
      */

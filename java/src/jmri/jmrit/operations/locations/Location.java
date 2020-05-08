@@ -1,6 +1,7 @@
 package jmri.jmrit.operations.locations;
 
 import java.awt.Point;
+import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -9,6 +10,8 @@ import java.util.List;
 import javax.swing.JComboBox;
 import jmri.InstanceManager;
 import jmri.Reporter;
+import jmri.beans.Identifiable;
+import jmri.beans.PropertyChangeSupport;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.rollingstock.RollingStock;
 import jmri.jmrit.operations.rollingstock.cars.Car;
@@ -30,7 +33,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Daniel Boudreau Copyright (C) 2008, 2012, 2013
  */
-public class Location implements java.beans.PropertyChangeListener {
+public class Location extends PropertyChangeSupport implements Identifiable, PropertyChangeListener {
 
     public static final String LOC_TRACK_REGIX = "s";
 
@@ -116,6 +119,7 @@ public class Location implements java.beans.PropertyChangeListener {
         addPropertyChangeListeners();
     }
 
+    @Override
     public String getId() {
         return _id;
     }
@@ -670,7 +674,7 @@ public class Location implements java.beans.PropertyChangeListener {
         return _switchListComment;
     }
 
-    private String[] getTypeNames() {
+    public String[] getTypeNames() {
         String[] types = new String[_listTypes.size()];
         for (int i = 0; i < _listTypes.size(); i++) {
             types[i] = _listTypes.get(i);
@@ -1276,7 +1280,7 @@ public class Location implements java.beans.PropertyChangeListener {
      * 
      * @param reader jmri.Reporter object.
      */
-    protected void setReporter(Reporter r) {
+    public void setReporter(Reporter r) {
         Reporter old = _reader;
         _reader = r;
         if (old != r) {
@@ -1318,6 +1322,7 @@ public class Location implements java.beans.PropertyChangeListener {
      *
      * @param e Consist XML element
      */
+    @SuppressWarnings("deprecation") // until there's a replacement for convertFromXmlComment()
     public Location(Element e) {
         Attribute a;
         if ((a = e.getAttribute(Xml.ID)) != null) {
@@ -1389,9 +1394,11 @@ public class Location implements java.beans.PropertyChangeListener {
         } catch (NumberFormatException nfe) {
             log.error("Train icon coordinates aren't vaild for location {}", getName());
         }
+        
         if ((a = e.getAttribute(Xml.COMMENT)) != null) {
             _comment = OperationsXml.convertFromXmlComment(a.getValue());
         }
+
         if ((a = e.getAttribute(Xml.SWITCH_LIST_COMMENT)) != null) {
             _switchListComment = a.getValue();
         }
@@ -1629,19 +1636,9 @@ public class Location implements java.beans.PropertyChangeListener {
         }
     }
 
-    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
-
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
-    }
-
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-
     protected void setDirtyAndFirePropertyChange(String p, Object old, Object n) {
         InstanceManager.getDefault(LocationManagerXml.class).setDirty(true);
-        pcs.firePropertyChange(p, old, n);
+        firePropertyChange(p, old, n);
     }
 
     private final static Logger log = LoggerFactory.getLogger(Location.class);

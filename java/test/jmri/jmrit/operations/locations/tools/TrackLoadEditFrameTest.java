@@ -1,6 +1,11 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.GraphicsEnvironment;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.locations.Location;
@@ -9,21 +14,18 @@ import jmri.jmrit.operations.locations.Track;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class TrackLoadEditFrameTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        
+        JUnitOperationsUtil.initOperationsData();
         TrackLoadEditFrame t = new TrackLoadEditFrame();
         Assert.assertNotNull("exists",t);
         
@@ -35,11 +37,14 @@ public class TrackLoadEditFrameTest extends OperationsTestCase {
         Assert.assertTrue(t.isVisible());
         
         JUnitUtil.dispose(t);
+
     }
     
     @Test
     public void testFrameButtons() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        
+        JUnitOperationsUtil.initOperationsData();
         TrackLoadEditFrame tlef = new TrackLoadEditFrame();
         Assert.assertNotNull("exists",tlef);
         
@@ -57,7 +62,7 @@ public class TrackLoadEditFrameTest extends OperationsTestCase {
         JemmyUtil.enterClickAndLeave(tlef.saveTrackButton);
         
         // error dialog window show appear
-        JemmyUtil.pressDialogButton(tlef, Bundle.getMessage("ErrorNoLoads"), "OK");
+        JemmyUtil.pressDialogButton(tlef, Bundle.getMessage("ErrorNoLoads"), Bundle.getMessage("ButtonOK"));
         
         // now add a load "Flat & E"
         JemmyUtil.enterClickAndLeave(tlef.addLoadButton);
@@ -70,21 +75,7 @@ public class TrackLoadEditFrameTest extends OperationsTestCase {
         Assert.assertFalse(track.acceptsLoadName("E"));
         
         JUnitUtil.dispose(tlef);
-    }
 
-    // The minimal setup for log4J
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-        
-        JUnitOperationsUtil.initOperationsData();
-    }
-
-    @Override
-    @After
-    public void tearDown() {
-        super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(TrackLoadEditFrameTest.class);

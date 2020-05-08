@@ -24,12 +24,8 @@ abstract public class PositionableJPanel extends Positionable implements MouseLi
         setLayout(new java.awt.GridBagLayout());
         _bodyComponent = getContainerComponent();
         add(_bodyComponent, new java.awt.GridBagConstraints());
-//        invalidate();
 
         _textComponent = getTextField();
-
-//        Dimension dim = getPreferredSize();
-//        super.setFixedSize(dim.width, dim.height);
     }
     
     abstract protected JTextField getTextField();
@@ -37,17 +33,10 @@ abstract public class PositionableJPanel extends Positionable implements MouseLi
     abstract public String getText();
     abstract public boolean setIconEditMenu(javax.swing.JPopupMenu popup);
 
-    /**
-     * Provides a generic method to return the bean associated with the
-     * Positionable
-     */
-    @Override
-    abstract public jmri.NamedBean getNamedBean();
-
     public JComponent getContainer() {
         return _bodyComponent;
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e) {
         _editor.mousePressed(new MouseEvent(this, e.getID(), e.getWhen(), e.getModifiersEx(),

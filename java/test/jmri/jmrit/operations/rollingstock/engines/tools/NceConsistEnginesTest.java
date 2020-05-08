@@ -1,34 +1,24 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
-import jmri.jmrit.operations.rollingstock.engines.tools.NceConsistEngines;
-import jmri.util.JUnitUtil;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
+
+import jmri.jmrit.operations.OperationsTestCase;
+import jmri.util.JUnitOperationsUtil;
 
 /**
  *
- * @author	Bob Coleman Copyright (C) 2008, 2009
+ * @author Bob Coleman Copyright (C) 2008, 2009
  */
-public class NceConsistEnginesTest {
+public class NceConsistEnginesTest extends OperationsTestCase {
 
     @Test
     public void testCTor(){
        // this class currently requires an NCE traffic controller to function.
        jmri.jmrix.nce.NceTrafficController tc = new jmri.jmrix.nce.NceTrafficControlScaffold();
        Assert.assertNotNull("NceConsistEngines exists",new NceConsistEngines(tc));
+       
+       JUnitOperationsUtil.checkNceShutDownTask();  // TODO need to fix this
+       //JUnitUtil.clearShutDownManager();  // TODO for now
     }
-
-    @Before
-    public void setUp() {
-        JUnitUtil.setUp();
-    }
-
-    @After
-    public void tearDown() {
-       JUnitUtil.tearDown();
-    }
-
-
 }

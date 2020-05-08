@@ -40,74 +40,6 @@ public class PositionableLabelXml extends PositionableJComponentXml {
     }
 
     /**
-     * Store the text formatting information.
-     * <p>
-     * This is always stored, even if the icon isn't in text mode, because some
-     * uses (subclasses) of PositionableLabel flip back and forth between icon
-     * and text, and want to remember their formatting.
-     *
-     * @param p       the icon to store
-     * @param element the XML representation of the icon
-     *
-    protected void storeTextInfo(Positionable p, Element element) {
-        //if (p.getText()!=null) element.setAttribute("text", p.getText());
-        PositionablePopupUtil util = p.getPopupUtility();
-
-        GuiLafPreferencesManager manager = InstanceManager.getDefault(GuiLafPreferencesManager.class);
-        String defaultFontName = manager.getDefaultFont().getFontName();
-
-        String fontName = p.getFont().getFontName();
-        if (!fontName.equals(defaultFontName)) {
-            element.setAttribute("fontname", "" + p.getFont().getFontName());
-        }
-
-        element.setAttribute("size", "" + util.getFontSize());
-        element.setAttribute("style", "" + util.getFontStyle());
-
-        // always write the foreground (text) color
-        element.setAttribute("red", "" + p.getForeground().getRed());
-        element.setAttribute("green", "" + p.getForeground().getGreen());
-        element.setAttribute("blue", "" + p.getForeground().getBlue());
-
-        Color backGround = p.getBackgroundColor(); 
-        if (backGround!=null) {
-            element.setAttribute("redBack", "" + backGround.getRed());
-            element.setAttribute("greenBack", "" + backGround.getGreen());
-            element.setAttribute("blueBack", "" + backGround.getBlue());
-        }
-
-        if (p.getMarginSize() != 0) {
-            element.setAttribute("margin", "" + p.getMarginSize());
-        }
-        if (p.getBorderSize() != 0) {
-            element.setAttribute("borderSize", "" + p.getBorderSize());
-            element.setAttribute("redBorder", "" + p.getBorderColor().getRed());
-            element.setAttribute("greenBorder", "" + p.getBorderColor().getGreen());
-            element.setAttribute("blueBorder", "" + p.getBorderColor().getBlue());
-        }
-        if (util.getFixedWidth() != 0) {
-            element.setAttribute("fixedWidth", "" + util.getFixedWidth());
-        }
-        if (util.getFixedHeight() != 0) {
-            element.setAttribute("fixedHeight", "" + util.getFixedHeight());
-        }
-
-        String just;
-        switch (util.getJustification()) {
-            case 0x02:
-                just = "right";
-                break;
-            case 0x04:
-                just = "centre";
-                break;
-            default:
-                just = "left";
-                break;
-        }
-        element.setAttribute("justification", just);
-    }
-
-    /**
      * Default implementation for storing the common contents of an Icon
      *
      * @param p       the icon to store
@@ -211,16 +143,14 @@ public class PositionableLabelXml extends PositionableJComponentXml {
             log.error("PositionableLabel is null!");
             if (log.isDebugEnabled()) {
                 java.util.List<Attribute> attrs = element.getAttributes();
-                log.debug("\tElement Has " + attrs.size() + " Attributes:");
-                for (int i = 0; i < attrs.size(); i++) {
-                    Attribute a = attrs.get(i);
-                    log.debug("\t\t" + a.getName() + " = " + a.getValue());
+                log.debug("\tElement Has {} Attributes:", attrs.size());
+                for (Attribute a : attrs) {
+                    log.debug("\t\t{} = {}", a.getName(), a.getValue());
                 }
                 java.util.List<Element> kids = element.getChildren();
-                log.debug("\tElementHas " + kids.size() + " children:");
-                for (int i = 0; i < kids.size(); i++) {
-                    Element e = kids.get(i);
-                    log.debug("\t\t" + e.getName() + " = \"" + e.getValue() + "\"");
+                log.debug("\tElementHas {} children:", kids.size());
+                for (Element e : kids) {
+                    log.debug("\t\t{} = \"{}\"", e.getName(), e.getValue());
                 }
             }
             editor.loadFailed();
@@ -258,14 +188,11 @@ public class PositionableLabelXml extends PositionableJComponentXml {
                 int style = a.getIntValue();
                 int drop = 0;
                 switch (style) {
-                    case 0:
-                        drop = 1; //0 Normal
-                        break;
-                    case 2:
-                        drop = 1; //italic
+                    case 0:  //0 Normal
+                    case 2:  // italic
+                        drop = 1;
                         break;
                     default:
-                        // fall through
                         break;
                 }
                 util.setFontStyle(style, drop);

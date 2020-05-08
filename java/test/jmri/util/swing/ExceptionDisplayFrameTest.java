@@ -1,15 +1,8 @@
 package jmri.util.swing;
 
 import java.awt.GraphicsEnvironment;
-import javax.swing.JFrame;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.Timeout;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -53,7 +46,6 @@ public class ExceptionDisplayFrameTest {
         JUnitUtil.dispose(dialog);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

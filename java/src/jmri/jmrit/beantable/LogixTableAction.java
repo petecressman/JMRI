@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.BorderFactory;
@@ -48,7 +47,6 @@ import jmri.InstanceManager;
 import jmri.Logix;
 import jmri.LogixManager;
 import jmri.Manager;
-import jmri.NamedBean;
 import jmri.UserPreferencesManager;
 import jmri.jmrit.conditional.ConditionalEditBase;
 import jmri.jmrit.conditional.ConditionalListEdit;
@@ -235,7 +233,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
             /**
              * Delete the bean after all the checking has been done.
              * <p>
-             * Deactivates the Logix and remove it's conditionals.
+             * Deactivates the Logix and remove its conditionals.
              *
              * @param bean of the Logix to delete
              */
@@ -347,7 +345,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
         javax.swing.JMenuBar menuBar = f.getJMenuBar();
         int pos = menuBar.getMenuCount() - 1;  // count the number of menus to insert the TableMenus before 'Window' and 'Help'
         int offset = 1;
-        log.debug("setMenuBar number of menu items = " + pos);  // NOI18N
+        log.debug("setMenuBar number of menu items = {}", pos);  // NOI18N
         for (int i = 0; i <= pos; i++) {
             if (menuBar.getComponent(i) instanceof JMenu) {
                 if (((JMenu) menuBar.getComponent(i)).getText().equals(Bundle.getMessage("MenuHelp"))) {  // NOI18N
@@ -601,7 +599,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
     /**
      * Find empty Conditional entries, called from menu.
      *
-     * @see Maintenance#findEmptyPressed(Frame)
+     * @see Maintenance#findEmptyPressed(java.awt.Frame)
      * @param e the event heard
      */
     void findEmptyPressed(ActionEvent e) {
@@ -611,7 +609,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
     /**
      * Find orphaned entries, called from menu.
      *
-     * @see Maintenance#findOrphansPressed(Frame)
+     * @see Maintenance#findOrphansPressed(java.awt.Frame)
      * @param e the event heard
      */
     void findOrphansPressed(ActionEvent e) {
@@ -653,9 +651,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
     }
 
     void enableAll(boolean enable) {
-        List<String> sysNameList = _logixManager.getSystemNameList();
-        for (int i = 0; i < sysNameList.size(); i++) {
-            Logix x = _logixManager.getBySystemName(sysNameList.get(i));
+        for (Logix x : _logixManager.getNamedBeanSet()) {
             x.setEnabled(enable);
         }
     }
@@ -947,7 +943,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
      * @param e the event heard
      */
     void copyLogixPressed(ActionEvent e) {
-        String uName = _addUserName.getText().trim();
+        String uName = _addUserName.getText();
         if (uName.length() == 0) {
             uName = null;
         }
@@ -961,7 +957,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
             if (!checkLogixSysName()) {
                 return;
             }
-            String sName = _systemName.getText().trim();
+            String sName = _systemName.getText();
             // check if a Logix with this name already exists
             boolean createLogix = true;
             targetLogix = _logixManager.getBySystemName(sName);
@@ -998,9 +994,11 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
             }
         }
         Logix srcLogic = _logixManager.getBySystemName(_logixSysName);
-        for (int i = 0; i < srcLogic.getNumConditionals(); i++) {
-            String cSysName = srcLogic.getConditionalByNumberOrder(i);
-            copyConditionalToLogix(cSysName, srcLogic, targetLogix);
+        if (srcLogic!=null){
+            for (int i = 0; i < srcLogic.getNumConditionals(); i++) {
+                String cSysName = srcLogic.getConditionalByNumberOrder(i);
+                copyConditionalToLogix(cSysName, srcLogic, targetLogix);
+            }
         }
         cancelAddPressed(null);
     }
@@ -1083,27 +1081,24 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
     }
 
     /**
-     * Check validity of Logix system name.
-     * <p>
-     * Fixes name if it doesn't start with "IX".
-     *
-     * @return false if name has length &lt; 1 after displaying a dialog
+     * Check for a valid Logix system name.
+     * A valid name has a Logix prefix, normally IX, and at least 1 additional character.
+     * The prefix will be added if necessary.
+     * makeSystemName errors are logged to the system console and a dialog is displayed.
+     * @return true if the name is now valid.
      */
     boolean checkLogixSysName() {
-        String sName = InstanceManager.getDefault(LogixManager.class).normalizeSystemName(_systemName.getText());
-        if ((sName.length() < 1)) {
-            // Entered system name is blank or too short
+        String sName = _systemName.getText();
+
+        try {
+            sName = InstanceManager.getDefault(jmri.LogixManager.class).makeSystemName(sName);
+        } catch (jmri.NamedBean.BadSystemNameException ex) {
             JOptionPane.showMessageDialog(addLogixFrame,
                     Bundle.getMessage("LogixError8"), Bundle.getMessage("ErrorTitle"), // NOI18N
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        if ((sName.length() < 2) || (sName.charAt(0) != 'I')
-                || (sName.charAt(1) != 'X')) {
-            // System name does not begin with IX, prefix IX to it
-            String s = sName;
-            sName = "IX" + s;  // NOI18N
-        }
+
         _systemName.setText(sName);
         return true;
     }
@@ -1144,7 +1139,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
             Logix x = _logixManager.getBySystemName(sName);
             if (x == null) {
                 // Logix does not exist, so cannot be edited
-                log.error("No Logix with system name: " + sName);
+                log.error("No Logix with system name: {}", sName);
                 JOptionPane.showMessageDialog(null,
                         Bundle.getMessage("LogixError5"),
                         Bundle.getMessage("ErrorTitle"), // NOI18N
@@ -1164,7 +1159,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
         // possible change
         _showReminder = true;
         String sName = "";
-        String uName = _addUserName.getText().trim();
+        String uName = _addUserName.getText();
         if (uName.length() == 0) {
             uName = null;
         }
@@ -1262,6 +1257,10 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
                             deletePressed(value);
                         } else if (key.equals("chgUname")) {         // NOI18N
                             Logix x = _logixManager.getBySystemName(lgxName);
+                            if (x == null) {
+                                log.error("Found no logix for name {} when changing user name (1)", lgxName);
+                                return;
+                            }
                             x.setUserName(value);
                             m.fireTableDataChanged();
                         }
@@ -1285,6 +1284,10 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
                             deletePressed(value);
                         } else if (key.equals("chgUname")) {         // NOI18N
                             Logix x = _logixManager.getBySystemName(lgxName);
+                            if (x == null) {
+                                log.error("Found no logix for name {} when changing user name (2)", lgxName);
+                                return;
+                            }
                             x.setUserName(value);
                             m.fireTableDataChanged();
                         }
@@ -1314,7 +1317,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
         options.put(0x00, Bundle.getMessage("DeleteAsk"));      // NOI18N
         options.put(0x01, Bundle.getMessage("DeleteNever"));    // NOI18N
         options.put(0x02, Bundle.getMessage("DeleteAlways"));   // NOI18N
-        jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).messageItemDetails(getClassName(), "delete", Bundle.getMessage("DeleteLogix"), options, 0x00);  // NOI18N
+        jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).setMessageItemDetails(getClassName(), "delete", Bundle.getMessage("DeleteLogix"), options, 0x00);  // NOI18N
         jmri.InstanceManager.getDefault(jmri.UserPreferencesManager.class).setPreferenceItemDetails(getClassName(), "remindSaveLogix", Bundle.getMessage("HideSaveReminder"));  // NOI18N
         super.setMessagePreferencesDetails();
     }
@@ -1326,9 +1329,6 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
      * @param sName system name of bean to be deleted
      */
     void deletePressed(String sName) {
-        if (!checkFlags(sName)) {
-            return;
-        }
         if (!checkConditionalReferences(sName)) {
             return;
         }
@@ -1414,7 +1414,8 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
     void loadReferenceNames(List<ConditionalVariable> varList, TreeSet<String> treeSet) {
         treeSet.clear();
         for (ConditionalVariable var : varList) {
-            if (var.getType() == Conditional.TYPE_CONDITIONAL_TRUE || var.getType() == Conditional.TYPE_CONDITIONAL_FALSE) {
+            if (var.getType() == Conditional.Type.CONDITIONAL_TRUE
+                    || var.getType() == Conditional.Type.CONDITIONAL_FALSE) {
                 treeSet.add(var.getName());
             }
         }
@@ -1425,8 +1426,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
             Conditional p = _conditionalManager.getByUserName(logix, uName);
             if (p != null) {
                 // Conditional with this user name already exists
-                log.error("Failure to update Conditional with Duplicate User Name: " // NOI18N
-                        + uName);
+                log.error("Failure to update Conditional with Duplicate User Name: {}", uName);
                 JOptionPane.showMessageDialog(
                         null, Bundle.getMessage("LogixError10"), // NOI18N
                         Bundle.getMessage("ErrorTitle"), // NOI18N
@@ -1640,7 +1640,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
      * @return a TextArea, empty if reference is not used
      * @since 4.7.4
      */
-    JTextArea buildWhereUsedListing() {
+    public JTextArea buildWhereUsedListing() {
         JTextArea condText = new javax.swing.JTextArea();
         condText.setText(null);
         HashMap<String, ArrayList<String>> whereUsed = InstanceManager.getDefault(ConditionalManager.class).getWhereUsedMap();
@@ -1659,7 +1659,11 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
     }
 
     String getWhereUsedName(String cName) {
-        return _conditionalManager.getBySystemName(cName).getUserName();
+        Conditional cond = _conditionalManager.getBySystemName(cName);
+        if ( cond!=null){
+            return cond.getUserName();
+        }
+        return "";
     }
 
 // ------------ Methods for Conditional Browser Window ------------
@@ -1738,7 +1742,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
         userFileChooser.setDialogTitle(Bundle.getMessage("BrowserSaveDialogTitle"));  // NOI18N
         userFileChooser.rescanCurrentDirectory();
         // Default to logix system name.txt
-        userFileChooser.setSelectedFile(new File(_curLogix.getSystemName() + ".txt"));  // NOI18N
+        userFileChooser.setSelectedFile(new File(FileUtil.sanitizeFilename(_curLogix.getSystemName()) + ".txt"));  // NOI18N
         int retVal = userFileChooser.showSaveDialog(null);
         if (retVal != JFileChooser.APPROVE_OPTION) {
             log.debug("Save browser content stopped, no file selected");  // NOI18N
@@ -1809,6 +1813,9 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
         for (int rx = 0; rx < numConditionals; rx++) {
             conditionalRowNumber = rx;
             Conditional curConditional = _conditionalManager.getBySystemName(_curLogix.getConditionalByNumberOrder(rx));
+            if (curConditional==null){
+                continue;
+            }
             variableList = curConditional.getCopyOfStateVariables();
             _logixSysName = curConditional.getSystemName();
             actionList = curConditional.getCopyOfActions();
@@ -1824,7 +1831,7 @@ public class LogixTableAction extends AbstractTableAction<Logix> {
                 showCondName = "C" + (rx + 1);
             }
             condText.append("\n  " + showSystemName + "  " + showCondName + "   \n");
-            if (curConditional.getLogicType() == Conditional.MIXED) {
+            if (curConditional.getLogicType() == Conditional.AntecedentOperator.MIXED) {
                 _antecedent = curConditional.getAntecedentExpression();
                 String antecedent = ConditionalEditBase.translateAntecedent(_antecedent, false);
                 condText.append("   " + Bundle.getMessage("LogixAntecedent") + " " + antecedent + "  \n");   // NOI18N

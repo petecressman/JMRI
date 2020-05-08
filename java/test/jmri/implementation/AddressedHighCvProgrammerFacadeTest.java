@@ -3,24 +3,26 @@ package jmri.implementation;
 import jmri.ProgListener;
 import jmri.Programmer;
 import jmri.progdebugger.ProgDebugger;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Test the AddressedHighCvProgrammerFacade class.
  *
- * @author	Bob Jacobsen Copyright 2013
+ * @author Bob Jacobsen Copyright 2013
  * 
  */
-public class AddressedHighCvProgrammerFacadeTest extends TestCase {
+public class AddressedHighCvProgrammerFacadeTest {
 
     int readValue = -2;
     boolean replied = false;
 
+    @Test
     public void testWriteReadDirect() throws jmri.ProgrammerException, InterruptedException {
 
         ProgDebugger dp = new ProgDebugger();
@@ -31,7 +33,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value=" + value + " status=" + status);
+                log.debug("callback value={} status={}", value, status);
                 replied = true;
                 readValue = value;
             }
@@ -43,11 +45,12 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         Assert.assertTrue("index L not written", !dp.hasBeenWritten(254));
         Assert.assertTrue("index val not written", !dp.hasBeenWritten(255));
 
-        p.readCV(4, l);
+        p.readCV("4", l);
         waitReply();
         Assert.assertEquals("read back", 12, readValue);
     }
 
+    @Test
     public void testWriteReadDirectHighCV() throws jmri.ProgrammerException, InterruptedException {
 
         ProgDebugger dp = new ProgDebugger();
@@ -58,7 +61,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value=" + value + " status=" + status);
+                log.debug("callback value={} status={}", value, status);
                 replied = true;
                 readValue = value;
             }
@@ -75,6 +78,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         Assert.assertEquals("read back", 12, readValue);
     }
 
+    @Test
     public void testWriteReadDirectHighCVRightSide() throws jmri.ProgrammerException, InterruptedException {
 
         ProgDebugger dp = new ProgDebugger();
@@ -85,7 +89,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value=" + value + " status=" + status);
+                log.debug("callback value={} status={}", value, status);
                 replied = true;
                 readValue = value;
             }
@@ -105,6 +109,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         Assert.assertEquals("read back", 12, readValue);
     }
 
+    @Test
     public void testWriteReadIndexed() throws jmri.ProgrammerException, InterruptedException {
 
         ProgDebugger dp = new ProgDebugger();
@@ -114,7 +119,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         ProgListener l = new ProgListener() {
             @Override
             public void programmingOpReply(int value, int status) {
-                log.debug("callback value=" + value + " status=" + status);
+                log.debug("callback value={} status={}", value, status);
                 replied = true;
                 readValue = value;
             }
@@ -131,6 +136,7 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         Assert.assertEquals("read back", 12, readValue);
     }
 
+    @Test
     public void testCvLimit() {
         ProgDebugger dp = new ProgDebugger();
         dp.setTestReadLimit(256);
@@ -150,29 +156,12 @@ public class AddressedHighCvProgrammerFacadeTest extends TestCase {
         replied = false;
     }
 
-    // from here down is testing infrastructure
-    public AddressedHighCvProgrammerFacadeTest(String s) {
-        super(s);
-    }
-
-    // Main entry point
-    static public void main(String[] args) {
-        String[] testCaseName = {AddressedHighCvProgrammerFacadeTest.class.getName()};
-        junit.textui.TestRunner.main(testCaseName);
-    }
-
-    // test suite from all defined tests
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AddressedHighCvProgrammerFacadeTest.class);
-        return suite;
-    }
-
-    @Override
+    @Before
     public void setUp() {
         jmri.util.JUnitUtil.setUp();
     }
 
-    @Override
+    @After
     public void tearDown(){
         jmri.util.JUnitUtil.tearDown();
     }

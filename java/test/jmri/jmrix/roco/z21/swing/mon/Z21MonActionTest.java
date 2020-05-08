@@ -24,7 +24,6 @@ public class Z21MonActionTest {
         Assert.assertNotNull("exists", t);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -41,6 +40,7 @@ public class Z21MonActionTest {
     public void tearDown() {
         jmri.InstanceManager.deregister(memo, jmri.jmrix.roco.z21.Z21SystemConnectionMemo.class);
         memo=null;
+        tc.terminateThreads();
         tc=null;
         JUnitUtil.tearDown();
     }

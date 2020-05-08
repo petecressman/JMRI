@@ -30,17 +30,18 @@ import jmri.util.SystemType;
 import jmri.util.swing.JmriColorChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.annotation.Nonnull;
 
 /**
  * Defines display objects.
- * <P>
+ * <p>
  * These are capable of:
- * <UL>
- * <LI>Being positioned by being dragged around on the screen. (See
+ * <ul>
+ * <li>Being positioned by being dragged around on the screen. (See
  * {@link #setPositionable})
- * <LI>Being hidden. (See {@link #setHidden})
- * <LI>Controlling the layout. (See {@link #setControlling})
- * </OL>
+ * <li>Being hidden. (See {@link #setHidden})
+ * <li>Controlling the layout. (See {@link #setControlling})
+ * </ul><p>
  * These are manipulated externally, for example by a subclass of
  * {@link Editor}. They are generally not stored directly as part of the state
  * of the object, though they could be, but as part of the state of the external
@@ -70,7 +71,6 @@ import org.slf4j.LoggerFactory;
 public class Positionable extends JComponent implements Cloneable {
 
     protected Editor _editor = null;
-
     private ToolTip _tooltip;
     private boolean _showTooltip = true;
     private boolean _editable = true;
@@ -86,16 +86,18 @@ public class Positionable extends JComponent implements Cloneable {
     private int _degree;
     private Dimension _displayDim = new Dimension(MIN_SIZE, MIN_SIZE);
     private int _flip;
+
+    private AffineTransform _transformCA = new AffineTransform();   // Scaled, Rotated & translated for coord alias
     public final static int NOFLIP = 0X00;
     public final static int HORIZONTALFLIP = 0X01;
     public final static int VERTICALFLIP = 0X02;
     
+    protected PositionablePropertiesUtil _propertiesUtil;
     private int _marginSize = 0;
     private int _borderSize = 0;
     private Color _borderColor = null;
     private boolean _suppressRecentColor = false;   // do not notify ColorChooser a color has been set
     private boolean _bordered = false;      // paint borders and margins      
-
     
     private int _fixedWidth = 0;
     private int _fixedHeight = 0;
@@ -103,12 +105,7 @@ public class Positionable extends JComponent implements Cloneable {
     static public final int LEFT = 0x00;
     static public final int RIGHT = 0x02;
     static public final int CENTRE = 0x04;
-
     static final public int MIN_SIZE = 10;
-
-    protected PositionablePropertiesUtil _propertiesUtil;
-
-    private AffineTransform _transformCA = new AffineTransform();   // Scaled, Rotated & translated for coord alias
 
     public Positionable(Editor editor) {
         _editor = editor;
@@ -134,7 +131,6 @@ public class Positionable extends JComponent implements Cloneable {
         pos._showTooltip = _showTooltip;
         pos._tooltip = _tooltip;
         pos._editable = _editable;
-
         setAttributesOf(pos);
         pos.updateSize();
         return pos;
@@ -470,6 +466,7 @@ public class Positionable extends JComponent implements Cloneable {
 
     /**
      * Removes this object from display and persistance
+     * @return true if removed
      */
     public boolean remove() {
         boolean b = _editor.removeFromContents(this);
@@ -746,6 +743,8 @@ public class Positionable extends JComponent implements Cloneable {
 
     /**
      * Rotate degrees return true if popup is set.
+     * @param popup a JPopupMenu menu
+     * @return true if this is not a background positionable
      */
     public boolean setRotateMenu(JPopupMenu popup) {
         if (getDisplayLevel() > Editor.BKG) {
@@ -762,7 +761,8 @@ public class Positionable extends JComponent implements Cloneable {
     /**
      * Scale percentage form display.
      *
-     * @return true if popup is set
+     * @param popup a JPopupMenu menu
+     * @return true if this is not a background positionable
      */
     public boolean setScaleMenu(JPopupMenu popup) {
         if (getDisplayLevel() > Editor.BKG) {
@@ -1049,13 +1049,11 @@ public class Positionable extends JComponent implements Cloneable {
     public final AffineTransform getTransform() {
         return _transformCA;
     }
-    
 
     @Override
     public Dimension getPreferredSize() {
         return _displayDim;
     }
-
 
     public Rectangle getContentBounds(Rectangle r) {
         return super.getBounds(r);
@@ -1083,7 +1081,6 @@ public class Positionable extends JComponent implements Cloneable {
         }
     }
     
-
     public void setBorder() {
         Color color;
         Border borderMargin;        
@@ -1104,11 +1101,14 @@ public class Positionable extends JComponent implements Cloneable {
             super.setBorder(new javax.swing.border.CompoundBorder(borderOutline, borderMargin));            
         }
     }
-
 /*    protected Graphics getTransfomGraphics(Graphics g) {
         Graphics2D g2d = (Graphics2D)g.create();
         g2d.transform(getTransform());
+=======
+    int getX();
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
 
+<<<<<<< HEAD
         // set antialiasing hint for macOS and Windows
         // note: antialiasing has performance problems on constrained systems
         // like the Raspberry Pi, assuming Linux variants are constrained
@@ -1123,7 +1123,11 @@ public class Positionable extends JComponent implements Cloneable {
             // g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
             //        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
         }
+=======
+    int getY();
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
 
+<<<<<<< HEAD
         java.awt.Color backgroundColor = getBackgroundColor();
         if (backgroundColor!=null) {
             setOpaque(true);

@@ -8,13 +8,14 @@ import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests for the Operations Locations GUI class
  *
- * @author	Dan Boudreau Copyright (C) 2009
+ * @author Dan Boudreau Copyright (C) 2009
  */
 public class StagingEditFrameTest extends OperationsTestCase {
 
@@ -28,12 +29,10 @@ public class StagingEditFrameTest extends OperationsTestCase {
      */
     @Test
     public void testAddStagingTrackDefaults() {
-        if (GraphicsEnvironment.isHeadless()) {
-            return; // can't use Assume in TestCase subclasses
-        }
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         StagingEditFrame f = new StagingEditFrame();
         f.setTitle("Test Staging Add Frame");
-        f.setLocation(0, 0);	// entire panel must be visible for tests to work properly
+        f.setLocation(0, 0); // entire panel must be visible for tests to work properly
         f.initComponents(l, null);
 
         // create one staging tracks
@@ -79,12 +78,10 @@ public class StagingEditFrameTest extends OperationsTestCase {
 
     @Test
     public void testSetDirectionUsingChceckbox() {
-        if (GraphicsEnvironment.isHeadless()) {
-            return; // can't use Assume in TestCase subclasses
-        }
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         StagingEditFrame f = new StagingEditFrame();
         f.setTitle("Test Staging Add Frame");
-        f.setLocation(0, 0);	// entire panel must be visible for tests to work properly
+        f.setLocation(0, 0); // entire panel must be visible for tests to work properly
         f.initComponents(l, null);
 
         f.trackNameTextField.setText("4th staging track");
@@ -110,12 +107,10 @@ public class StagingEditFrameTest extends OperationsTestCase {
 
     @Test
     public void testAddCloseAndReload() {
-        if (GraphicsEnvironment.isHeadless()) {
-            return; // can't use Assume in TestCase subclasses
-        }
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         StagingEditFrame f = new StagingEditFrame();
         f.setTitle("Test Staging Add Frame");
-        f.setLocation(0, 0);	// entire panel must be visible for tests to work properly
+        f.setLocation(0, 0); // entire panel must be visible for tests to work properly
         f.initComponents(l, null);
 
         // create four staging tracks

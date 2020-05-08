@@ -1,6 +1,6 @@
 package jmri.jmrit.display.configurexml;
 
-import apps.gui.GuiLafPreferencesManager;
+import jmri.util.gui.GuiLafPreferencesManager;
 import java.awt.Color;
 import java.awt.Font;
 import jmri.InstanceManager;
@@ -411,33 +411,32 @@ public class PositionableJComponentXml extends AbstractXmlAdapter {
 
     Color loadColor(Element elem, String childName, String name) {
         Element element = elem.getChild(childName);
-        if (element == null) {
+        if (element != null) {
+            try {
+                int red = 0;
+                int blue = 0;
+                int green = 0;
+                int alpha = 255;
+                try {
+                    red = element.getAttribute("red").getIntValue();
+                } catch (NullPointerException e) {
+                }            
+                try {
+                    blue = element.getAttribute("blue").getIntValue();;
+                } catch (NullPointerException e) {
+                }            
+                try {
+                    green = element.getAttribute("green").getIntValue();
+                } catch (NullPointerException e) {
+                }            
+                try {
+                    alpha = element.getAttribute("alpha").getIntValue();
+                } catch (NullPointerException e) {
+                }            
+                return new Color(red, green, blue, alpha);
+            } catch (org.jdom2.DataConversionException e) {
+            }
             log.warn("Could not find color {} for item {}!", childName, name);
-        }
-        try {
-            int red = 0;
-            int blue = 0;
-            int green = 0;
-            int alpha = 255;
-            try {
-                red = element.getAttribute("red").getIntValue();
-            } catch (NullPointerException e) {
-            }            
-            try {
-                blue = element.getAttribute("blue").getIntValue();;
-            } catch (NullPointerException e) {
-            }            
-            try {
-                green = element.getAttribute("green").getIntValue();
-            } catch (NullPointerException e) {
-            }            
-            try {
-                alpha = element.getAttribute("alpha").getIntValue();
-            } catch (NullPointerException e) {
-            }            
-            return new Color(red, green, blue, alpha);
-        } catch (org.jdom2.DataConversionException e) {
-            log.warn("Could not parse color attributes of {} for Item {}!", childName, name);
         }
         return null;
     }

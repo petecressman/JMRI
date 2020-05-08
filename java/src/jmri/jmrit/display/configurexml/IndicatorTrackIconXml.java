@@ -63,9 +63,9 @@ public class IndicatorTrackIconXml extends PositionableIconXml {
         elem = new Element("paths");
         ArrayList<String> paths = p.getPaths();
         if (paths != null) {
-            for (int i = 0; i < paths.size(); i++) {
+            for (String path : paths) {
                 Element e = new Element("path");
-                e.addContent(paths.get(i));
+                e.addContent(path);
                 elem.addContent(e);
 
             }
@@ -125,8 +125,8 @@ public class IndicatorTrackIconXml extends PositionableIconXml {
         if (elem != null) {
             ArrayList<String> paths = new ArrayList<>();
             List<Element> pth = elem.getChildren();
-            for (int i = 0; i < pth.size(); i++) {
-                paths.add(pth.get(i).getText());
+            for (Element value : pth) {
+                paths.add(value.getText());
             }
             l.setPaths(paths);
         }
@@ -158,11 +158,11 @@ public class IndicatorTrackIconXml extends PositionableIconXml {
             List<Element> status = elem.getChildren();
             if (status.size() > 0) {
                 for (int i = 0; i < status.size(); i++) {
-                    String msg = "IndicatorTrack \"" + name + "\" icon \"" + status.get(i).getName() + "\" ";
-                    NamedIcon icon = loadIcon(l, status.get(i).getName(), elem,
-                            msg, ed);
+                    String key = status.get(i).getName();
+                    String msg = "IndicatorTrack \"" + name + "\" icon \"" + key + "\" ";
+                    NamedIcon icon = loadIcon(l, key, elem, msg, ed);
                     if (icon != null) {
-                        l.setStateIcon(status.get(i).getName(), icon);
+                        l.setStateIcon(key, icon);
                     } else {
                         log.info(msg + " removed for url= " + status.get(i).getName());
                         return;

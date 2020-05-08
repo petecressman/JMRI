@@ -6,20 +6,21 @@ import org.junit.*;
 /**
  * Tests for TrafficRelay class in the jmri.jmrit.ussctc package
  *
- * @author	Bob Jacobsen Copyright 2007
+ * @author Bob Jacobsen Copyright 2007
  */
 public class TrafficRelayTest {
 
     @Test
     public void testLocked() {
         SignalHeadSection s = new SignalHeadSection() {
+            @Override
             public String getName() {
                 return "";
             }
         };
         s.lastIndication = SignalHeadSection.CODE_LEFT;
 
-        TrafficLock lock = new TrafficLock(s, SignalHeadSection.CODE_LEFT);
+        TrafficRelay lock = new TrafficRelay(s, SignalHeadSection.CODE_LEFT);
 
         Assert.assertTrue(!lock.isLockClear());
     }
@@ -27,18 +28,18 @@ public class TrafficRelayTest {
     @Test
     public void testUnlocked() {
         SignalHeadSection s = new SignalHeadSection() {
+            @Override
             public String getName() {
                 return "";
             }
         };
         s.lastIndication = SignalHeadSection.CODE_RIGHT;
 
-        TrafficLock lock = new TrafficLock(s, SignalHeadSection.CODE_LEFT);
+        TrafficRelay lock = new TrafficRelay(s, SignalHeadSection.CODE_LEFT);
 
         Assert.assertTrue(lock.isLockClear());
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

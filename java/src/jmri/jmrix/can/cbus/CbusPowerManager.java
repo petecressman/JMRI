@@ -1,5 +1,7 @@
 package jmri.jmrix.can.cbus;
 
+import java.beans.PropertyChangeListener;
+
 import jmri.JmriException;
 import jmri.PowerManager;
 import jmri.jmrix.can.CanListener;
@@ -20,52 +22,64 @@ public class CbusPowerManager implements PowerManager, CanListener {
         // connect to the TrafficManager
         this.memo = memo;
         tc = memo.getTrafficController();
-        tc.addCanListener(this);
+        addTc(tc);
     }
 
-    CanSystemConnectionMemo memo;
+    private CanSystemConnectionMemo memo;
 
     @Override
     public String getUserName() {
-        if (memo != null) {
-            return memo.getUserName();
-        }
-        return "CBUS";
+        return memo.getUserName();
     }
 
     int power = ON;
 
+    /** 
+     * Sends Main Track Power Status Request to Layout.
+     * Sets Main Track Power status to unknown while waiting for response.
+     * {@inheritDoc} 
+     */
     @Override
     public void setPower(int v) throws JmriException {
-        power = UNKNOWN; // while waiting for reply
+        updatePower(UNKNOWN); // while waiting for reply
         checkTC();
         if (v == ON) {
             // send "Enable main track"
             tc.sendCanMessage(CbusMessage.getRequestTrackOn(tc.getCanid()), this);
-        } else if (v == OFF) {
+        }
+        else if (v == OFF) {
             // send "Kill main track"
             tc.sendCanMessage(CbusMessage.getRequestTrackOff(tc.getCanid()), this);
         }
     }
-
-    /*
-     * Used to update power state after service mode programming operation
-     * without sending a message to the SPROG
+    
+    /**
+     * Notification to JMRI of main track power state.
+     * Does not send to Layout.
+     * @param newPower New Power Status
      */
-    public void notePowerState(int v) {
-        power = v;
-        firePropertyChange("Power", null, null);
+    public void updatePower( int newPower){
+        int oldPower = power;
+        if (oldPower!=newPower) {
+            power = newPower;
+            firePropertyChange("Power", oldPower, power);
+        }
     }
 
+    /** 
+     * {@inheritDoc} 
+     */
     @Override
     public int getPower() {
         return power;
     }
 
-    // to free resources when no longer used
+    /** 
+     * {@inheritDoc} 
+     */
     @Override
     public void dispose() throws JmriException {
-        tc.removeCanListener(this);
+        removeTc(tc);
         tc = null;
     }
 
@@ -92,23 +106,51 @@ public class CbusPowerManager implements PowerManager, CanListener {
         pcs.removePropertyChangeListener(l);
     }
 
-    TrafficController tc = null;
+    /** {@inheritDoc} */
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
 
-    // to listen for status changes from Cbus system
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
+    }
+
+    private TrafficController tc;
+
+    /** {@inheritDoc} */
     @Override
     public void reply(CanReply m) {
+        if ( m.extendedOrRtr() ) {
+            return;
+        }
         if (CbusMessage.isTrackOff(m)) {
-            power = OFF;
-            firePropertyChange("Power", null, null);
+            updatePower(OFF);
         } else if (CbusMessage.isTrackOn(m)) {
-            power = ON;
-            firePropertyChange("Power", null, null);
+            updatePower(ON);
         } else if (CbusMessage.isArst(m)) {
-            power = ON;
-            firePropertyChange("Power", null, null);
+            updatePower(ON);
         }
     }
 
+    /** 
+     * Does not listen to outgoing messages.
+     * {@inheritDoc} 
+     */
     @Override
     public void message(CanMessage m) {
         // do nothing

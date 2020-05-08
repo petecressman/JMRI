@@ -7,8 +7,8 @@ import org.junit.*;
 /**
  * JUnit tests for the cm11.SpecficMessage class.
  *
- * @author	Bob Jacobsen Copyright 2003, 2007, 2008, 2009
-  */
+ * @author Bob Jacobsen Copyright 2003, 2007, 2008, 2009
+ */
 public class SpecificMessageTest extends jmri.jmrix.AbstractMessageTestBase {
 
     private SerialMessage msg;
@@ -16,14 +16,14 @@ public class SpecificMessageTest extends jmri.jmrix.AbstractMessageTestBase {
     @Before
     @Override
     public void setUp() {
-	JUnitUtil.setUp();
+        JUnitUtil.setUp();
         m = msg = new SpecificMessage(4);
     }
 
     @After
-    public void tearDown(){
-	m = msg = null;
-	JUnitUtil.tearDown();
+    public void tearDown() {
+        m = msg = null;
+        JUnitUtil.tearDown();
     }
 
     @Test

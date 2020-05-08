@@ -11,7 +11,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class QsiMonActionTest {
 
@@ -20,10 +20,9 @@ public class QsiMonActionTest {
         QsiTrafficController tc = new QsiTrafficControlScaffold();
         QsiSystemConnectionMemo memo = new QsiSystemConnectionMemo(tc);
         QsiMonAction t = new QsiMonAction(memo);
-        Assert.assertNotNull("exists",t);
+        Assert.assertNotNull("exists", t);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

@@ -189,7 +189,7 @@ public class ControllerFilterFrame extends JmriJFrame implements TableModelListe
     @Override
     public void tableChanged(TableModelEvent e) {
         if (log.isDebugEnabled()) {
-            log.debug("Set mod flag true for: " + getTitle());
+            log.debug("Set mod flag true for: {}", getTitle());
         }
         this.setModifiedFlag(true);
     }
@@ -253,8 +253,8 @@ public class ControllerFilterFrame extends JmriJFrame implements TableModelListe
 
         TurnoutManager mgr = InstanceManager.turnoutManagerInstance();
 
+        @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
         TurnoutFilterModel() {
-
             sysNameList = mgr.getSystemNameList();
             mgr.addPropertyChangeListener(this);
         }
@@ -337,8 +337,8 @@ public class ControllerFilterFrame extends JmriJFrame implements TableModelListe
 
         RouteManager mgr = InstanceManager.getDefault(jmri.RouteManager.class);
 
+        @SuppressWarnings("deprecation") // needs careful unwinding for Set operations
         RouteFilterModel() {
-
             sysNameList = mgr.getSystemNameList();
             mgr.addPropertyChangeListener(this);
         }

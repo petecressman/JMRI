@@ -1,29 +1,24 @@
 package apps;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class SystemConsoleConfigPanelTest {
 
     @Test
-    @Ignore("Needs more set-up")
     public void testCTor() {
         SystemConsoleConfigPanel t = new SystemConsoleConfigPanel();
         Assert.assertNotNull("exists",t);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
+        jmri.InstanceManager.setDefault(apps.systemconsole.SystemConsolePreferencesManager.class,new apps.systemconsole.SystemConsolePreferencesManager());
     }
 
     @After

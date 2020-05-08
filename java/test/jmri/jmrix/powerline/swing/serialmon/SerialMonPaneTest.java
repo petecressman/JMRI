@@ -1,6 +1,5 @@
 package jmri.jmrix.powerline.swing.serialmon;
 
-import jmri.jmrix.powerline.SerialTrafficControlScaffold;
 import jmri.util.JUnitUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -8,7 +7,7 @@ import org.junit.Before;
 /**
  * Test simple functioning of SerialMonPane
  *
- * @author	Paul Bender Copyright (C) 2016
+ * @author Paul Bender Copyright (C) 2016
  */
 public class SerialMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
 
@@ -22,11 +21,13 @@ public class SerialMonPaneTest extends jmri.jmrix.AbstractMonPaneTestBase {
         // pane for AbstractMonPaneTestBase, panel for JmriPanel
         panel = pane = new SerialMonPane();
         title="Powerline_: Communication Monitor";
+        helpTarget="package.jmri.jmrix.powerline.serialmon.SerialMonFrame";
     }
 
     @Override
     @After
     public void tearDown() {
+        panel = pane = null;
         JUnitUtil.tearDown();
         // tc = null;
     }

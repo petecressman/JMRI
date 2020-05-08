@@ -58,7 +58,7 @@ public class SignallingSourcePanel extends jmri.util.swing.JmriPanel implements 
         super();
         sml = InstanceManager.getDefault(jmri.SignalMastLogicManager.class).getSignalMastLogic(sourceMast);
         this.sourceMast = sourceMast;
-        fixedSourceMastLabel = new JLabel(Bundle.getMessage("SourceMast") + ": " + sourceMast.getDisplayName());  // NOI18N
+        fixedSourceMastLabel = new JLabel(Bundle.getMessage("MakeLabel", Bundle.getMessage("SourceMast")) + " " + sourceMast.getDisplayName());  // NOI18N
         if (sml != null) {
             _signalMastList = sml.getDestinationList();
         }
@@ -291,7 +291,7 @@ public class SignallingSourcePanel extends jmri.util.swing.JmriPanel implements 
                 case DEL_COLUMN: // not actually used due to the configureTable, setColumnToHoldButton, configureButton
                     return new JTextField(22).getPreferredSize().width;
                 default:
-                    log.warn("Unexpected column in getPreferredWidth: " + col);  // NOI18N
+                    log.warn("Unexpected column in getPreferredWidth: {}", col);  // NOI18N
                     return new JTextField(8).getPreferredSize().width;
             }
         }

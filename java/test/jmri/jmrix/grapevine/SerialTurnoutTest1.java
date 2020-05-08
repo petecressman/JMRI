@@ -9,8 +9,8 @@ import org.junit.Before;
 /**
  * Tests for the jmri.jmrix.grapevine.SerialTurnout class, middle bank.
  *
- * @author	Bob Jacobsen
-  */
+ * @author Bob Jacobsen
+ */
 public class SerialTurnoutTest1 extends AbstractTurnoutTestBase {
 
     private GrapevineSystemConnectionMemo memo = null; 

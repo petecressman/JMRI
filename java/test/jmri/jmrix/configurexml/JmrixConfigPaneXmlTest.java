@@ -7,9 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * JmrixConfigPaneXmlTest.java
- *
- * Description: tests for the JmrixConfigPaneXml class
+ * Tests for the JmrixConfigPaneXml class.
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -17,10 +15,9 @@ public class JmrixConfigPaneXmlTest {
 
     @Test
     public void testCtor(){
-      Assert.assertNotNull("JmrixConfigPaneXml constructor",new JmrixConfigPaneXml());
+      Assert.assertNotNull("JmrixConfigPaneXml constructor", new JmrixConfigPaneXml());
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -32,4 +29,3 @@ public class JmrixConfigPaneXmlTest {
     }
 
 }
-

@@ -69,7 +69,6 @@ public class SignalMastIconXml extends PositionableIconXml {
         }
         
         SignalMast sh = jmri.InstanceManager.getDefault(jmri.SignalMastManager.class).getSignalMast(name);
-
         if (sh != null) {
             l.setSignalMast(name);
         } else {
@@ -81,6 +80,7 @@ public class SignalMastIconXml extends PositionableIconXml {
         if (!loadPositionableIcon(element, l)) {
             loadPre50(element, l, name);
         }
+
        /*
          * We need to set the rotation and scaling first, prior to setting the
          * signalmast, otherwise we end up in a situation where by the icons do
@@ -106,8 +106,7 @@ public class SignalMastIconXml extends PositionableIconXml {
             }
             l.setScale(scale);
             if (log.isDebugEnabled()) {
-                log.debug("Load SignalMast rotation= " + rotation
-                        + " scale= " + scale + " attr text= " + text);
+                log.debug("Load SignalMast rotation= {} scale= {} attr text= {}", rotation, scale, text);
             }
         } catch (org.jdom2.DataConversionException e) {
             log.error("failed to convert rotation or scale attribute");
@@ -124,7 +123,7 @@ public class SignalMastIconXml extends PositionableIconXml {
                 l.setClickMode(attr.getIntValue());
             }
         } catch (org.jdom2.DataConversionException e) {
-            log.error("Failed on clickmode attribute: " + e);
+            log.error("Failed on clickmode attribute: {}", e);
         }
 
         try {
@@ -133,7 +132,7 @@ public class SignalMastIconXml extends PositionableIconXml {
                 l.setLitMode(attr.getBooleanValue());
             }
         } catch (org.jdom2.DataConversionException e) {
-            log.error("Failed on litmode attribute: " + e);
+            log.error("Failed on litmode attribute: {}", e);
         }
 
         l.updateSize();

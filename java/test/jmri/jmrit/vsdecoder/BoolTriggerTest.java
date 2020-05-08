@@ -2,9 +2,7 @@ package jmri.jmrit.vsdecoder;
 
 import java.beans.PropertyChangeEvent;
 import org.jdom2.Element;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Tests for the BoolTrigger class
@@ -114,15 +112,14 @@ public class BoolTriggerTest {
         Element e = new Element("Trigger");
         e.setAttribute("name", "test_trigger");
         e.setAttribute("type", "BOOLEAN");
-        e.addContent(new Element("event_name").addContent("test_event"));
-        e.addContent(new Element("target_name").addContent("test_target"));
+        e.addContent(new Element("event-name").addContent("test_event"));
+        e.addContent(new Element("target-name").addContent("test_target"));
         e.addContent(new Element("match").addContent("TRUE"));
         e.addContent(new Element("action").addContent("PLAY"));
-        return (e);
+        return e;
     }
 
     @Test
-    @Ignore("Currently causes an NPE")
     public void testSetXML() {
         BoolTrigger uut = new BoolTrigger("fred"); // intentionally use wrong name
         Element e = buildTestXML();
@@ -133,8 +130,6 @@ public class BoolTriggerTest {
         Assert.assertEquals("xml target name", "test_target", uut.getTargetName());
         Assert.assertTrue("xml match value", uut.getMatchValue());
         Assert.assertEquals("xml action", Trigger.TargetAction.PLAY, uut.getTargetAction());
-
     }
-
 
 }

@@ -65,10 +65,9 @@ public class PanelEditorXml extends AbstractXmlAdapter {
         // include contents
         List<Positionable> contents = p.getContents();
         if (log.isDebugEnabled()) {
-            log.debug("N elements: " + contents.size());
+            log.debug("N elements: {}", contents.size());
         }
-        for (int i = 0; i < contents.size(); i++) {
-            Positionable sub = contents.get(i);
+        for (Positionable sub : contents) {
             if (sub != null && sub.storeItem()) {
                 try {
                     Element e = jmri.configurexml.ConfigXmlManager.elementFromObject(sub);
@@ -91,7 +90,7 @@ public class PanelEditorXml extends AbstractXmlAdapter {
 
     /**
      * Create a PanelEditor object, then register and fill it, then pop it in a
-     * JFrame
+     * JFrame.
      *
      * @param shared Top level Element to unpack.
      * @return true if successful
@@ -99,16 +98,25 @@ public class PanelEditorXml extends AbstractXmlAdapter {
     @Override
     public boolean load(Element shared, Element perNode) {
         boolean result = true;
+        Attribute a;
         // find coordinates
         int x = 0;
         int y = 0;
         int height = 400;
         int width = 300;
         try {
-            x = shared.getAttribute("x").getIntValue();
-            y = shared.getAttribute("y").getIntValue();
-            height = shared.getAttribute("height").getIntValue();
-            width = shared.getAttribute("width").getIntValue();
+            if ((a = shared.getAttribute("x")) != null) {
+                x = a.getIntValue();
+            }
+            if ((a = shared.getAttribute("y")) != null) {
+                y = a.getIntValue();
+            }
+            if ((a = shared.getAttribute("height")) != null) {
+                height = a.getIntValue();
+            }
+            if ((a = shared.getAttribute("width")) != null) {
+                width = a.getIntValue();
+            }
         } catch (org.jdom2.DataConversionException e) {
             log.error("failed to convert PanelEditor's attribute");
             result = false;
@@ -123,6 +131,26 @@ public class PanelEditorXml extends AbstractXmlAdapter {
             log.warn("File contains a panel with the same name ({}) as an existing panel", name);
             result = false;
         }
+
+        // If available, override location and size with machine dependent values
+        if (!InstanceManager.getDefault(jmri.util.gui.GuiLafPreferencesManager.class).isEditorUseOldLocSize()) {
+            jmri.UserPreferencesManager prefsMgr = InstanceManager.getNullableDefault(jmri.UserPreferencesManager.class);
+            if (prefsMgr != null) {
+
+                java.awt.Point prefsWindowLocation = prefsMgr.getWindowLocation(name);
+                if (prefsWindowLocation != null) {
+                    x = (int) prefsWindowLocation.getX();
+                    y = (int) prefsWindowLocation.getY();
+                }
+
+                java.awt.Dimension prefsWindowSize = prefsMgr.getWindowSize(name);
+                if (prefsWindowSize != null && prefsWindowSize.getHeight() != 0 && prefsWindowSize.getWidth() != 0) {
+                    height = (int) prefsWindowSize.getHeight();
+                    width = (int) prefsWindowSize.getWidth();
+                }
+            }
+        }
+
         PanelEditor panel = new PanelEditor(name);
         panel.setTitle();
         panel.getTargetFrame().setLocation(x, y);
@@ -131,54 +159,14 @@ public class PanelEditorXml extends AbstractXmlAdapter {
 
         // Load editor option flags. This has to be done before the content
         // items are loaded, to preserve the individual item settings
-        Attribute a;
-        boolean value = true;
-        if ((a = shared.getAttribute("editable")) != null && a.getValue().equals("no")) {
-            value = false;
-        }
-        panel.setAllEditable(value);
-
-        value = true;
-        if ((a = shared.getAttribute("positionable")) != null && a.getValue().equals("no")) {
-            value = false;
-        }
-        panel.setAllPositionable(value);
-
-        /*
-         value = false;
-         if ((a = element.getAttribute("showcoordinates"))!=null && a.getValue().equals("yes"))
-         value = true;
-         panel.setShowCoordinates(value);
-         */
-        value = true;
-        if ((a = shared.getAttribute("showtooltips")) != null && a.getValue().equals("no")) {
-            value = false;
-        }
-        panel.setAllShowToolTip(value);
-
-        value = true;
-        if ((a = shared.getAttribute("controlling")) != null && a.getValue().equals("no")) {
-            value = false;
-        }
-        panel.setAllControlling(value);
-
-        value = false;
-        if ((a = shared.getAttribute("hide")) != null && a.getValue().equals("yes")) {
-            value = true;
-        }
-        panel.setShowHidden(value);
-
-        value = true;
-        if ((a = shared.getAttribute("panelmenu")) != null && a.getValue().equals("no")) {
-            value = false;
-        }
-        panel.setPanelMenuVisible(value);
-
-        String state = "both";
-        if ((a = shared.getAttribute("scrollable")) != null) {
-            state = a.getValue();
-        }
-        panel.setScroll(state);
+        panel.setAllEditable(!shared.getAttributeValue("editable","yes").equals("no"));
+        panel.setAllPositionable(!shared.getAttributeValue("positionable","yes").equals("no"));
+        //panel.setShowCoordinates(shared.getAttributeValue("showcoordinates","no").equals("yes"));
+        panel.setAllShowToolTip(!shared.getAttributeValue("showtooltips","yes").equals("no"));
+        panel.setAllControlling(!shared.getAttributeValue("controlling", "yes").equals("no"));
+        panel.setShowHidden(shared.getAttributeValue("hide","no").equals("yes"));
+        panel.setPanelMenuVisible(!shared.getAttributeValue("panelmenu","yes").equals("no"));
+        panel.setScroll(shared.getAttributeValue("scrollable","both"));
 
         // set color if needed
         try {
@@ -194,22 +182,20 @@ public class PanelEditorXml extends AbstractXmlAdapter {
         panel.initView();
 
         // load the contents with their individual option settings
-        List<Element> items = shared.getChildren();
-        for (int i = 0; i < items.size(); i++) {
+        List<Element> panelItems = shared.getChildren();
+        for (Element item : panelItems) {
             // get the class, hence the adapter object to do loading
-            Element item = items.get(i);
             String adapterName = item.getAttribute("class").getValue();
-            log.debug("load via " + adapterName);
+            log.debug("load via {}", adapterName);
             try {
-                XmlAdapter adapter = (XmlAdapter) Class.forName(adapterName).newInstance();
+                XmlAdapter adapter = (XmlAdapter) Class.forName(adapterName).getDeclaredConstructor().newInstance();
                 // and do it
                 adapter.load(item, panel);
                 if (!panel.loadOK()) {
                     result = false;
                 }
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                    | jmri.configurexml.JmriConfigureXmlException
-                    | RuntimeException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException
+                    | jmri.configurexml.JmriConfigureXmlException | java.lang.reflect.InvocationTargetException e) {
                 log.error("Exception while loading {}", item.getName(), e);
                 result = false;
             }

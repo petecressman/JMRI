@@ -161,7 +161,7 @@ public class LocoStatsPanel extends LnPanel implements LocoNetInterfaceStatsList
     /**
      * Configure LocoNet connection
      * 
-     * @param memo - specifies which LocoNet connection is used by this tool
+     * @param memo  specifies which LocoNet connection is used by this tool
      */
     @Override
     public void initComponents(LocoNetSystemConnectionMemo memo) {
@@ -190,7 +190,7 @@ public class LocoStatsPanel extends LnPanel implements LocoNetInterfaceStatsList
      * threading problems.
      */
     public void requestUpdate() {
-        // Invoke the Loconet request send on the layout thread, not the GUI thread!
+        // Invoke the LocoNet request send on the layout thread, not the GUI thread!
         // Note - there is no guarantee that the LocoNet message will be sent 
         // before execution returns to this method (but it might).
         ThreadingUtil.runOnLayoutEventually(()->{  stats.sendLocoNetInterfaceStatusQueryMessage(); });
@@ -245,7 +245,7 @@ public class LocoStatsPanel extends LnPanel implements LocoNetInterfaceStatsList
     @Override
     @SuppressFBWarnings(value = "BC_UNCONFIRMED_CAST_OF_RETURN_VALUE", justification = "GUI elements are created such that cast to JmriJFrame this is accurate")
     public void notifyChangedInterfaceStatus(Object o) {
-        log.debug("Update is being handled:" +o.toString());  // NOI18N
+        log.debug("Update is being handled:{}", o.toString());  // NOI18N
         if (!updateRequestPending) {
             return;
         }

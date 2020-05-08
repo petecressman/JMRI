@@ -3,7 +3,7 @@ package jmri.jmrit.display.layoutEditor;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
+import javax.annotation.CheckForNull;
 import jmri.NamedBean;
 import jmri.Sensor;
 import jmri.SignalHead;
@@ -20,31 +20,29 @@ import org.slf4j.LoggerFactory;
  */
 public class LayoutEditorFindItems {
 
-    private LayoutEditor layoutEditor;
+    private final LayoutEditor layoutEditor;
 
     public LayoutEditorFindItems(LayoutEditor editor) {
         layoutEditor = editor;
     }
 
     public TrackSegment findTrackSegmentByName(String name) {
-        if (name.isEmpty()) {
-            return null;
-        }
-        for (TrackSegment t : layoutEditor.getTrackSegments()) {
-            if (t.getId().equals(name)) {
-                return t;
+        if (!name.isEmpty()) {
+            for (TrackSegment t : layoutEditor.getTrackSegments()) {
+                if (t.getId().equals(name)) {
+                    return t;
+                }
             }
         }
         return null;
     }
 
     public PositionablePoint findPositionablePointByName(String name) {
-        if (name.isEmpty()) {
-            return null;
-        }
-        for (PositionablePoint p : layoutEditor.getPositionablePoints()) {
-            if (p.getId().equals(name)) {
-                return p;
+        if (!name.isEmpty()) {
+            for (PositionablePoint p : layoutEditor.getPositionablePoints()) {
+                if (p.getId().equals(name)) {
+                    return p;
+                }
             }
         }
         return null;
@@ -62,7 +60,7 @@ public class LayoutEditorFindItems {
 
     public PositionablePoint findPositionableLinkPoint(LayoutBlock blk1) {
         for (PositionablePoint p : layoutEditor.getPositionablePoints()) {
-            if (p.getType() == PositionablePoint.EDGE_CONNECTOR) {
+            if (p.getType() == PositionablePoint.PointType.EDGE_CONNECTOR) {
                 if ((p.getConnect1() != null && p.getConnect1().getLayoutBlock() == blk1)
                         || (p.getConnect2() != null && p.getConnect2().getLayoutBlock() == blk1)) {
                     return p;
@@ -198,7 +196,7 @@ public class LayoutEditorFindItems {
     }
 
     @CheckReturnValue
-    public LayoutTurnout findLayoutTurnoutByBean(@Nullable NamedBean bean) {
+    public LayoutTurnout findLayoutTurnoutByBean(@CheckForNull NamedBean bean) {
         List<LayoutTurnout> layoutTurnouts = layoutEditor.getLayoutTurnouts();
         if (bean instanceof SignalMast) {
             for (LayoutTurnout t : layoutTurnouts) {
@@ -491,6 +489,19 @@ public class LayoutEditorFindItems {
         return result;
     }
 
+    public LayoutShape findLayoutShapeByName(String name) {
+        LayoutShape result = null;
+        if ((name != null) && !name.isEmpty()) {
+            for (LayoutShape x : layoutEditor.getLayoutShapes()) {
+                if (x.getName().equals(name)) {
+                    result = x;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     // data encapsulation means that no one external to an object should
     // care about its type... we treat all objects as equal and it's up
     // to each object to implement methods specific to that type.
@@ -509,43 +520,42 @@ public class LayoutEditorFindItems {
     // a "type-less" system by replacing this routine with a type-less one:
     // (BTW: AFAICT this routine is only called by the setObjects routine in TrackSegment.java)
     //
-
     /*
-     * @deprecated since 4.7.1 use @link{findObjectByName()} instead.
+    * @deprecated since 4.7.1 use @link{findObjectByName()} instead.
      */
     @Deprecated
-    public LayoutTrack findObjectByTypeAndName(int type, String name) {
+    public LayoutTrack findObjectByTypeAndName(HitPointType type, String name) {
         if (name.isEmpty()) {
             return null;
         }
         switch (type) {
-            case LayoutTrack.NONE:
+            case NONE:
                 return null;
-            case LayoutTrack.POS_POINT:
+            case POS_POINT:
                 return findPositionablePointByName(name);
-            case LayoutTrack.TURNOUT_A:
-            case LayoutTrack.TURNOUT_B:
-            case LayoutTrack.TURNOUT_C:
-            case LayoutTrack.TURNOUT_D:
+            case TURNOUT_A:
+            case TURNOUT_B:
+            case TURNOUT_C:
+            case TURNOUT_D:
                 return findLayoutTurnoutByName(name);
-            case LayoutTrack.LEVEL_XING_A:
-            case LayoutTrack.LEVEL_XING_B:
-            case LayoutTrack.LEVEL_XING_C:
-            case LayoutTrack.LEVEL_XING_D:
+            case LEVEL_XING_A:
+            case LEVEL_XING_B:
+            case LEVEL_XING_C:
+            case LEVEL_XING_D:
                 return findLevelXingByName(name);
-            case LayoutTrack.SLIP_A:
-            case LayoutTrack.SLIP_B:
-            case LayoutTrack.SLIP_C:
-            case LayoutTrack.SLIP_D:
+            case SLIP_A:
+            case SLIP_B:
+            case SLIP_C:
+            case SLIP_D:
                 return findLayoutSlipByName(name);
-            case LayoutTrack.TRACK:
+            case TRACK:
                 return findTrackSegmentByName(name);
             default:
-                if (type >= LayoutTrack.TURNTABLE_RAY_OFFSET) {
+                if (HitPointType.isTurntableRayHitType(type)) {
                     return findLayoutTurntableByName(name);
                 }
         }
-        log.error("did not find Object '" + name + "' of type " + type);
+        log.error("did not find Object '{}' of type {}", name, type);
         return null;
     }
 
@@ -567,7 +577,7 @@ public class LayoutEditorFindItems {
         if ((name != null) && !name.isEmpty()) {
             if (name.startsWith("TO")) {
                 result = findLayoutTurnoutByName(name);
-            } else if (name.startsWith("A") || name.startsWith("EB") || name.startsWith("EC")) {
+            } else if (name.startsWith("A") || name.startsWith("EB") || name.startsWith("EC") || name.matches("F\\d+-A-\\d+")) {
                 result = findPositionablePointByName(name);
             } else if (name.startsWith("X")) {
                 result = findLevelXingByName(name);
@@ -575,7 +585,7 @@ public class LayoutEditorFindItems {
                 result = findLayoutSlipByName(name);
             } else if (name.startsWith("TUR")) {
                 result = findLayoutTurntableByName(name);
-            } else if (name.startsWith("T")) {  // (this prefix has to go after "TO" & "TUR" prefixes above)
+            } else if (name.startsWith("T") || name.matches("F\\d+-S-\\d+")) {  // (this prefix has to go after "TO" & "TUR" prefixes above)
                 result = findTrackSegmentByName(name);
             } else if (name.endsWith("-EB")) {  //BUGFIX: a 3rd party JMRI exporter gets this one wrong.
                 result = findPositionablePointByName(name);
@@ -589,21 +599,34 @@ public class LayoutEditorFindItems {
         return result;
     }
 
-   /**
-     * Determine the first unused LayoutTrack object name...
-     * @param inPrefix ...with this prefix...
+    /**
+     * Determine the first unused object name...
+     *
+     * @param inPrefix     ...with this prefix...
      * @param inStartIndex ...and this starting index...
-     * @return the first unused LayoutTrack object name
+     * @return the first unused object name
      */
     public String uniqueName(String inPrefix, int inStartIndex) {
         String result;
         for (int idx = inStartIndex; true; idx++) {
             result = String.format("%s%d", inPrefix, idx);
-            if (findObjectByName(result) == null) {
+            if ((inPrefix.equals("S") // LayoutShape?
+                    && (findLayoutShapeByName(result) == null))
+                    || (findObjectByName(result) == null)) {
                 break;
             }
         }
         return result;
+    }
+
+    /**
+     * Determine the first unused object name...
+     *
+     * @param inPrefix ...with this prefix...
+     * @return the first unused object name
+     */
+    public String uniqueName(String inPrefix) {
+        return uniqueName(inPrefix, 1);
     }
 
     private final static Logger log = LoggerFactory.getLogger(LayoutEditorFindItems.class);

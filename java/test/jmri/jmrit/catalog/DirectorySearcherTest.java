@@ -1,14 +1,16 @@
 package jmri.jmrit.catalog;
 
+import java.awt.Container;
+import java.awt.GraphicsEnvironment;
+import org.junit.*;
+
+import jmri.InstanceManager;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author pete cressman
+ * @author Paul Bender Copyright (C) 2017
  */
 public class DirectorySearcherTest {
 
@@ -19,7 +21,17 @@ public class DirectorySearcherTest {
         t.close();
     }
 
-    // The minimal setup for log4J
+    @Test
+    public void testOpenDirectory() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        jmri.util.ThreadingUtil.runOnGUIEventually(() -> {
+            InstanceManager.getDefault(DirectorySearcher.class).openDirectory();
+        });
+        Container pane = JUnitUtil.findContainer(Bundle.getMessage("openDirMenu"));
+        Assert.assertNotNull("FileChooser not found", pane);
+        JUnitUtil.pressButton(pane, "Cancel");
+    }
+
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -27,6 +39,7 @@ public class DirectorySearcherTest {
 
     @After
     public void tearDown() {
+        JUnitUtil.resetWindows(false,false);
         JUnitUtil.tearDown();
     }
 

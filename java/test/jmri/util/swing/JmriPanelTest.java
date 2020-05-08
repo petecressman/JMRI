@@ -8,7 +8,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class JmriPanelTest {
 
@@ -18,7 +18,7 @@ public class JmriPanelTest {
 
     @Test
     public void testCTor() {
-        Assert.assertNotNull("exists",panel);
+        Assert.assertNotNull("exists", panel);
     }
 
     @Test
@@ -29,15 +29,14 @@ public class JmriPanelTest {
 
     @Test
     public void testGetHelpTarget(){
-        Assert.assertEquals("help target",helpTarget,panel.getHelpTarget());
+        Assert.assertEquals("help target", helpTarget, panel.getHelpTarget());
     }
 
     @Test
     public void testGetTitle(){
-        Assert.assertEquals("title",title,panel.getTitle());
+        Assert.assertEquals("title", title, panel.getTitle());
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -47,6 +46,12 @@ public class JmriPanelTest {
 
     @After
     public void tearDown() {
+        if(panel!=null) {
+           panel.dispose();
+        }
+        panel = null;
+        helpTarget = null;
+        title = null;
         JUnitUtil.tearDown();
     }
 

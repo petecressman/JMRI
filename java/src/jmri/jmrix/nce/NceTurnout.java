@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Implement a Turnout via NCE communications.
- * <P>
+ * <p>
  * This object doesn't listen to the NCE communications. This is because it
  * should be the only object that is sending messages for this turnout; more
  * than one Turnout object pointing to a single device is not allowed.
@@ -45,7 +45,7 @@ public class NceTurnout extends AbstractTurnout {
 
     private synchronized void initialize() {
         numNtTurnouts++; // increment the total number of NCE turnouts
-        // update feedback modes, MONITORING requires PowerHouse system with new EPROM    
+        // update feedback modes, MONITORING requires PowerPro system with new EPROM    
         if (tc.getCommandOptions() >= NceTrafficController.OPTION_2006 && tc.getUsbSystem() == NceTrafficController.USB_SYSTEM_NONE) {
             if (modeNames == null) {
                 if (_validFeedbackNames.length != _validFeedbackModes.length) {
@@ -94,7 +94,7 @@ public class NceTurnout extends AbstractTurnout {
             // first look for the double case, which we can't handle
             if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN " + s);
+                log.error("Cannot command both CLOSED and THROWN {}", s);
                 return;
             } else {
                 // send a CLOSED command
@@ -113,9 +113,7 @@ public class NceTurnout extends AbstractTurnout {
     @Override
     protected void turnoutPushbuttonLockout(boolean pushButtonLockout) {
         if (log.isDebugEnabled()) {
-            log.debug("Send command to "
-                    + (pushButtonLockout ? "Lock" : "Unlock")
-                    + " Pushbutton " + prefix + _number);
+            log.debug("Send command to {} Pushbutton {}{}", pushButtonLockout ? "Lock" : "Unlock", prefix, _number);
         }
 
         byte[] bl = PushbuttonPacket.pushbuttonPkt(prefix, _number, pushButtonLockout);
@@ -150,7 +148,7 @@ public class NceTurnout extends AbstractTurnout {
      * state change (by using a throttle), and that command has
      * already taken effect. Hence we use "newKnownState" to indicate it's taken
      * place.
-     * <P>
+     *
      * @param state Observed state, updated state from command station
      */
     synchronized void setKnownStateFromCS(int state) {
@@ -242,12 +240,7 @@ public class NceTurnout extends AbstractTurnout {
             byte[] bl = NceBinaryCommand.accDecoder(_number, closed);
 
             if (log.isDebugEnabled()) {
-                log.debug("Command: "
-                        + Integer.toHexString(0xFF & bl[0])
-                        + " " + Integer.toHexString(0xFF & bl[1])
-                        + " " + Integer.toHexString(0xFF & bl[2])
-                        + " " + Integer.toHexString(0xFF & bl[3])
-                        + " " + Integer.toHexString(0xFF & bl[4]));
+                log.debug("Command: {} {} {} {} {}", Integer.toHexString(0xFF & bl[0]), Integer.toHexString(0xFF & bl[1]), Integer.toHexString(0xFF & bl[2]), Integer.toHexString(0xFF & bl[3]), Integer.toHexString(0xFF & bl[4]));
             }
 
             NceMessage m = NceMessage.createBinaryMessage(tc, bl);
@@ -259,10 +252,7 @@ public class NceTurnout extends AbstractTurnout {
             byte[] bl = NmraPacket.accDecoderPkt(_number, closed);
 
             if (log.isDebugEnabled()) {
-                log.debug("packet: "
-                        + Integer.toHexString(0xFF & bl[0])
-                        + " " + Integer.toHexString(0xFF & bl[1])
-                        + " " + Integer.toHexString(0xFF & bl[2]));
+                log.debug("packet: {} {} {}", Integer.toHexString(0xFF & bl[0]), Integer.toHexString(0xFF & bl[1]), Integer.toHexString(0xFF & bl[2]));
             }
 
             NceMessage m = NceMessage.sendPacketMessage(tc, bl);

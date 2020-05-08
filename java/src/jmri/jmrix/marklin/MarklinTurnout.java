@@ -53,7 +53,7 @@ public class MarklinTurnout extends AbstractTurnout
             // first look for the double case, which we can't handle
             if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN " + s);
+                log.error("Cannot command both CLOSED and THROWN {}", s);
                 return;
             } else {
                 // send a CLOSED command
@@ -130,7 +130,7 @@ public class MarklinTurnout extends AbstractTurnout
         MarklinMessage m = MarklinMessage.getSetTurnout(getCANAddress(), (newstate ? 1 : 0), 0x01);
         tc.sendMarklinMessage(m, this);
 
-        meterTimer.schedule(new java.util.TimerTask() {
+        jmri.util.TimerUtil.schedule(new java.util.TimerTask() {
             boolean state = newstate;
 
             @Override
@@ -138,7 +138,7 @@ public class MarklinTurnout extends AbstractTurnout
                 try {
                     sendOffMessage((state ? 1 : 0));
                 } catch (Exception e) {
-                    log.error("Exception occurred while sending delayed off to turnout: " + e);
+                    log.error("Exception occurred while sending delayed off to turnout: {}", e);
                 }
             }
         }, METERINTERVAL);
@@ -176,7 +176,7 @@ public class MarklinTurnout extends AbstractTurnout
                         setKnownStateFromCS(Turnout.CLOSED);
                         break;
                     default:
-                        log.warn("Unknown state command " + m.getElement(9));
+                        log.warn("Unknown state command {}", m.getElement(9));
                 }
             }
         }
@@ -193,7 +193,6 @@ public class MarklinTurnout extends AbstractTurnout
     }
 
     static final int METERINTERVAL = 100;  // msec wait before closed
-    static java.util.Timer meterTimer = new java.util.Timer("Marklin Turnout Meter Timer",true);
 
     private final static Logger log = LoggerFactory.getLogger(MarklinTurnout.class);
 }

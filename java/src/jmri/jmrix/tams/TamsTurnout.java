@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Implement a Turnout via Tams communications.
- * <P>
+ * <p>
  * This object doesn't listen to the Tams communications. This is because it
  * should be the only object that is sending messages for this turnout; more
  * than one Turnout object pointing to a single device is not allowed.
  *
  * Based on work by Bob Jacobsen and Kevin Dickerson Copyright
  *
- * @author	 Jan Boen
+ * @author  Jan Boen
  */
 public class TamsTurnout extends AbstractTurnout
         implements TamsListener {
@@ -85,7 +85,7 @@ public class TamsTurnout extends AbstractTurnout
             // first look for the double case, which we can't handle
             if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN " + s);
+                log.error("Cannot command both CLOSED and THROWN {}", s);
                 return;
             } else {
                 // send a CLOSED command
@@ -116,7 +116,7 @@ public class TamsTurnout extends AbstractTurnout
             log.debug("Returning");
             return;
         }
-        log.debug("Setting to state " + state);
+        log.debug("Setting to state {}", state);
         newCommandedState(state);
     }
 
@@ -126,7 +126,7 @@ public class TamsTurnout extends AbstractTurnout
      * state change (by using a throttle), and that command has
      * already taken effect. Hence we use "newKnownState" to indicate it's taken
      * place.
-     * <P>
+     *
      * @param state Observed state, updated state from command station
      */
     synchronized void setKnownStateFromCS(int state) {
@@ -142,7 +142,7 @@ public class TamsTurnout extends AbstractTurnout
     }
 
     /**
-     * Tams turnouts can be inverted
+     * Tams turnouts can be inverted.
      */
     @Override
     public boolean canInvert() {
@@ -159,26 +159,25 @@ public class TamsTurnout extends AbstractTurnout
         // get control
         TamsMessage m = new TamsMessage("xT " + _number + "," + (closed ? "r" : "g") + ",1");
         tc.sendTamsMessage(m, this);
-
     }
 
-    // to listen for status changes from Tams system
+    // Listen for status changes from Tams system.
     @Override
     public void reply(TamsReply m) {
         log.debug("*** TamsReply ***");
-        log.debug("m.match(\"T\") = " + Integer.toString(m.match("T")));
+        log.debug("m.match(\"T\") = {}", Integer.toString(m.match("T")));
         String msg = m.toString();
-        log.debug("Turnout Reply = " + msg);
+        log.debug("Turnout Reply = {}", msg);
         if (m.match("T") == 0) {
             String[] lines = msg.split(" ");
             if (lines[1].equals("" + _number)) {
                 updateReceived = true;
                 if (lines[2].equals("r") || lines[2].equals("0")) {
-                    log.debug("Turnout " + _number + " = CLOSED");
+                    log.debug("Turnout {} = CLOSED", _number);
                     setCommandedStateFromCS(Turnout.CLOSED);
                     setKnownStateFromCS(Turnout.CLOSED);
                 } else {
-                    log.debug("Turnout " + _number + " = THROWN");
+                    log.debug("Turnout {} = THROWN", _number);
                     setCommandedStateFromCS(Turnout.THROWN);
                     setKnownStateFromCS(Turnout.THROWN);
                 }
@@ -229,6 +228,5 @@ public class TamsTurnout extends AbstractTurnout
     }
 
     private final static Logger log = LoggerFactory.getLogger(TamsTurnout.class);
+
 }
-
-

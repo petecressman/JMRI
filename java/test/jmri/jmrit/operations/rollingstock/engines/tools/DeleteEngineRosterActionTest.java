@@ -1,40 +1,64 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
 import java.awt.GraphicsEnvironment;
-import jmri.jmrit.operations.rollingstock.engines.EnginesTableFrame;
-import jmri.jmrit.operations.rollingstock.engines.tools.DeleteEngineRosterAction;
-import jmri.util.JUnitUtil;
-import org.junit.After;
+import java.awt.event.ActionEvent;
+
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
+
+import jmri.InstanceManager;
+import jmri.jmrit.operations.OperationsTestCase;
+import jmri.jmrit.operations.rollingstock.engines.EngineManager;
+import jmri.util.JUnitOperationsUtil;
+import jmri.util.swing.JemmyUtil;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
-public class DeleteEngineRosterActionTest {
+public class DeleteEngineRosterActionTest extends OperationsTestCase {
 
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        EnginesTableFrame etf = new EnginesTableFrame();
-        DeleteEngineRosterAction t = new DeleteEngineRosterAction("Test Action",etf);
-        Assert.assertNotNull("exists",t);
-        JUnitUtil.dispose(etf);
+        DeleteEngineRosterAction t = new DeleteEngineRosterAction();
+        Assert.assertNotNull("exists", t);
     }
 
-    // The minimal setup for log4J
-    @Before
-    public void setUp() {
-        JUnitUtil.setUp();
-        JUnitUtil.resetProfileManager();
-    }
+    @Test
+    public void testDelete() {
+        Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        DeleteEngineRosterAction deleteRosterAction = new DeleteEngineRosterAction();
+        Assert.assertNotNull("exists", deleteRosterAction);
 
-    @After
-    public void tearDown() {
-        JUnitUtil.tearDown();
+        JUnitOperationsUtil.initOperationsData();
+        Assert.assertEquals("Number of engines", 4, InstanceManager.getDefault(EngineManager.class).getNumEntries());
+
+        Thread delete = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                deleteRosterAction.actionPerformed(new ActionEvent("Test Action", 0, null));
+            }
+        });
+        delete.setName("Delete Engines"); // NOI18N
+        delete.start();
+
+        jmri.util.JUnitUtil.waitFor(() -> {
+            return delete.getState().equals(Thread.State.WAITING);
+        }, "wait for prompt");
+
+        JemmyUtil.pressDialogButton(Bundle.getMessage("engineDeleteAll"), Bundle.getMessage("ButtonOK"));
+
+        try {
+            delete.join();
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+
+        Assert.assertEquals("Number of engines", 0, InstanceManager.getDefault(EngineManager.class).getNumEntries());
+        
+
     }
 
     // private final static Logger log = LoggerFactory.getLogger(DeleteEngineRosterActionTest.class);

@@ -179,6 +179,8 @@ abstract public class AbstractPortController implements PortAdapter {
      * @return the option value
      */
     @Override
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
+    justification = "availability was checked before, should never get here")
     public String getOptionState(String option) {
         if (options.containsKey(option)) {
             return options.get(option).getCurrent();
@@ -187,12 +189,14 @@ abstract public class AbstractPortController implements PortAdapter {
     }
 
     /**
-     * Get a list of the various choices allowed with an given option.
+     * Get a list of the various choices allowed with a given option.
      *
      * @param option the name of the option to query
-     * @return list of valid values for the option
+     * @return list of valid values for the option, null if none are available
      */
     @Override
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
+    justification = "availability was checked before, should never get here")
     public String[] getOptionChoices(String option) {
         if (options.containsKey(option)) {
             return options.get(option).getOptions();
@@ -201,6 +205,8 @@ abstract public class AbstractPortController implements PortAdapter {
     }
 
     @Override
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
+    justification = "availability was checked before, should never get here")
     public String getOptionDisplayName(String option) {
         if (options.containsKey(option)) {
             return options.get(option).getDisplayText();
@@ -341,7 +347,7 @@ abstract public class AbstractPortController implements PortAdapter {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
-            log.error("Sleep Exception raised during reconnection attempt" + s);
+            log.error("Sleep Exception raised during reconnection attempt{}", s);
         }
     }
 
@@ -373,7 +379,7 @@ abstract public class AbstractPortController implements PortAdapter {
      @SuppressFBWarnings(value = "SR_NOT_CHECKED", justification = "skipping all, don't care what skip() returns")
      protected void purgeStream(@Nonnull java.io.InputStream serialStream) throws java.io.IOException {
         int count = serialStream.available();
-        log.debug("input stream shows " + count + " bytes available");
+         log.debug("input stream shows {} bytes available", count);
         while (count > 0) {
             serialStream.skip(count);
             count = serialStream.available();

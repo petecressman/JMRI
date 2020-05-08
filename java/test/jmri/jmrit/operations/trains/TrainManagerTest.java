@@ -5,19 +5,20 @@ import java.awt.GraphicsEnvironment;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.locations.LocationManager;
 import jmri.jmrit.operations.rollingstock.cars.CarLoad;
+import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.JmriJFrame;
 import jmri.util.swing.JemmyUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Tests for the TrainManager class Last manually cross-checked on 20090131
@@ -52,7 +53,9 @@ public class TrainManagerTest extends OperationsTestCase {
     @Test
     public void testGetTrainByName() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
+        JUnitOperationsUtil.initOperationsData();
         Assert.assertNotNull("Retrieve Train", tmanager.getTrainByName("STF"));
+
     }
 
     /**
@@ -61,22 +64,27 @@ public class TrainManagerTest extends OperationsTestCase {
     @Test
     public void testGetTrainById() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
+        JUnitOperationsUtil.initOperationsData();
         Assert.assertNotNull("Retrieve Train", tmanager.getTrainById("1"));
+
     }
 
     @Test
     public void testTrainCopy() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
+        JUnitOperationsUtil.initOperationsData();
         Train train = tmanager.getTrainById("1");
         Train copiedTrain = tmanager.copyTrain(train, "Copied train");
 
         Assert.assertEquals("Copied train", copiedTrain.getName());
         Assert.assertEquals(train.getRoute(), copiedTrain.getRoute());
+
     }
 
     @Test
     public void testReplaceLoad() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
+        JUnitOperationsUtil.initOperationsData();
         Train train = tmanager.getTrainById("1");
         train.setLoadOption(Train.INCLUDE_LOADS);
         train.addLoadName("Nuts");
@@ -109,21 +117,28 @@ public class TrainManagerTest extends OperationsTestCase {
         Assert.assertTrue("confirm load name", train.acceptsLoad("Bolts", "Boxcar")); // not changed
         Assert.assertFalse("confirm load name", train.acceptsLoadName("Nuts"));
         Assert.assertFalse("confirm load name", train.acceptsLoadName("bolts"));    
+        
+
     }
     
     @Test
     public void testIsAnyTrainBuilt() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
+        JUnitOperationsUtil.initOperationsData();
         Train train = tmanager.getTrainById("1");
         
         Assert.assertFalse("no built trains", tmanager.isAnyTrainBuilt());
         Assert.assertTrue("train built",train.build());
         Assert.assertTrue("One built train", tmanager.isAnyTrainBuilt());
+        
+        JUnitOperationsUtil.checkOperationsShutDownTask();
+
     }
     
     @Test
     public void testGetTrainsArrivingThisLocationList() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
+        JUnitOperationsUtil.initOperationsData();
         Train train1 = tmanager.getTrainById("1");
         Train train2 = tmanager.getTrainById("2");
         
@@ -148,22 +163,27 @@ public class TrainManagerTest extends OperationsTestCase {
         Assert.assertEquals("list size", 2 , trains.size());
         Assert.assertEquals(train2, trains.get(0));
         Assert.assertEquals(train1, trains.get(1));
+        
+        JUnitOperationsUtil.checkOperationsShutDownTask();
+
     }
     
     @Test
     public void testGetTrainsByDepartureList() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
-         
+        JUnitOperationsUtil.initOperationsData();
         List<Train> trains = tmanager.getTrainsByDepartureList();
         Assert.assertEquals("list size", 2 , trains.size());
         Assert.assertEquals("STF", trains.get(0).getName());
         Assert.assertEquals("SFF", trains.get(1).getName());
+        
+
     }
     
     @Test
     public void testGetTrainsByDescriptionList() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
-        
+        JUnitOperationsUtil.initOperationsData();
         Train train1 = tmanager.getTrainById("1");
         Train train2 = tmanager.getTrainById("2");
         train1.setDescription("Bad Train");
@@ -173,22 +193,26 @@ public class TrainManagerTest extends OperationsTestCase {
         Assert.assertEquals("list size", 2 , trains.size());
         Assert.assertEquals("SFF", trains.get(0).getName());
         Assert.assertEquals("STF", trains.get(1).getName());
+        
+
     }
     
     @Test
     public void testGetTrainsByRouteList() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
-         
+        JUnitOperationsUtil.initOperationsData();
         List<Train> trains = tmanager.getTrainsByRouteList();
         Assert.assertEquals("list size", 2 , trains.size());
         Assert.assertEquals("STF", trains.get(0).getName());
         Assert.assertEquals("SFF", trains.get(1).getName());
+        
+
     }
     
     @Test
     public void testGetTrainsByStatusList() {
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
-         
+        JUnitOperationsUtil.initOperationsData();
         List<Train> trains = tmanager.getTrainsByStatusList();
         Assert.assertEquals("list size", 2 , trains.size());
         Assert.assertEquals("STF", trains.get(0).getName());
@@ -201,14 +225,16 @@ public class TrainManagerTest extends OperationsTestCase {
         trains = tmanager.getTrainsByStatusList();
         Assert.assertEquals("list size", 2 , trains.size());
         Assert.assertEquals("SFF", trains.get(0).getName());
-        Assert.assertEquals("STF", trains.get(1).getName());        
+        Assert.assertEquals("STF", trains.get(1).getName());     
+        
+
     }
     
     @Test
     public void testSelectedTrainsGUI() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         TrainManager tmanager = InstanceManager.getDefault(TrainManager.class);
-        
+        JUnitOperationsUtil.initOperationsData();
         // don't build train 1
         Train train1 = tmanager.getTrainById("1");
         train1.setBuildEnabled(false);
@@ -258,29 +284,15 @@ public class TrainManagerTest extends OperationsTestCase {
 
         
         JemmyUtil.pressDialogButton(MessageFormat.format(Bundle.getMessage("TerminateTrain"),
-                            new Object[]{train2.getName(), train2.getDescription()}), "Yes");
+                            new Object[]{train2.getName(), train2.getDescription()}), Bundle.getMessage("ButtonYes"));
         
         jmri.util.JUnitUtil.waitFor(() -> {
             return terminate.getState().equals(Thread.State.TERMINATED);
         }, "wait terminate");
        
         Assert.assertFalse(train2.isBuilt());
+        
+        JUnitOperationsUtil.checkOperationsShutDownTask();
+
     }
-
-    // from here down is testing infrastructure
-    // Ensure minimal setup for log4J
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-
-        jmri.util.JUnitOperationsUtil.initOperationsData();
-    }
-
-    @After
-    @Override
-    public void tearDown() {
-        super.tearDown();
-    }
-
 }

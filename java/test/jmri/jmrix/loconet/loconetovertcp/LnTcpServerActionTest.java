@@ -11,14 +11,14 @@ import org.junit.Test;
 /**
  * Test simple functioning of LnTcpServerAction
  *
- * @author	Paul Bender Copyright (C) 2016
+ * @author Paul Bender Copyright (C) 2016
  */
 public class LnTcpServerActionTest {
 
     @Test
     public void testStringCtor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        LnTcpServerAction action = new LnTcpServerAction("Loconet test Action");
+        LnTcpServerAction action = new LnTcpServerAction("LocoNet test Action");
         Assert.assertNotNull("exists", action);
     }
 

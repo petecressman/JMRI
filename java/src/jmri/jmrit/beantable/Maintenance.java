@@ -67,6 +67,7 @@ public class Maintenance {
      *
      * @param parent Frame to check
      */
+    @SuppressWarnings("deprecation") // requires JUnit tests before can reliably redo getSystemNameList-using algorithms
     public static void findOrphansPressed(Frame parent) {
         Vector<String> display = new Vector<String>();
         Vector<String> names = new Vector<String>();
@@ -249,6 +250,7 @@ public class Maintenance {
      *
      * @param parent Frame to check
      */
+    @SuppressWarnings("deprecation") // requires JUnit tests before can reliably redo getSystemNameList-using algorithms
     public static void findEmptyPressed(Frame parent) {
         Vector<String> display = new Vector<String>();
         Vector<String> names = new Vector<String>();
@@ -339,7 +341,8 @@ public class Maintenance {
      * Searches each Manager for a reference to the "name".
      *
      * @param name string (name base) to look for
-     * @return 4 element String array: {Type, userName, sysName, numListeners}
+     * @return 4 element String array: {Type, userName, sysName, numListeners}  - 
+     * This should probably return an instance of a custom type rather than a bunch of string names
      */
     @Nonnull
     static String[] getTypeAndNames(@Nonnull String name) {
@@ -376,15 +379,14 @@ public class Maintenance {
 
     }
     // captive for above
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "PZLA_PREFER_ZERO_LENGTH_ARRAYS",
+        justification = "null return for normal (no error) case is easy to check, and this is a really wierd array")
+    // This should probably return an instance of a custom type rather than a bunch of string names
     static private String[] checkForOneTypeAndNames( @Nonnull Manager<? extends NamedBean> manager, @Nonnull String type, @Nonnull String beanName) {
-        NamedBean bean = manager.getBeanBySystemName(beanName);
+        NamedBean bean = manager.getBySystemName(beanName);
         if (bean != null) return new String[]{type, bean.getUserName(), bean.getSystemName(), Integer.toString(bean.getNumPropertyChangeListeners())};
 
-        // special case  - check for upper case system name - not recommended, but here for historical reasons
-        bean = manager.getBeanBySystemName(beanName.toUpperCase());
-        if (bean != null) return new String[]{type, bean.getUserName(), bean.getSystemName(), Integer.toString(bean.getNumPropertyChangeListeners())};
-
-        bean = manager.getBeanByUserName(beanName);
+        bean = manager.getByUserName(beanName);
         if (bean != null) return new String[]{type, bean.getUserName(), bean.getSystemName(), Integer.toString(bean.getNumPropertyChangeListeners())};
 
         return null;
@@ -431,10 +433,11 @@ public class Maintenance {
      * @param text body of the message to be displayed reporting the result
      * @return true if name is found at least once as a bean name
      */
+    @SuppressWarnings("deprecation") // requires JUnit tests before can reliably redo getSystemNameList-using algorithms
     static boolean search(String name, JTextArea text) {
         String[] names = getTypeAndNames(name);
         if (log.isDebugEnabled()) {
-            log.debug("search for " + name + " as " + names[0] + " \"" + names[1] + "\" (" + names[2] + ")");
+            log.debug("search for {} as {} \"{}\" ({})", name, names[0], names[1], names[2]);
         }
         if (names[0].length() == 0) {
             if (text != null) {
@@ -458,7 +461,7 @@ public class Maintenance {
             String sName = iter1.next();
             Logix x = InstanceManager.getDefault(jmri.LogixManager.class).getBySystemName(sName);
             if (x == null) {
-                log.error("Error getting Logix  - " + sName);
+                log.error("Error getting Logix  - {}", sName);
                 break;
             }
             tempText = new StringBuilder();
@@ -473,7 +476,7 @@ public class Maintenance {
                 }
                 Conditional c = InstanceManager.getDefault(jmri.ConditionalManager.class).getBySystemName(sName);
                 if (c == null) {
-                    log.error("Invalid conditional system name - " + sName);
+                    log.error("Invalid conditional system name - {}", sName);
                     break;
                 }
                 uName = c.getUserName();
@@ -538,6 +541,9 @@ public class Maintenance {
             // get the next Logix
             String sName = iter1.next();
             jmri.jmrit.logix.OBlock block = oBlockManager.getBySystemName(sName);
+            if (block==null){
+                continue;
+            }
             String uName = block.getUserName();
             String line1 = MessageFormat.format(rbm.getString("ReferenceTitle"),
                     new Object[]{" ", Bundle.getMessage("BeanNameOBlock"), uName, sName});
@@ -574,7 +580,7 @@ public class Maintenance {
             String sName = iter1.next();
             jmri.Route r = routeManager.getBySystemName(sName);
             if (r == null) {
-                log.error("Error getting Route  - " + sName);
+                log.error("Error getting Route  - {}", sName);
                 break;
             }
             String uName = r.getUserName();
@@ -641,7 +647,7 @@ public class Maintenance {
             String sName = iter1.next();
             jmri.Transit transit = transitManager.getBySystemName(sName);
             if (transit == null) {
-                log.error("Error getting Transit - " + sName);
+                log.error("Error getting Transit - {}", sName);
                 break;
             }
             String uName = transit.getUserName();
@@ -757,7 +763,7 @@ public class Maintenance {
             String sName = iter1.next();
             jmri.Section section = sectionManager.getBySystemName(sName);
             if (section == null) {
-                log.error("Error getting Section - " + sName);
+                log.error("Error getting Section - {}", sName);
                 break;
             }
             String uName = section.getUserName();
@@ -894,7 +900,7 @@ public class Maintenance {
             String sName = iter1.next();
             jmri.jmrit.display.layoutEditor.LayoutBlock lb = lbm.getBySystemName(sName);
             if (lb == null) {
-                log.error("Error getting LayoutBlock - " + sName);
+                log.error("Error getting LayoutBlock - {}", sName);
                 break;
             }
             String uName = lb.getUserName();
@@ -1035,6 +1041,9 @@ public class Maintenance {
         while (iter1.hasNext()) {
             String sName = iter1.next();
             Logix x = InstanceManager.getDefault(jmri.LogixManager.class).getBySystemName(sName);
+            if (x == null){
+                continue;
+            }
             for (int i = 0; i < x.getNumConditionals(); i++) {
                 sName = x.getConditionalByNumberOrder(i);
                 sysNameList.remove(sName);
@@ -1046,7 +1055,7 @@ public class Maintenance {
             String sName = iter1.next();
             jmri.Conditional c = conditionalManager.getBySystemName(sName);
             if (c == null) {
-                log.error("Error getting Condition - " + sName);
+                log.error("Error getting Condition - {}", sName);
                 break;
             }
             String uName = c.getUserName();

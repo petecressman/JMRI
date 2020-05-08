@@ -28,28 +28,6 @@ public class XNetSensor extends AbstractSensor implements XNetListener {
 
     protected XNetTrafficController tc = null;
 
-    /**
-     * Create XNet sensor using fixed connection prefix
-     * @deprecated JMRI Since 4.9.5
-     */
-    @Deprecated
-    public XNetSensor(String systemName, String userName, XNetTrafficController controller) {
-        super(systemName, userName);
-        tc = controller;
-        init(systemName, "X"); // Should not give Null
-    }
-
-    /**
-     * Create XNet sensor using fixed connection prefix
-     * @deprecated JMRI Since 4.9.5
-     */
-    @Deprecated
-    public XNetSensor(String systemName, XNetTrafficController controller) {
-        super(systemName);
-        tc = controller;
-        init(systemName, "X");
-    }
-
     public XNetSensor(String systemName, String userName, XNetTrafficController controller, String prefix) {
         super(systemName, userName);
         tc = controller;
@@ -148,7 +126,7 @@ public class XNetSensor extends AbstractSensor implements XNetListener {
     @Override
     public synchronized void message(XNetReply l) {
         if (log.isDebugEnabled()) {
-            log.debug("received message: " + l);
+            log.debug("received message: {}", l);
         }
         if (l.isFeedbackBroadcastMessage()) {
             int numDataBytes = l.getElement(0) & 0x0f;
@@ -157,10 +135,7 @@ public class XNetSensor extends AbstractSensor implements XNetListener {
                         && baseaddress == l.getFeedbackEncoderMsgAddr(i)
                         && nibble == (l.getElement(i + 1) & 0x10)) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Message for sensor " + systemName
-                                + " (Address " + baseaddress
-                                + " position " + (address - (baseaddress * 8))
-                                + ")");
+                        log.debug("Message for sensor {} (Address {} position {})", systemName, baseaddress, address - (baseaddress * 8));
                     }
                     if (statusRequested && l.isUnsolicited()) {
                         l.resetUnsolicited();
@@ -190,7 +165,7 @@ public class XNetSensor extends AbstractSensor implements XNetListener {
     @Override
     public void notifyTimeout(XNetMessage msg) {
         if (log.isDebugEnabled()) {
-            log.debug("Notified of timeout on message" + msg.toString());
+            log.debug("Notified of timeout on message{}", msg.toString());
         }
     }
 
@@ -220,6 +195,6 @@ public class XNetSensor extends AbstractSensor implements XNetListener {
         return nibble;
     }
 
-    private final static Logger log = LoggerFactory.getLogger(XNetSensor.class);
+    private static final Logger log = LoggerFactory.getLogger(XNetSensor.class);
 
 }

@@ -17,9 +17,11 @@ public class SimulatorAdapterTest {
    public void ConstructorTest(){
        SimulatorAdapter a = new SimulatorAdapter();
        Assert.assertNotNull(a);
+
+       // clean up
+       a.getSystemConnectionMemo().getSprogTrafficController().dispose();
    }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

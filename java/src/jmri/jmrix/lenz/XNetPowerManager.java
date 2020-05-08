@@ -2,6 +2,9 @@ package jmri.jmrix.lenz;
 
 import jmri.JmriException;
 import jmri.PowerManager;
+
+import java.beans.PropertyChangeListener;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +35,12 @@ public class XNetPowerManager implements PowerManager, XNetListener {
     int power = UNKNOWN;
 
     @Override
+    public boolean implementsIdle() {
+        // XPressNet implements idle via the broadcast emergency stop commands. 
+        return true;
+    }
+
+    @Override
     public void setPower(int v) throws JmriException {
         power = UNKNOWN;
         checkTC();
@@ -41,6 +50,9 @@ public class XNetPowerManager implements PowerManager, XNetListener {
         } else if (v == OFF) {
             // send EMERGENCY_OFF
             tc.sendXNetMessage(XNetMessage.getEmergencyOffMsg(), this);
+        } else if (v == IDLE) {
+            // send EMERGENCY_STOP
+            tc.sendXNetMessage(XNetMessage.getEmergencyStopMsg(), this);
         }
         firePropertyChange("Power", null, null); // NOI18N
     }
@@ -80,6 +92,30 @@ public class XNetPowerManager implements PowerManager, XNetListener {
         pcs.removePropertyChangeListener(l);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
+    }
+
     XNetTrafficController tc = null;
 
     // to listen for Broadcast messages related to track power.
@@ -87,7 +123,7 @@ public class XNetPowerManager implements PowerManager, XNetListener {
     @Override
     public void message(XNetReply m) {
         if (log.isDebugEnabled()) {
-            log.debug("Message received: " + m.toString());
+            log.debug("Message received: {}", m.toString());
         }
         // First, we check for a "normal operations resumed message"
         // This indicates the power to the track is ON
@@ -106,7 +142,7 @@ public class XNetPowerManager implements PowerManager, XNetListener {
         // locomotives are stopped
         else if (m.getElement(0) == jmri.jmrix.lenz.XNetConstants.BC_EMERGENCY_STOP
                 && m.getElement(1) == jmri.jmrix.lenz.XNetConstants.BC_EVERYTHING_OFF) {
-            power = OFF;
+            power = IDLE;
             firePropertyChange("Power", null, null);
         } // Next we check for a "Service Mode Entry" message
         // This indicatse track power is off on the mainline.
@@ -125,7 +161,7 @@ public class XNetPowerManager implements PowerManager, XNetListener {
                 firePropertyChange("Power", null, null);
             } else if ((statusByte & 0x02) == 0x02) {
                 // Command station is in Emergency Stop Mode
-                power = OFF;
+                power = IDLE;
                 firePropertyChange("Power", null, null);
             } else if ((statusByte & 0x08) == 0x08) {
                 // Command station is in Service Mode, power to the 
@@ -157,11 +193,11 @@ public class XNetPowerManager implements PowerManager, XNetListener {
     @Override
     public void notifyTimeout(XNetMessage msg) {
         if (log.isDebugEnabled()) {
-            log.debug("Notified of timeout on message" + msg.toString());
+            log.debug("Notified of timeout on message{}", msg.toString());
         }
     }
 
     // Initialize logging information
-    private final static Logger log = LoggerFactory.getLogger(XNetPowerManager.class);
+    private static final Logger log = LoggerFactory.getLogger(XNetPowerManager.class);
 
 }

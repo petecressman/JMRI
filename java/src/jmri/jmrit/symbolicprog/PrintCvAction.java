@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Action to print the information in the CV table.
- * <P>
+ * <p>
  * This uses the older style printing, for compatibility with Java 1.1.8 in
  * Macintosh MRJ
  *
@@ -59,7 +59,7 @@ public class PrintCvAction extends AbstractAction {
                 w.write(s, 0, s.length());
             }
         } catch (IOException e) {
-            log.warn("error during printing: " + e);
+            log.warn("error during printing: {}", e);
         }
         mRoster.printEntry(w);
         w.setFontStyle(Font.PLAIN);

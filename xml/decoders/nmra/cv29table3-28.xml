@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="../XSLT/decoder.xsl"?>
 <!-- Copyright (C) JMRI 2001, 2005, 2007, 2009, 2010, 2014 All rights reserved -->
-<!-- $Id$ -->
 <!--                                                                        -->
 <!-- JMRI is free software; you can redistribute it and/or modify it under  -->
 <!-- the terms of version 2 of the GNU General Public License as published  -->
@@ -69,7 +68,7 @@
 			</enumChoice>
 			<enumChoice choice="Use Speed Table">
 				<choice>Use Speed Table (CV's 67-94)</choice>
-				<choice xml:lang="it">Usa Tabella Velocità' (CV's 67-94)</choice>
+				<choice xml:lang="it">Usa Tabella Velocità (CV's 67-94)</choice>
 				<choice xml:lang="fr">Utiliser tableau de vitesse (CV's 67-94)</choice>
 				<choice xml:lang="de">Geschwindigkeitskennlinie nutzen (CV's 67-94)</choice>
 				<choice xml:lang="cs">Použít rychlostní tabulku (CV 67-94)</choice>

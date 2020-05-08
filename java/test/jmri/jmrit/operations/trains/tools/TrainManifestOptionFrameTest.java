@@ -1,6 +1,11 @@
 package jmri.jmrit.operations.trains.tools;
 
 import java.awt.GraphicsEnvironment;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.trains.Train;
@@ -9,15 +14,10 @@ import jmri.jmrit.operations.trains.TrainManager;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class TrainManifestOptionFrameTest extends OperationsTestCase {
 
@@ -51,19 +51,8 @@ public class TrainManifestOptionFrameTest extends OperationsTestCase {
         // closing the train edit window should also close the option window
         JUnitUtil.dispose(trainEditFrame);
         Assert.assertFalse(t.isShowing());
-    }
+        
 
-    // The minimal setup for log4J
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-    }
-
-    @Override
-    @After
-    public void tearDown() {
-        super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(TrainManifestOptionFrameTest.class);

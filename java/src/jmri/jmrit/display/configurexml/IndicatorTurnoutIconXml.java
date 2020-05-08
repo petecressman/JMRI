@@ -89,9 +89,9 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
         elem = new Element("paths");
         ArrayList<String> paths = p.getPaths();
         if (paths != null) {
-            for (int i = 0; i < paths.size(); i++) {
+            for (String path : paths) {
                 Element e = new Element("path");
-                e.addContent(paths.get(i));
+                e.addContent(path);
                 elem.addContent(e);
 
             }
@@ -129,9 +129,9 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
             return;
         } else {
             name = elem.getText();
-            pi.setTurnout(name);
         }
         loadPositionableIcon(element, pi);
+        pi.setTurnout(name);
         
         
         HashMap<String, HashMap<String, DisplayState>> displayMaps = pi.getDisplayMaps();
@@ -184,8 +184,8 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
         if (elem != null) {
             ArrayList<String> paths = new ArrayList<>();
             List<Element> pth = elem.getChildren();
-            for (int i = 0; i < pth.size(); i++) {
-                paths.add(pth.get(i).getText());
+            for (Element value : pth) {
+                paths.add(value.getText());
             }
             pi.setPaths(paths);
         }
@@ -244,10 +244,9 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
         Element elem = element.getChild("text");
         if (elem != null) {
             ds.setText(elem.getText());
-        }
-        
-        if (elem.getAttribute("text") != null) {
-            ds.setText(elem.getAttribute("text").getValue());
+            if (elem.getAttribute("text") != null) {
+                ds.setText(elem.getAttribute("text").getValue());
+            }
         }
 
         ds.setIcon(getNamedIcon("icon", element, "pi.getName() ", pi.getEditor()));
@@ -261,7 +260,7 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
     /*
      * pre release 5.0 or something like that
      */
-    private void loadPre50(Element status, PositionableIcon p, String name) {
+    private void loadPre50(Element status, IndicatorTurnoutIcon p, String name) {
         Editor ed = p.getEditor();
 
         try {
@@ -282,7 +281,7 @@ public class IndicatorTurnoutIconXml extends PositionableIconXml {
                 NamedIcon icon = PositionableLabelXml.loadIcon(p, stateName, status, 
                         "IndicatorTurnoutIcon \"" + statusName + "\": icon \"" + stateName + "\" ", ed);
                 if (icon != null) {
-                    p.setStateIcon(stateName, icon);
+                    p.setStateIcon(statusName, stateName, icon);
                     if (log.isDebugEnabled()) {
                         log.debug("Icon for  {}, {} loaded", statusName, stateName);
                     }

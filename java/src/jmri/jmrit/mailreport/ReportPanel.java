@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -34,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The report is sent to a dedicated SourceForge mailing list, from which people
  * can retrieve it.
- * <P>
+ *
  * @author Bob Jacobsen Copyright (C) 2009
  * @author Matthew Harris Copyright (c) 2014
  */
@@ -144,7 +145,7 @@ public class ReportPanel extends JPanel {
     }
     
     // made static, public, not final so can be changed via script
-    static public String requestURL = "http://jmri.org/problem-report.php";  //NOI18N
+    static public String requestURL = "http://jmri.org/problem-report.php";  // NOI18N
 
     @SuppressWarnings("unchecked")
     public void sendButtonActionPerformed(java.awt.event.ActionEvent e) {
@@ -156,9 +157,8 @@ public class ReportPanel extends JPanel {
             email.validate();
 
             log.debug("start send");
-            String charSet = "UTF-8";  //NO18N
 
-            MultipartMessage msg = new MultipartMessage(requestURL, charSet);
+            MultipartMessage msg = new MultipartMessage(requestURL, StandardCharsets.UTF_8.name());
 
             // add reporter email address
             log.debug("start creating message");
@@ -173,7 +173,7 @@ public class ReportPanel extends JPanel {
             // build detailed error report (include context if selected)
             String report = descField.getText() + "\r\n";
             if (checkContext.isSelected()) {
-                report += "=========================================================\r\n"; //NOI18N
+                report += "=========================================================\r\n"; // NOI18N
                 report += (new ReportContext()).getReport(checkNetwork.isSelected() && checkNetwork.isEnabled());
             }
             msg.addFormField("problem", report);
@@ -186,17 +186,17 @@ public class ReportPanel extends JPanel {
                 for (PerformFileModel m : InstanceManager.getDefault(StartupActionsManager.class).getActions(PerformFileModel.class)) {
                     String fn = m.getFileName();
                     File f = new File(fn);
-                    log.debug("add startup panel file: {}", f);
+                    log.info("Add panel file loaded at startup: {}", f);
                     msg.addFilePart("logfileupload[]", f);
                 }
                 // Check that a manual panel file has been loaded
                 File file = jmri.configurexml.LoadXmlUserAction.getCurrentFile();
                 if (file != null) {
-                    log.debug("add manual panel file: {}", file.getPath());
+                    log.info("Adding manually-loaded panel file: {}", file.getPath());
                     msg.addFilePart("logfileupload[]", jmri.configurexml.LoadXmlUserAction.getCurrentFile());
                 } else {
-                    // No panel file loaded
-                    log.warn("No manual panel file loaded - not sending");
+                    // No panel file loaded by manual action
+                    log.debug("No panel file manually loaded");
                 }
             }
 
@@ -205,23 +205,25 @@ public class ReportPanel extends JPanel {
                 log.debug("prepare profile attachment");
                 // Check that a profile has been loaded
                 Profile profile = ProfileManager.getDefault().getActiveProfile();
-                File file = profile.getPath();
-                if (file != null) {
-                    log.debug("add profile: {}", file.getPath());
-                    // Now zip-up contents of profile
-                    // Create temp file that will be deleted when Java quits
-                    File temp = File.createTempFile("profile", ".zip");
-                    temp.deleteOnExit();
+                if (profile != null) {
+                    File file = profile.getPath();
+                    if (file != null) {
+                        log.debug("add profile: {}", file.getPath());
+                        // Now zip-up contents of profile
+                        // Create temp file that will be deleted when Java quits
+                        File temp = File.createTempFile("profile", ".zip");
+                        temp.deleteOnExit();
 
-                    FileOutputStream out = new FileOutputStream(temp);
-                    ZipOutputStream zip = new ZipOutputStream(out);
+                        FileOutputStream out = new FileOutputStream(temp);
+                        ZipOutputStream zip = new ZipOutputStream(out);
 
-                    addDirectory(zip, file);
+                        addDirectory(zip, file);
 
-                    zip.close();
-                    out.close();
+                        zip.close();
+                        out.close();
 
-                    msg.addFilePart("logfileupload[]", temp);
+                        msg.addFilePart("logfileupload[]", temp);
+                    }
                 } else {
                     // No profile loaded
                     log.warn("No profile loaded - not sending");
@@ -272,10 +274,10 @@ public class ReportPanel extends JPanel {
             }
 
         } catch (IOException ex) {
-            log.error("Error when attempting to send report: " + ex);
+            log.error("Error when attempting to send report: {}", ex);
             sendButton.setEnabled(true);
         } catch (AddressException ex) {
-            log.error("Invalid email address: " + ex);
+            log.error("Invalid email address: {}", ex);
             JOptionPane.showMessageDialog(null, rb.getString("ErrAddress"), rb.getString("ErrTitle"), JOptionPane.ERROR_MESSAGE); // TODO add Bundle to folder and use ErrorTitle key in NamedBeanBundle props
             sendButton.setEnabled(true);
         }
@@ -291,6 +293,10 @@ public class ReportPanel extends JPanel {
         File[] files = source.listFiles();
 
         log.debug("Add directory: {}", directory);
+        if ( files == null ) {
+            log.warn("No files in directory {}",source);
+            return;
+        }
 
         for (File file : files) {
             // if current file is a directory, call recursively
@@ -300,7 +306,7 @@ public class ReportPanel extends JPanel {
                     try {
                         out.putNextEntry(new ZipEntry(directory + file.getName() + "/"));
                     } catch (IOException ex) {
-                        log.error("Exception when adding directory: " + ex);
+                        log.error("Exception when adding directory: {}", ex);
                     }
                     addDirectory(out, file, directory + file.getName() + "/");
                 } else {
@@ -328,9 +334,9 @@ public class ReportPanel extends JPanel {
                     log.debug("Skip file: {}{}", directory, file.getName());
                 }
             } catch (FileNotFoundException ex) {
-                log.error("Exception when adding file: " + ex);
+                log.error("Exception when adding file: {}", ex);
             } catch (IOException ex) {
-                log.error("Exception when adding file: " + ex);
+                log.error("Exception when adding file: {}", ex);
             }
         }
     }

@@ -4,11 +4,9 @@ import jmri.util.JUnitUtil;
 import org.junit.*;
 
 /**
- * JMRIClientReporterTest.java
+ * Tests for the jmri.jmrix.jmriclient.JMRIClientReporter class
  *
- * Description:	tests for the jmri.jmrix.jmriclient.JMRIClientReporter class
- *
- * @author	Bob Jacobsen
+ * @author Bob Jacobsen
  */
 public class JMRIClientReporterTest extends jmri.implementation.AbstractReporterTestBase{
 
@@ -31,9 +29,11 @@ public class JMRIClientReporterTest extends jmri.implementation.AbstractReporter
         r = new JMRIClientReporter(3, new JMRIClientSystemConnectionMemo(tc));
     }
 
+    @After
     @Override
     public void tearDown() {
-	r = null;
+        r = null;
+        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

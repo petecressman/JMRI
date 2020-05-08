@@ -9,6 +9,7 @@ import java.util.Iterator;
 import jmri.Audio;
 import jmri.DccLocoAddress;
 import jmri.LocoAddress;
+import jmri.Throttle;
 import jmri.jmrit.operations.locations.Location;
 import jmri.jmrit.operations.routes.RouteLocation;
 import jmri.jmrit.operations.routes.Route;
@@ -22,24 +23,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Virtual Sound Decoder
- * <p>
  * Implements a software "decoder" that responds to throttle inputs and
  * generates sounds in responds to them.
  * <p>
  * Each VSDecoder implements exactly one Sound Profile (describes a particular
- * type of locomtive, say, an EMD GP7).
+ * type of locomotive, say, an EMD GP7).
  * <hr>
  * This file is part of JMRI.
- * <P>
+ * <p>
  * JMRI is free software; you can redistribute it and/or modify it under the
  * terms of version 2 of the GNU General Public License as published by the Free
  * Software Foundation. See the "COPYING" file for a copy of this license.
- * <P>
+ * <p>
  * JMRI is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * <P>
  *
  * @author Mark Underwood Copyright (C) 2011
  * @author Klaus Killinger Copyright (C) 2018
@@ -64,31 +62,8 @@ public class VSDecoder implements PropertyChangeListener {
     int topspeed_rev;
     int setup_index; // Can be set by a Route
 
-    // List of registered event listeners
-    protected javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
-
     HashMap<String, VSDSound> sound_list; // list of sounds
     HashMap<String, SoundEvent> event_list; // list of events
-
-    /**
-     * Construct a VSDecoder with a given name and ID (system name)
-     *
-     * @param id   (String) System Name of this VSDecoder
-     * @param name (String) Sound Profile name for this VSDecoder
-     */
-    @Deprecated
-    public VSDecoder(String id, String name) {
-
-        config = new VSDConfig();
-        config.setProfileName(name);
-        config.setId(id);
-
-        sound_list = new HashMap<String, VSDSound>();
-        event_list = new HashMap<String, SoundEvent>();
-
-        // Force re-initialization
-        initialized = _init();
-    }
 
     /**
      * Construct a VSDecoder with the given system name (id) and configuration
@@ -115,10 +90,10 @@ public class VSDecoder implements PropertyChangeListener {
                 initialized = false;
             }
         } catch (java.util.zip.ZipException e) {
-            log.error("ZipException loading VSDecoder from " + config.getVSDPath());
+            log.error("ZipException loading VSDecoder from {}", config.getVSDPath());
             // would be nice to pop up a dialog here...
         } catch (java.io.IOException ioe) {
-            log.error("IOException loading VSDecoder from " + config.getVSDPath());
+            log.error("IOException loading VSDecoder from {}", config.getVSDPath());
             // would be nice to pop up a dialog here...
         }
 
@@ -134,12 +109,12 @@ public class VSDecoder implements PropertyChangeListener {
 
         if (log.isDebugEnabled()) {
             log.debug("VSDecoder Init Complete.  Audio Objects Created:");
-            for (String s : jmri.InstanceManager.getDefault(jmri.AudioManager.class).getSystemNameList(Audio.SOURCE)) {
+            jmri.InstanceManager.getDefault(jmri.AudioManager.class).getNamedBeanSet(Audio.SOURCE).forEach((s) -> {
                 log.debug("\tSource: {}", s);
-            }
-            for (String s : jmri.InstanceManager.getDefault(jmri.AudioManager.class).getSystemNameList(Audio.BUFFER)) {
+            });
+            jmri.InstanceManager.getDefault(jmri.AudioManager.class).getNamedBeanSet(Audio.BUFFER).forEach((s) -> {
                 log.debug("\tBuffer: {}", s);
-            }
+            });
         }
     }
 
@@ -175,10 +150,10 @@ public class VSDecoder implements PropertyChangeListener {
                 initialized = false;
             }
         } catch (java.util.zip.ZipException e) {
-            log.error("ZipException loading VSDecoder from " + path);
+            log.error("ZipException loading VSDecoder from {}", path);
             // would be nice to pop up a dialog here...
         } catch (java.io.IOException ioe) {
-            log.error("IOException loading VSDecoder from " + path);
+            log.error("IOException loading VSDecoder from {}", path);
             // would be nice to pop up a dialog here...
         }
     }
@@ -225,49 +200,6 @@ public class VSDecoder implements PropertyChangeListener {
         return config.getVSDPath();
     }
 
-    // VSDecoder Events
-    /**
-     * Add a listener for this object's events
-     *
-     * @param listener handle
-     */
-    public void addEventListener(VSDecoderListener listener) {
-        listenerList.add(VSDecoderListener.class, listener);
-    }
-
-    /**
-     * Remove a listener for this object's events
-     *
-     * @param listener handle
-     */
-    public void removeEventListener(VSDecoderListener listener) {
-        listenerList.remove(VSDecoderListener.class, listener);
-    }
-
-    /**
-     * Fire an event to this object's listeners
-     */
-    private void fireMyEvent(VSDecoderEvent evt) {
-        for (VSDecoderListener l : listenerList.getListeners(VSDecoderListener.class)) {
-            l.eventAction(evt);
-        }
-    }
-
-    /**
-     * Handle Window events from this VSDecoder's GUI window.
-     *
-     * @param e the window event to handle
-     */
-    public void windowChange(java.awt.event.WindowEvent e) {
-        log.debug("decoder.windowChange() - {}", e.toString());
-        log.debug("param string: {}", e.paramString());
-        // if (e.paramString().equals("WINDOW_CLOSING")) {
-        // Shut down the sounds.
-        this.shutdown();
-
-        // }
-    }
-
     /**
      * Shut down this VSDecoder and all of its associated sounds.
      */
@@ -300,21 +232,21 @@ public class VSDecoder implements PropertyChangeListener {
         log.debug("VSDecoderPane throttle property change: {}", eventName);
 
         if (eventName.equals("throttleAssigned")) {
-            Float s = (Float) jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(config.getDccAddress(), "SpeedSetting"); 
+            Float s = (Float) jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(config.getDccAddress(), Throttle.SPEEDSETTING);
             if (s != null) {
                 ((EngineSound) this.getSound("ENGINE")).setFirstSpeed(true); // Auto-start needs this
                 // Mimic a throttlePropertyChange to propagate the current (init) speed setting of the throttle.
                 log.debug("Existing DCC Throttle found. Speed: {}", s);
-                this.throttlePropertyChange(new PropertyChangeEvent(this, "SpeedSetting", null, s));
+                this.throttlePropertyChange(new PropertyChangeEvent(this, Throttle.SPEEDSETTING, null, s));
             }
 
             // Check for an existing throttle and get loco direction if it exists.
-            Boolean b = (Boolean) jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(config.getDccAddress(), "IsForward");
+            Boolean b = (Boolean) jmri.InstanceManager.throttleManagerInstance().getThrottleInfo(config.getDccAddress(), Throttle.ISFORWARD);
             if (b != null) {
                 dirfn = b ? 1 : -1;
                 log.debug("Existing DCC Throttle found. IsForward is {}", b);
                 log.debug("Initial dirfn: {} for {}", dirfn, config.getDccAddress());
-                this.throttlePropertyChange(new PropertyChangeEvent(this, "IsForward", null, b));
+                this.throttlePropertyChange(new PropertyChangeEvent(this, Throttle.ISFORWARD, null, b));
             } else {
                 log.warn("No existing DCC throttle found.");
             }
@@ -343,11 +275,11 @@ public class VSDecoder implements PropertyChangeListener {
             t.propertyChange(event);
         }
 
-        if (eventName.equals("SpeedSetting")) {
+        if (eventName.equals(Throttle.SPEEDSETTING)) {
             currentspeed = (float) this.getSound("ENGINE").speedCurve((float) event.getNewValue());
         }
 
-        if (eventName.equals("IsForward")) {
+        if (eventName.equals(Throttle.ISFORWARD)) {
             dirfn = (Boolean) event.getNewValue() ? 1 : -1;
         }
     }
@@ -382,7 +314,7 @@ public class VSDecoder implements PropertyChangeListener {
                 throttlePropertyChange(event);
             }
         });
-        log.debug("VSDecoder: Address set to {}", config.getLocoAddress().toString());
+        log.debug("VSDecoder: Address set to {}", config.getLocoAddress());
     }
 
     /**
@@ -453,7 +385,7 @@ public class VSDecoder implements PropertyChangeListener {
         if (create_xy_series) {   
             log.info("{}: {}\t{}", this.getAddress(), (float) Math.round(p.x*10000)/10000, p.y);
         }
-        log.debug("( " + this.getAddress() + ") Set Position: " + p.toString());
+        log.debug("( {} ). Set Position: {}", this.getAddress(), p);
 
         this.lastPos = p; // save this position
 
@@ -478,7 +410,6 @@ public class VSDecoder implements PropertyChangeListener {
         for (VSDSound vs : sound_list.values()) {
             vs.setVolume(tv);
         }
-        fireMyEvent(new VSDecoderEvent(this, VSDecoderEvent.EventType.LOCATION_CHANGE, p));
     }
 
     /**
@@ -501,7 +432,7 @@ public class VSDecoder implements PropertyChangeListener {
         String property = evt.getPropertyName();
         // Respond to events from the new GUI.
         if (evt.getSource() instanceof VSDControl) {
-            if (property.equals(VSDControl.PCIdMap.get(VSDControl.PropertyChangeId.OPTION_CHANGE))) {
+            if (property.equals(VSDControl.OPTION_CHANGE)) {
                 Train selected_train = jmri.InstanceManager.getDefault(TrainManager.class).getTrainByName((String) evt.getNewValue());
                 if (selected_train != null) {
                     selected_train.addPropertyChangeListener(this);
@@ -530,29 +461,18 @@ public class VSDecoder implements PropertyChangeListener {
             return;
         }
 
-        // Respond to events from the old GUI.
-        if ((property.equals(VSDManagerFrame.PCIDMap.get(VSDManagerFrame.PropertyChangeID.MUTE)))
-                || (property.equals(VSDecoderPane.PCIDMap.get(VSDecoderPane.PropertyChangeID.MUTE)))) {
-            // Either GUI Mute button
+        if (property.equals(VSDManagerFrame.MUTE)) {
+            // GUI Mute button
             log.debug("VSD: Mute change. value: {}", evt.getNewValue());
             Boolean b = (Boolean) evt.getNewValue();
             this.mute(b.booleanValue());
-
-        } else if ((property.equals(VSDManagerFrame.PCIDMap.get(VSDManagerFrame.PropertyChangeID.VOLUME_CHANGE)))
-                || (property.equals(VSDecoderPane.PCIDMap.get(VSDecoderPane.PropertyChangeID.VOLUME_CHANGE)))) {
-            // Either GUI Volume slider
-            log.debug("VSD: Volume change. value: {}", evt.getNewValue());
+        } else if (property.equals(VSDManagerFrame.VOLUME_CHANGE)) {
+            // GUI Volume slider
+            log.debug("VSD: Volume change. value: {}", evt.getOldValue());
             // Slider gives integer 0-100. Need to change that to a float 0.0-1.0
-            this.setMasterVolume((1.0f * (Integer) evt.getNewValue()) / 100.0f);
-
-        } else if (property.equals(VSDecoderPane.PCIDMap.get(VSDecoderPane.PropertyChangeID.ADDRESS_CHANGE))) {
-            // OLD GUI Address Change
-            log.debug("Decoder set address: {}", (LocoAddress) evt.getNewValue());
-            this.setAddress((LocoAddress) evt.getNewValue());
-            this.enable();
-
+            this.setMasterVolume((1.0f * (Integer) evt.getOldValue()) / 100.0f);
         } else if (property.equals(Train.TRAIN_LOCATION_CHANGED_PROPERTY)) {
-            // Train Location Move (either GUI)
+            // Train Location Move
             PhysicalLocation p = getTrainPosition((Train) evt.getSource());
             if (p != null) {
                 this.setPosition(getTrainPosition((Train) evt.getSource()));
@@ -560,10 +480,9 @@ public class VSDecoder implements PropertyChangeListener {
                 log.debug("Train has null position");
                 this.setPosition(new PhysicalLocation());
             }
-
         } else if (property.equals(Train.STATUS_CHANGED_PROPERTY)) {
-            // Train Status change (either GUI)
-            String status = (String) evt.getNewValue();
+            // Train Status change
+            String status = (String) evt.getOldValue();
             log.debug("Train status changed: {}", status);
             log.debug("New Location: {}", getTrainPosition((Train) evt.getSource()));
             if ((status.startsWith(Train.BUILT)) || (status.startsWith(Train.PARTIAL_BUILT))) {
@@ -613,54 +532,6 @@ public class VSDecoder implements PropertyChangeListener {
      */
     public VSDSound getSound(String name) {
         return sound_list.get(name);
-    }
-
-    /**
-     * Turn the bell sound on/off.
-     */
-    public void toggleBell() {
-        VSDSound snd = sound_list.get("BELL");
-        if (snd.isPlaying()) {
-            snd.stop();
-        } else {
-            snd.loop();
-        }
-    }
-
-    /**
-     * Turn the horn sound on/off.
-     */
-    public void toggleHorn() {
-        VSDSound snd = sound_list.get("HORN");
-        if (snd.isPlaying()) {
-            snd.stop();
-        } else {
-            snd.loop();
-        }
-    }
-
-    /**
-     * Turn the horn sound on.
-     */
-    public void playHorn() {
-        VSDSound snd = sound_list.get("HORN");
-        snd.loop();
-    }
-
-    /**
-     * Turn the horn sound on (Short burst).
-     */
-    public void shortHorn() {
-        VSDSound snd = sound_list.get("HORN");
-        snd.play();
-    }
-
-    /**
-     * Turn the horn sound off.
-     */
-    public void stopHorn() {
-        VSDSound snd = sound_list.get("HORN");
-        snd.stop();
     }
 
     // Java Bean set/get Functions
@@ -818,10 +689,10 @@ public class VSDecoder implements PropertyChangeListener {
         n = e.getChildText("create-xy-series");
         if ((n != null) && (n.equals("yes"))) {
             create_xy_series = true;
-            log.debug("Profile {}: xy-position-coordinates will be created in JMRI System console", getProfileName());
+            log.debug("Profile {}: xy-position-coordinates will be created in JMRI System Console", getProfileName());
         } else {
             create_xy_series = false;
-            log.debug("Profile {}: xy-position-coordinates will NOT be created in JMRI System console", getProfileName());
+            log.debug("Profile {}: xy-position-coordinates will NOT be created in JMRI System Console", getProfileName());
         }
 
         // Check for an optional sound start-position.
@@ -839,7 +710,7 @@ public class VSDecoder implements PropertyChangeListener {
         while (itr.hasNext()) {
             // Pull each element from the XML file.
             el = itr.next();
-            log.debug("Element: {}", el.toString());
+            log.debug("Element: {}", el);
             if (el.getAttribute("name") != null) {
                 log.debug("  Name: {}", el.getAttributeValue("name"));
                 log.debug("   type: {}", el.getAttributeValue("type"));
@@ -887,7 +758,7 @@ public class VSDecoder implements PropertyChangeListener {
                 es.setXml(el, vf);
                 sound_list.put(el.getAttributeValue("name"), es);
                 topspeed = es.top_speed;
-                topspeed_rev = topspeed;
+                topspeed_rev = es.top_speed_reverse;
             } else {
                 // TODO: Some type other than configurable sound. Handle appropriately
             }

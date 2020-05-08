@@ -390,6 +390,7 @@ public class FunctionPanel extends JInternalFrame implements FunctionListener, j
      * loaded from a roster entry, update buttons accordingly
      */
     public void resetFnButtons() {
+        final ThrottlesPreferences preferences = InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences();
         // Buttons names, ids,
         for (int i = 0; i < NUM_FUNCTION_BUTTONS; i++) {
             functionButton[i].setIdentity(i);
@@ -401,9 +402,7 @@ public class FunctionPanel extends JInternalFrame implements FunctionListener, j
             }
 
             functionButton[i].setDisplay(true);
-            if ((i < 3)
-                    && InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingExThrottle()
-                    && InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingFunctionIcon()) {
+            if ((i < 3) && preferences.isUsingIcons()) {
                 switch (i) {
                     case 0:
                         functionButton[i].setIconPath("resources/icons/throttles/Light.png");
@@ -469,13 +468,14 @@ public class FunctionPanel extends JInternalFrame implements FunctionListener, j
 
     // Update buttons value from slot + load buttons definition from roster if any
     private void setFnButtons() {
+        final ThrottlesPreferences preferences = InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences();
         if (mThrottle != null) {
             if (addressPanel == null) {
                 return;
             }
             RosterEntry rosterEntry = addressPanel.getRosterEntry();
             if ((rosterEntry != null) && (log.isDebugEnabled())) {
-                log.debug("RosterEntry found: " + rosterEntry.getId());
+                log.debug("RosterEntry found: {}", rosterEntry.getId());
             }
             int maxi = 0; // the number of function buttons defined for this entry
             for (int i = 0; i < FunctionPanel.NUM_FUNCTION_BUTTONS; i++) {
@@ -488,19 +488,18 @@ public class FunctionPanel extends JInternalFrame implements FunctionListener, j
                             (Object[]) null);
                     functionButton[i].setState(state.booleanValue()); // reset button state
                 } catch (java.lang.NoSuchMethodException ex1) {
-                    log.warn("Exception in notifyThrottleFound: " + ex1);
+                    log.warn("Exception in notifyThrottleFound: {}", ex1);
                 } catch (java.lang.IllegalAccessException ex2) {
-                    log.warn("Exception in notifyThrottleFound: " + ex2);
+                    log.warn("Exception in notifyThrottleFound: {}", ex2);
                 } catch (java.lang.reflect.InvocationTargetException ex3) {
-                    log.warn("Exception in notifyThrottleFound: " + ex3);
+                    log.warn("Exception in notifyThrottleFound: {}", ex3);
                 }
                 if (rosterEntry != null) { // from here, update button text with roster data
                     String text = rosterEntry.getFunctionLabel(i);
                     if (text != null) {
                         functionButton[i].setDisplay(true);
                         functionButton[i].setButtonLabel(text);
-                        if ((InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingExThrottle())
-                                && (InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences().isUsingFunctionIcon())) {
+                        if (preferences.isUsingIcons()) {
                             functionButton[i].setIconPath(rosterEntry.getFunctionImage(i));
                             functionButton[i].setSelectedIconPath(rosterEntry.getFunctionSelectedImage(i));
                         } else {
@@ -513,10 +512,8 @@ public class FunctionPanel extends JInternalFrame implements FunctionListener, j
                             functionButton[i].setVisible(true);
                         }
                         maxi++; // bump number of buttons shown
-                    } else if (InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences()
-                            .isUsingExThrottle()
-                            && InstanceManager.getDefault(ThrottleFrameManager.class).getThrottlesPreferences()
-                            .isHidingUndefinedFuncButt()) {
+                    } else if (preferences.isUsingExThrottle()
+                            && preferences.isHidingUndefinedFuncButt()) {
                         functionButton[i].setDisplay(false);
                         functionButton[i].setVisible(false);
                     }
@@ -524,11 +521,8 @@ public class FunctionPanel extends JInternalFrame implements FunctionListener, j
             }
             // hide alt buttons if not required
             if ((rosterEntry != null) && (maxi < NUM_FUNC_BUTTONS_INIT
-                    && InstanceManager.getDefault(ThrottleFrameManager.class)
-                    .getThrottlesPreferences().isUsingExThrottle()
-                    && InstanceManager.getDefault(ThrottleFrameManager.class)
-                    .getThrottlesPreferences()
-                    .isHidingUndefinedFuncButt())) {
+                    && preferences.isUsingExThrottle()
+                    && preferences.isHidingUndefinedFuncButt())) {
                 alt1Button.setVisible(false);
                 alt2Button.setVisible(false);
             }

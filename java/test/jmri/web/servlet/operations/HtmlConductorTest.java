@@ -21,16 +21,17 @@ public class HtmlConductorTest {
         Assert.assertNotNull("exists",t);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
-        jmri.util.JUnitOperationsUtil.resetOperationsManager();
+        jmri.util.JUnitUtil.initIdTagManager();
+        jmri.util.JUnitOperationsUtil.setupOperationsTests();
         jmri.util.JUnitOperationsUtil.initOperationsData();
     }
 
     @After
     public void tearDown() {
+        JUnitUtil.clearShutDownManager();
         JUnitUtil.tearDown();
     }
 

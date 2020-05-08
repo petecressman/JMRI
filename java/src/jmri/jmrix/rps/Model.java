@@ -10,7 +10,7 @@ import java.util.List;
  * The layout geometry is expressed as a set of (perhaps overlapping) Regions.
  *
  * @since 2.1.7
- * @author	Bob Jacobsen Copyright (C) 2008
+ * @author Bob Jacobsen Copyright (C) 2008
  */
 public class Model {
 
@@ -110,4 +110,5 @@ public class Model {
         }
         return _instance;
     }
+
 }

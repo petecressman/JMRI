@@ -125,7 +125,7 @@ public class AutomatTableDataModel extends AbstractTableModel {
             case KILLCOL:  // return button text here
                 return rb.getString("ButtonKill");
             default:
-                log.error("internal state inconsistent with table requst for " + row + " " + col);
+                log.error("internal state inconsistent with table requst for {} {}", row, col);
                 return null;
         }
     }
@@ -139,7 +139,7 @@ public class AutomatTableDataModel extends AbstractTableModel {
             case KILLCOL:
                 return new JButton(rb.getString("ButtonKill")).getPreferredSize().width;
             default:
-                log.warn("Unexpected column in getPreferredWidth: " + col);
+                log.warn("Unexpected column in getPreferredWidth: {}", col);
                 return new JTextField(5).getPreferredSize().width;
         }
     }
@@ -178,7 +178,7 @@ public class AutomatTableDataModel extends AbstractTableModel {
     }
 
     /**
-     * Service method to setup a column so that it will hold a button for it's
+     * Service method to setup a column so that it will hold a button for its
      * values
      *
      * @param table the table in which to configure the column

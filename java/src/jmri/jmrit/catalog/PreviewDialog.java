@@ -31,6 +31,7 @@ import jmri.InstanceManager;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.util.swing.DrawSquares;
 import jmri.util.swing.ImagePanel;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,10 +178,15 @@ public class PreviewDialog extends JDialog {
     }
 
     /**
+<<<<<<< HEAD
      * Set up a display panel to display icons.
      * Includes a "View on:" drop down list.
      * Employs a normal JComboBox, no Panel Background option.
      * @see jmri.jmrit.catalog.CatalogPanel#makeButtonPanel()
+=======
+     * Set up a display panel to display icons. Includes a "View on:" drop down
+     * list. Employs a normal JComboBox, no Panel Background option.
+>>>>>>> branch 'master' of https://github.com/JMRI/JMRI
      *
      * @return a JPanel with preview pane and background color drop down
      */
@@ -293,12 +299,9 @@ public class PreviewDialog extends JDialog {
         int cnt = 0;    // total number of images in directory
         File[] files = _currentDir.listFiles(); // all files, filtered below
         if (files != null) { // prevent spotbugs NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE
-            int nCols = 1;
-            int nRows = 1;
-            int nAvail = 1;
 
             for (int i = 0; i < files.length; i++) {
-                String ext = jmri.util.FileChooserFilter.getFileExtension(files[i]);
+                String ext = FilenameUtils.getExtension(files[i].getName());
                 for (int k = 0; k < _filter.length; k++) {
                     if (ext != null && ext.equalsIgnoreCase(_filter[k])) {
                         // files[i] filtered to be an image file

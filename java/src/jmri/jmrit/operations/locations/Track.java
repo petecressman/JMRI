@@ -3,19 +3,21 @@ package jmri.jmrit.operations.locations;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jmri.InstanceManager;
 import jmri.Reporter;
+import jmri.beans.PropertyChangeSupport;
 import jmri.jmrit.operations.OperationsXml;
 import jmri.jmrit.operations.locations.schedules.Schedule;
 import jmri.jmrit.operations.locations.schedules.ScheduleItem;
 import jmri.jmrit.operations.locations.schedules.ScheduleManager;
 import jmri.jmrit.operations.rollingstock.RollingStock;
-import jmri.jmrit.operations.rollingstock.cars.Car;
-import jmri.jmrit.operations.rollingstock.cars.CarLoad;
-import jmri.jmrit.operations.rollingstock.cars.CarLoads;
-import jmri.jmrit.operations.rollingstock.cars.CarManager;
-import jmri.jmrit.operations.rollingstock.cars.CarRoads;
-import jmri.jmrit.operations.rollingstock.cars.CarTypes;
+import jmri.jmrit.operations.rollingstock.cars.*;
 import jmri.jmrit.operations.rollingstock.engines.Engine;
 import jmri.jmrit.operations.rollingstock.engines.EngineTypes;
 import jmri.jmrit.operations.routes.Route;
@@ -24,12 +26,8 @@ import jmri.jmrit.operations.setup.Control;
 import jmri.jmrit.operations.setup.Setup;
 import jmri.jmrit.operations.trains.Train;
 import jmri.jmrit.operations.trains.TrainManager;
-import jmri.jmrit.operations.trains.timetable.TrainSchedule;
-import jmri.jmrit.operations.trains.timetable.TrainScheduleManager;
-import org.jdom2.Attribute;
-import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jmri.jmrit.operations.trains.schedules.TrainSchedule;
+import jmri.jmrit.operations.trains.schedules.TrainScheduleManager;
 
 /**
  * Represents a location (track) on the layout Can be a spur, yard, staging, or
@@ -37,7 +35,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Daniel Boudreau Copyright (C) 2008 - 2014
  */
-public class Track {
+public class Track extends PropertyChangeSupport {
 
     public static final String NONE = "";
 
@@ -63,6 +61,9 @@ public class Track {
     protected int _blockingOrder = 0; // defines the order tracks are serviced by trains
     protected String _comment = NONE;
 
+    // Manifest and switch list comments
+    protected boolean _printCommentManifest = true;
+    protected boolean _printCommentSwitchList = false;
     protected String _commentPickup = NONE;
     protected String _commentSetout = NONE;
     protected String _commentBoth = NONE;
@@ -546,7 +547,7 @@ public class Track {
 
     /**
      * The amount of consumed track space to be ignored when sending new rolling
-     * stock to the track.
+     * stock to the track.  See Planned Pickups in help.
      *
      * @param percentage a number between 0 and 100
      */
@@ -747,12 +748,32 @@ public class Track {
         String old = _commentBoth;
         _commentBoth = comment;
         if (!old.equals(comment)) {
-            setDirtyAndFirePropertyChange("trackCommentBoth", old, comment); // NOI18N
+           setDirtyAndFirePropertyChange("trackCommentBoth", old, comment); // NOI18N
         }
     }
 
     public String getCommentBoth() {
         return _commentBoth;
+    }
+    
+    public boolean isPrintManifestCommentEnabled() {
+        return _printCommentManifest;
+    }
+    
+    public void setPrintManifestCommentEnabled(boolean enable) {
+        boolean old = isPrintManifestCommentEnabled();
+        _printCommentManifest = enable;
+        setDirtyAndFirePropertyChange("trackPrintManifestComment", old, enable);
+    }
+    
+    public boolean isPrintSwitchListCommentEnabled() {
+        return _printCommentSwitchList;
+    }
+    
+    public void setPrintSwitchListCommentEnabled(boolean enable) {
+        boolean old = isPrintSwitchListCommentEnabled();
+        _printCommentSwitchList = enable;
+        setDirtyAndFirePropertyChange("trackPrintSwitchListComment", old, enable);
     }
 
     List<String> _typeList = new ArrayList<>();
@@ -1298,17 +1319,17 @@ public class Track {
      * @return true if the train can set out cars to this track.
      */
     public boolean acceptsDropTrain(Train train) {
-        if (_dropOption.equals(ANY)) {
+        if (getDropOption().equals(ANY)) {
             return true;
         }
         // yard tracks accept all trains
         if (isYard()) {
             return true;
         }
-        if (_dropOption.equals(TRAINS)) {
+        if (getDropOption().equals(TRAINS)) {
             return containsDropId(train.getId());
         }
-        if (_dropOption.equals(EXCLUDE_TRAINS)) {
+        if (getDropOption().equals(EXCLUDE_TRAINS)) {
             return !containsDropId(train.getId());
         } else if (train.getRoute() == null) {
             return false;
@@ -1317,14 +1338,14 @@ public class Track {
     }
 
     public boolean acceptsDropRoute(Route route) {
-        if (_dropOption.equals(ANY) || _dropOption.equals(TRAINS) || _dropOption.equals(EXCLUDE_TRAINS)) {
+        if (getDropOption().equals(ANY) || getDropOption().equals(TRAINS) || getDropOption().equals(EXCLUDE_TRAINS)) {
             return true;
         }
         // yard tracks accept all routes
         if (isYard()) {
             return true;
         }
-        if (_dropOption.equals(EXCLUDE_ROUTES)) {
+        if (getDropOption().equals(EXCLUDE_ROUTES)) {
             return !containsDropId(route.getId());
         }
         return containsDropId(route.getId());
@@ -1502,7 +1523,7 @@ public class Track {
                 return NO_FINAL_DESTINATION;
             }
             // check for car in kernel
-            if (car.getKernel() != null && car.getKernel().isLead(car)) {
+            if (car.isLead()) {
                 length = car.getKernel().getTotalLength();
             }
             if (!acceptsLoad(car.getLoadName(), car.getTypeName())) {
@@ -1514,7 +1535,7 @@ public class Track {
         // check for loco in consist
         if (Engine.class.isInstance(rs)) {
             Engine eng = (Engine) rs;
-            if (eng.getConsist() != null && eng.getConsist().isLead(eng)) {
+            if (eng.isLead()) {
                 length = eng.getConsist().getTotalLength();
             }
         }
@@ -1539,9 +1560,22 @@ public class Track {
             }
             log.debug("Rolling stock ({}) not accepted at location ({}, {}) no room!", rs.toString(), getLocation()
                     .getName(), getName()); // NOI18N
+            // calculate the available space
+            int available = getLength() -
+                    (getUsedLength() * (100 - getIgnoreUsedLengthPercentage()) / 100 +
+                            getReserved());
+            // could be less
+            int available3 = getLength() + (getLength() * getIgnoreUsedLengthPercentage() / 100) - getUsedLength() - getReserved();
+            if (available3 < available) {
+                available = available3;
+            }
+            // could be less based on track length
+            int available2 = getLength() - getReservedLengthDrops();
+            if (available2 < available) {
+                available = available2;
+            }
             return MessageFormat.format(Bundle.getMessage("lengthIssue"), new Object[]{LENGTH, length,
-                    Setup.getLengthUnit().toLowerCase(),
-                    getLength() - (getUsedLength() * (100 - getIgnoreUsedLengthPercentage()) / 100 + getReserved())});
+                    Setup.getLengthUnit().toLowerCase(), available});
         }
         return OKAY;
     }
@@ -1628,7 +1662,7 @@ public class Track {
         }
         Schedule schedule = getSchedule();
         if (schedule == null) {
-            log.error("No name schedule for id: " + getScheduleId());
+            log.error("No name schedule for id: {}", getScheduleId());
             return NONE;
         }
         return schedule.getName();
@@ -1640,7 +1674,7 @@ public class Track {
         }
         Schedule schedule = InstanceManager.getDefault(ScheduleManager.class).getScheduleById(getScheduleId());
         if (schedule == null) {
-            log.error("No schedule for id: " + getScheduleId());
+            log.error("No schedule for id: {}", getScheduleId());
         }
         return schedule;
     }
@@ -1662,7 +1696,7 @@ public class Track {
         if (_scheduleId.equals(NONE) && !_scheduleName.equals(NONE)) {
             Schedule schedule = InstanceManager.getDefault(ScheduleManager.class).getScheduleByName(_scheduleName);
             if (schedule == null) {
-                log.error("No schedule for name: " + _scheduleName);
+                log.error("No schedule for name: {}", _scheduleName);
             } else {
                 _scheduleId = schedule.getId();
             }
@@ -1748,7 +1782,7 @@ public class Track {
     public ScheduleItem getNextScheduleItem() {
         Schedule sch = getSchedule();
         if (sch == null) {
-            log.warn("Can not find schedule (" + getScheduleId() + ") assigned to track (" + getName() + ")");
+            log.warn("Can not find schedule ({}) assigned to track ({})", getScheduleId(), getName());
             return null;
         }
         List<ScheduleItem> items = sch.getItemsBySequenceList();
@@ -2066,7 +2100,7 @@ public class Track {
             return OKAY;
         }
         // is car part of a kernel?
-        if (car.getKernel() != null && !car.getKernel().isLead(car)) {
+        if (car.getKernel() != null && !car.isLead()) {
             log.debug("Car ({}) is part of kernel ({}) not lead", car.toString(), car.getKernelName());
             return OKAY;
         }
@@ -2109,16 +2143,16 @@ public class Track {
             // + getLoad() + ") arrived out of sequence, needed type (" + currentSi.getType() // NOI18N
             // + ") road (" + currentSi.getRoad() + ") load (" + currentSi.getLoad() + ")"); // NOI18N
             // build return message
-            String timetableName = "";
-            String currentTimetableName = "";
+            String scheduleName = "";
+            String currentTrainScheduleName = "";
             TrainSchedule sch = InstanceManager.getDefault(TrainScheduleManager.class).getScheduleById(
                     InstanceManager.getDefault(TrainScheduleManager.class).getTrainScheduleActiveId());
             if (sch != null) {
-                timetableName = sch.getName();
+                scheduleName = sch.getName();
             }
             sch = InstanceManager.getDefault(TrainScheduleManager.class).getScheduleById(currentSi.getSetoutTrainScheduleId());
             if (sch != null) {
-                currentTimetableName = sch.getName();
+                currentTrainScheduleName = sch.getName();
             }
             String mode = Bundle.getMessage("sequential");
             if (getScheduleMode() == 1) {
@@ -2126,11 +2160,11 @@ public class Track {
             }
             return SCHEDULE +
                     MessageFormat.format(Bundle.getMessage("sequentialMessage"), new Object[]{getScheduleName(),
-                            mode, car.toString(), car.getTypeName(), timetableName, car.getRoadName(),
-                            car.getLoadName(), currentSi.getTypeName(), currentTimetableName, currentSi.getRoadName(),
+                            mode, car.toString(), car.getTypeName(), scheduleName, car.getRoadName(),
+                            car.getLoadName(), currentSi.getTypeName(), currentTrainScheduleName, currentSi.getRoadName(),
                             currentSi.getReceiveLoadName()});
         } else {
-            log.error("ERROR Track " + getName() + " current schedule item is null!");
+            log.error("ERROR Track {} current schedule item is null!", getName());
             return SCHEDULE + " ERROR Track " + getName() + " current schedule item is null!"; // NOI18N
         }
         return OKAY;
@@ -2182,7 +2216,7 @@ public class Track {
     }
 
     public boolean isLoadSwapEnabled() {
-        return (0 < (_loadOptions & SWAP_GENERIC_LOADS));
+        return (0 != (_loadOptions & SWAP_GENERIC_LOADS));
     }
 
     /**
@@ -2200,7 +2234,7 @@ public class Track {
     }
 
     public boolean isLoadEmptyEnabled() {
-        return (0 < (_loadOptions & EMPTY_GENERIC_LOADS));
+        return (0 != (_loadOptions & EMPTY_GENERIC_LOADS));
     }
 
     /**
@@ -2217,7 +2251,7 @@ public class Track {
     }
 
     public boolean isRemoveCustomLoadsEnabled() {
-        return (0 < (_loadOptions & EMPTY_CUSTOM_LOADS));
+        return (0 != (_loadOptions & EMPTY_CUSTOM_LOADS));
     }
 
     /**
@@ -2236,7 +2270,7 @@ public class Track {
     }
 
     public boolean isAddCustomLoadsEnabled() {
-        return (0 < (_loadOptions & GENERATE_CUSTOM_LOADS));
+        return (0 != (_loadOptions & GENERATE_CUSTOM_LOADS));
     }
 
     /**
@@ -2256,7 +2290,7 @@ public class Track {
     }
 
     public boolean isAddCustomLoadsAnySpurEnabled() {
-        return (0 < (_loadOptions & GENERATE_CUSTOM_LOADS_ANY_SPUR));
+        return (0 != (_loadOptions & GENERATE_CUSTOM_LOADS_ANY_SPUR));
     }
 
     /**
@@ -2276,7 +2310,7 @@ public class Track {
     }
 
     public boolean isAddCustomLoadsAnyStagingTrackEnabled() {
-        return (0 < (_loadOptions & GENERATE_CUSTOM_LOADS_ANY_STAGING_TRACK));
+        return (0 != (_loadOptions & GENERATE_CUSTOM_LOADS_ANY_STAGING_TRACK));
     }
 
     public void setBlockCarsEnabled(boolean enable) {
@@ -2293,7 +2327,7 @@ public class Track {
      * @return true if blocking is enabled.
      */
     public boolean isBlockCarsEnabled() {
-        return (0 < (_blockOptions & BLOCK_CARS));
+        return (0 != (_blockOptions & BLOCK_CARS));
     }
 
     public void setPool(Pool pool) {
@@ -2378,13 +2412,13 @@ public class Track {
 
     /**
      * Sets the destination option for this track. The three options are:
-     * <P>
+     * <p>
      * ALL_DESTINATIONS which means this track services all destinations, the
      * default.
-     * <P>
+     * <p>
      * INCLUDE_DESTINATIONS which means this track services only certain
      * destinations.
-     * <P>
+     * <p>
      * EXCLUDE_DESTINATIONS which means this track does not service certain
      * destinations.
      *
@@ -2454,6 +2488,7 @@ public class Track {
      * @param e Consist XML element
      * @param location The Location loading this track.
      */
+    @SuppressWarnings("deprecation") // until there's a replacement for convertFromXmlComment()
     public Track(Element e, Location location) {
         _location = location;
         Attribute a;
@@ -2744,6 +2779,14 @@ public class Track {
                     (a = e.getChild(Xml.COMMENTS).getChild(Xml.SETOUT).getAttribute(Xml.COMMENT)) != null) {
                 _commentSetout = a.getValue();
             }
+            if (e.getChild(Xml.COMMENTS).getChild(Xml.PRINT_MANIFEST) != null &&
+                    (a = e.getChild(Xml.COMMENTS).getChild(Xml.PRINT_MANIFEST).getAttribute(Xml.COMMENT)) != null) {
+                _printCommentManifest = a.getValue().equals(Xml.TRUE);
+            }
+            if (e.getChild(Xml.COMMENTS).getChild(Xml.PRINT_SWITCH_LISTS) != null &&
+                    (a = e.getChild(Xml.COMMENTS).getChild(Xml.PRINT_SWITCH_LISTS).getAttribute(Xml.COMMENT)) != null) {
+                _printCommentSwitchList = a.getValue().equals(Xml.TRUE);
+            }
         }
 
         if ((a = e.getAttribute(Xml.READER)) != null) {
@@ -2968,14 +3011,23 @@ public class Track {
             Element both = new Element(Xml.BOTH);
             Element pickup = new Element(Xml.PICKUP);
             Element setout = new Element(Xml.SETOUT);
+            Element printManifest = new Element(Xml.PRINT_MANIFEST);
+            Element printSwitchList = new Element(Xml.PRINT_SWITCH_LISTS);
+            
             comments.addContent(track);
             comments.addContent(both);
             comments.addContent(pickup);
             comments.addContent(setout);
+            comments.addContent(printManifest);
+            comments.addContent(printSwitchList);
+            
             track.setAttribute(Xml.COMMENT, getComment());
             both.setAttribute(Xml.COMMENT, getCommentBoth());
             pickup.setAttribute(Xml.COMMENT, getCommentPickup());
             setout.setAttribute(Xml.COMMENT, getCommentSetout());
+            printManifest.setAttribute(Xml.COMMENT, isPrintManifestCommentEnabled()? Xml.TRUE : Xml.FALSE);
+            printSwitchList.setAttribute(Xml.COMMENT, isPrintSwitchListCommentEnabled()? Xml.TRUE : Xml.FALSE);
+            
             e.addContent(comments);
         }
         if (_reader != null) {
@@ -2984,19 +3036,9 @@ public class Track {
         return e;
     }
 
-    java.beans.PropertyChangeSupport pcs = new java.beans.PropertyChangeSupport(this);
-
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
-        pcs.addPropertyChangeListener(l);
-    }
-
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
-        pcs.removePropertyChangeListener(l);
-    }
-
     protected void setDirtyAndFirePropertyChange(String p, Object old, Object n) {
         InstanceManager.getDefault(LocationManagerXml.class).setDirty(true);
-        pcs.firePropertyChange(p, old, n);
+        firePropertyChange(p, old, n);
     }
 
     /*
@@ -3004,7 +3046,7 @@ public class Track {
      *
      * @param reader jmri.Reporter object.
      */
-    protected void setReporter(Reporter r) {
+    public void setReporter(Reporter r) {
         Reporter old = _reader;
         _reader = r;
         if (old != r) {

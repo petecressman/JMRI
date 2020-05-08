@@ -1,11 +1,8 @@
 package jmri.jmrix.sprog;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import jmri.util.junit.annotations.*;
+import org.junit.*;
 
 /**
  * Tests for SprogPowerManager.
@@ -74,13 +71,13 @@ public class SprogPowerManagerTest extends jmri.jmrix.AbstractPowerManagerTestBa
 
     @Test
     @Override
-    @Ignore("unsolicited state changes are currently ignored")
+    @NotApplicable("unsolicited state changes are currently ignored")
     public void testStateOn(){
     }
 
     @Test
     @Override
-    @Ignore("unsolicited state changes are currently ignored")
+    @NotApplicable("unsolicited state changes are currently ignored")
     public void testStateOff(){
     }
 
@@ -102,7 +99,6 @@ public class SprogPowerManagerTest extends jmri.jmrix.AbstractPowerManagerTestBa
 
     }
 
-    // The minimal setup for log4J
     @Before
     @Override
     public void setUp() {

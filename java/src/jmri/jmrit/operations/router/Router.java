@@ -55,19 +55,6 @@ public class Router extends TrainCommon implements InstanceManagerAutoDefault {
     private boolean _addtoReportVeryDetailed = false;
 
     /**
-     * Get the default instance of this class.
-     *
-     * @return the default instance of this class
-     * @deprecated since 4.9.2; use
-     *             {@link jmri.InstanceManager#getDefault(java.lang.Class)}
-     *             instead
-     */
-    @Deprecated
-    public static synchronized Router instance() {
-        return InstanceManager.getDefault(Router.class);
-    }
-
-    /**
      * Returns the status of the router when using the setDestination() for a
      * car.
      *
@@ -128,7 +115,7 @@ public class Router extends TrainCommon implements InstanceManagerAutoDefault {
             log.debug("Routing using train ({})", train.getName());
         }
         // is car part of kernel?
-        if (car.getKernel() != null && !car.getKernel().isLead(car)) {
+        if (car.getKernel() != null && !car.isLead()) {
             return false;
         }
         // note clone car has the car's "final destination" as its destination
@@ -930,7 +917,7 @@ public class Router extends TrainCommon implements InstanceManagerAutoDefault {
         Car clone = car.copy();
         // modify clone car length if car is part of kernel
         if (car.getKernel() != null) {
-            clone.setLength(Integer.toString(car.getKernel().getTotalLength() - RollingStock.COUPLER));
+            clone.setLength(Integer.toString(car.getKernel().getTotalLength() - RollingStock.COUPLERS));
         }
         clone.setTrack(car.getTrack());
         clone.setFinalDestination(car.getFinalDestination());

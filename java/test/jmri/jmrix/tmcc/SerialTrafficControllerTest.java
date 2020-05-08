@@ -4,11 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -222,7 +218,13 @@ public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficCon
 
         @Override
         public String[] validBaudRates() {
-            return null;
+            return new String[] {};
+        }
+
+        //@Override
+        @Override
+        public int[] validBaudNumbers() {
+            return new int[] {};
         }
 
         protected SerialPortControllerScaffold() throws Exception {
@@ -260,7 +262,6 @@ public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficCon
     static DataOutputStream tistream; // Tests write to this
     static DataInputStream istream;   // so the traffic controller can read from this
 
-    // The minimal setup for log4J
     @Before
     @Override
     public void setUp() {
@@ -277,7 +278,8 @@ public class SerialTrafficControllerTest extends jmri.jmrix.AbstractMRTrafficCon
     @Override
     public void tearDown() {
         if (c != null) c.terminateThreads();
-       jmri.util.JUnitUtil.tearDown();
+        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
+        jmri.util.JUnitUtil.tearDown();
     }
 
     private final static Logger log = LoggerFactory.getLogger(SerialTrafficControllerTest.class);

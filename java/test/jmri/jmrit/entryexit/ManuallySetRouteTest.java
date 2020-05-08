@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import jmri.jmrit.display.layoutEditor.LayoutBlock;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  *
@@ -31,7 +27,6 @@ public class ManuallySetRouteTest {
         Assert.assertNotNull("exists",t);  // NOI18N
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

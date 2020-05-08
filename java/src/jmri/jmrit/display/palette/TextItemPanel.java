@@ -1,6 +1,5 @@
 package jmri.jmrit.display.palette;
 
-import java.awt.Color;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -12,9 +11,7 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceDropEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -32,6 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * ItemPanel for text labels.
  * @see ItemPanel palette class diagram
+ * @author Pete Cressman Copyright (c) 2010, 2011, 2020
  */
 public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
 
@@ -42,20 +40,15 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
      *
      * @param parentFrame ItemPalette instance
      * @param type        identifier of the ItemPanel type, should be "Text"
-     * @param editor      Editor that called this ItemPalette
      */
-    public TextItemPanel(DisplayFrame parentFrame, String type, Editor editor) {
-        super(parentFrame, type, editor);
+    public TextItemPanel(DisplayFrame parentFrame, String type) {
+        super(parentFrame, type);
         setToolTipText(Bundle.getMessage("ToolTipDragText"));
     }
 
     @Override
     public void init() {
         if (!_initialized) {
-            if (!jmri.util.ThreadingUtil.isGUIThread()) {
-                log.error("Not on GUI thread", new Exception("traceback"));
-            }
-            Thread.yield();
             JPanel blurb = new JPanel();
             blurb.setLayout(new BoxLayout(blurb, BoxLayout.Y_AXIS));
             blurb.add(new JLabel(Bundle.getMessage("addTextAndAttrs")));
@@ -64,23 +57,20 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
             JPanel p = new JPanel();
             p.add(blurb);
             add(p);
-            DragDecoratorLabel sample = new DragDecoratorLabel(Bundle.getMessage("sample"), _editor);
-            _decorator = new DecoratorPanel(_editor, _paletteFrame);
+            DragDecoratorLabel sample = new DragDecoratorLabel(Bundle.getMessage("sample"), _frame.getEditor());
+            _decorator = new DecoratorPanel(_frame);
             _decorator.initDecoratorPanel(sample);
             add(_decorator);
-            _paletteFrame.pack();
+            _frame.pack();
             if (log.isDebugEnabled()) {
                 log.debug("end init: TextItemPanel size {}", getPreferredSize());
             }
             super.init();
         }
-        if (_decorator != null) {
-            _decorator._bgColorBox.setSelectedIndex(_paletteFrame.getPreviewBg());
-        }
     }
 
     public void init(ActionListener doneAction, Positionable pos) {
-        _decorator = new DecoratorPanel(_editor, _paletteFrame);
+        _decorator = new DecoratorPanel(_frame);
         _decorator.initDecoratorPanel(pos);
     }
 
@@ -89,16 +79,9 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
     }
 
     @Override
-    protected void updateBackground0(BufferedImage im) {
-        if (_decorator != null) {
-            _decorator._bgColorBox.setSelectedIndex(_paletteFrame.getPreviewBg());
-        }
-    }
-
-    @Override
-    protected void setPreviewBg(int index) {
-        if (_decorator != null) {
-            _decorator._bgColorBox.setSelectedIndex(_paletteFrame.getPreviewBg());
+    protected void previewColorChange() {
+        if (_decorator  != null) {
+            _decorator.sampleBgColorChange();
         }
     }
 
@@ -110,27 +93,11 @@ public class TextItemPanel extends ItemPanel /*implements ActionListener */ {
         panel.add(updateButton);
 
         JButton cancelButton = new JButton(Bundle.getMessage("ButtonCancel"));
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent a) {
-                closeDialogs();
-            }
-        });
+        cancelButton.addActionListener(a -> closeDialogs());
         panel.add(cancelButton);
         return panel;
     }
 
-    @Override
-    protected void setEditor(Editor ed) {
-        super.setEditor(ed);
-        if (_decorator != null) {
-            Color panelBackground = _editor.getTargetPanel().getBackground();
-            // set Panel background color
-            _decorator.setBackgrounds(makeBackgrounds(_decorator.getBackgrounds(), panelBackground));
-            _decorator._bgColorBox.setSelectedIndex(_paletteFrame.getPreviewBg());
-        }
-    }
-    
     public void updateAttributes(PositionableLabel l) {
         _decorator.setAttributes(l);
     }

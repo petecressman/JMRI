@@ -74,17 +74,14 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
         OlcbAddress a = new OlcbAddress(address);
         OlcbAddress[] v = a.split();
         if (v == null) {
-            log.error("Did not find usable system name: " + address);
+            log.error("Did not find usable system name: {}", address);
             return;
         }
-        switch (v.length) {
-            case 2:
-                addrThrown = v[0];
-                addrClosed = v[1];
-                break;
-            default:
-                log.error("Can't parse OpenLCB Turnout system name: " + address);
-                return;
+        if (v.length == 2) {
+            addrThrown = v[0];
+            addrClosed = v[1];
+        } else {
+            log.error("Can't parse OpenLCB Turnout system name: {}", address);
         }
     }
 
@@ -94,12 +91,9 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
      */
     public void finishLoad() {
         // Clear some objects first.
-        if (turnoutListener != null) turnoutListener.release();
-        if (pc != null) pc.release();
-        turnoutListener = null;
-        pc = null;
+        disposePc();
 
-        int flags = 0;
+        int flags;
         switch (_activeFeedbackType) {
             case MONITORING:
             default:
@@ -176,10 +170,10 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
     }
 
     @Override
-    public void setProperty(String key, Object value) {
+    public void setProperty(@Nonnull String key, Object value) {
         Object old = getProperty(key);
         super.setProperty(key, value);
-        if (old != null && value.equals(old)) return;
+        if (value.equals(old)) return;
         if (pc == null) return;
         finishLoad();
     }
@@ -245,9 +239,15 @@ public class OlcbTurnout extends jmri.implementation.AbstractTurnout {
             closedEventTableEntryHolder.release();
             closedEventTableEntryHolder = null;
         }
+        disposePc();
+        super.dispose();
+    }
+
+    private void disposePc() {
         if (turnoutListener != null) turnoutListener.release();
         if (pc != null) pc.release();
-        super.dispose();
+        turnoutListener = null;
+        pc = null;
     }
 
     /**

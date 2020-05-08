@@ -12,16 +12,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Models a serial C/MRI node, consisting of a (S)USIC and attached cards.
- * <P>
+ * <p>
  * Nodes are numbered ala the UA number, from 1 to 63. Node number 1 carries
  * sensors 1 to 999, node 2 1001 to 1999 etc.
- * <P>
+ * <p>
  * The array of sensor states is used to update sensor known state only when
  * there's a change on the serial bus. This allows for the sensor state to be
  * updated within the program, keeping this updated state until the next change
  * on the serial bus. E.g. you can manually change a state via an icon, and not
  * have it change back the next time that node is polled.
- * <P>
+ * <p>
  * The SMINI is defined as having 1 input and 2 outputs cards.<br>
  * USIC/SUSIC nodes can have 0-63 inputs and 0-63 output cards, but no more than
  * 64 total cards.
@@ -42,10 +42,10 @@ public class SerialNode extends AbstractNode {
 
     /**
      * Maximum number of sensors a node can carry.
-     * <P>
+     * <p>
      * Note this is less than a current SUSIC motherboard can have, but should
      * be sufficient for all reasonable layouts.
-     * <P>
+     * <p>
      * Must be less than, and is general one less than,
      * {@link SerialSensorManager#SENSORSPERUA}
      */
@@ -192,12 +192,12 @@ public class SerialNode extends AbstractNode {
     public void setCardTypeLocation(int num, int value) {
         // Validate the input
         if ((num < 0) || (num >= MAXCARDLOCATIONBYTES)) {
-            log.error("setCardTypeLocation - invalid num (index) - " + num);
+            log.error("setCardTypeLocation - invalid num (index) - {}", num);
             return;
         }
         int val = value & 0xFF;
         if ((val != NO_CARD) && (val != INPUT_CARD) && (val != OUTPUT_CARD)) {
-            log.error("setCardTypeLocation - invalid value - " + val);
+            log.error("setCardTypeLocation - invalid value - {}", val);
             return;
         }
         // Set the card type
@@ -453,7 +453,8 @@ public class SerialNode extends AbstractNode {
           break;
             
 // here recognize other node types
-          default: log.error("Bad node type - "+Integer.toString(type) );
+          default:
+              log.error("Bad node type - {}", Integer.toString(type));
         }
 
     }
@@ -472,7 +473,7 @@ public class SerialNode extends AbstractNode {
         if ((bits == 24) || (bits == 32) || (bits == 16) || (bits == 8)) {
             bitsPerCard = bits;
         } else {
-            log.warn("unexpected number of bits per card: " + Integer.toString(bits));
+            log.warn("unexpected number of bits per card: {}", Integer.toString(bits));
             bitsPerCard = bits;
         }
     }
@@ -610,8 +611,7 @@ public class SerialNode extends AbstractNode {
      */
     public void setTransmissionDelay(int delay) {
         if ((delay < 0) || (delay > 65535)) {
-            log.warn("transmission delay out of 0-65535 range: "
-                    + Integer.toString(delay));
+            log.warn("transmission delay out of 0-65535 range: {}", Integer.toString(delay));
             if (delay < 0) {
                 delay = 0;
             }
@@ -637,8 +637,7 @@ public class SerialNode extends AbstractNode {
      */
     public void setPulseWidth(int width) {
         if ((width < 100) || (width > 10000)) {
-            log.warn("pulse width out of 100 - 10000 range: "
-                    + Integer.toString(width));
+            log.warn("pulse width out of 100 - 10000 range: {}", Integer.toString(width));
             if (width < 100) {
                 width = 100;
             }
@@ -657,12 +656,12 @@ public class SerialNode extends AbstractNode {
     public void setCardTypeByAddress(int address, int type) {
         // validate address
         if ((address < 0) || (address > 63)) {
-            log.error("illegal card address: " + Integer.toString(address));
+            log.error("illegal card address: {}", Integer.toString(address));
             return;
         }
         // validate type
         if ((type != OUTPUT_CARD) && (type != INPUT_CARD) && (type != NO_CARD)) {
-            log.error("illegal card type: " + Integer.toString(type));
+            log.error("illegal card type: {}", Integer.toString(type));
             cardTypeLocation[address] = NO_CARD;
             return;
         }
@@ -786,14 +785,12 @@ public class SerialNode extends AbstractNode {
         }
         // validate bit number range
         if ((bit < 0) || (bit > 46)) {
-            log.error("Invalid bit number when setting SMINI Searchlights bits: "
-                    + Integer.toString(bit));
+            log.error("Invalid bit number when setting SMINI Searchlights bits: {}", Integer.toString(bit));
             return;
         }
         // validate that bits are not already set
         if ((locSearchLightBits[bit] != 0) || (locSearchLightBits[bit + 1] != 0)) {
-            log.error("bit number for SMINI Searchlights bits already set: "
-                    + Integer.toString(bit));
+            log.error("bit number for SMINI Searchlights bits already set: {}", Integer.toString(bit));
             return;
         }
         // set the bits
@@ -817,14 +814,12 @@ public class SerialNode extends AbstractNode {
         }
         // validate bit number range
         if ((bit < 0) || (bit > 46)) {
-            log.error("Invalid bit number when setting SMINI Searchlights bits: "
-                    + Integer.toString(bit));
+            log.error("Invalid bit number when setting SMINI Searchlights bits: {}", Integer.toString(bit));
             return;
         }
         // validate that bits are not already clear
         if ((locSearchLightBits[bit] != 1) || (locSearchLightBits[bit + 1] != 1)) {
-            log.error("bit number for SMINI Searchlights bits already clear: "
-                    + Integer.toString(bit));
+            log.error("bit number for SMINI Searchlights bits already clear: {}", Integer.toString(bit));
             return;
         }
         // set the bits
@@ -847,8 +842,7 @@ public class SerialNode extends AbstractNode {
         }
         // validate bit number range
         if ((bit < 0) || (bit > 47)) {
-            log.error("Invalid bit number in query of SMINI Searchlights bits: "
-                    + Integer.toString(bit));
+            log.error("Invalid bit number in query of SMINI Searchlights bits: {}", Integer.toString(bit));
             return (false);
         }
         if (locSearchLightBits[bit] == 1) {
@@ -1064,7 +1058,8 @@ public class SerialNode extends AbstractNode {
 
             break;
             
-            default:  log.error("Invalid node type ("+nodeType+") in SerialNode Init Message");
+            default:
+                log.error("Invalid node type ({}) in SerialNode Init Message", nodeType);
                 
         }            
         
@@ -1186,20 +1181,20 @@ public class SerialNode extends AbstractNode {
                 }
             }
         } catch (JmriException e) {
-            log.error("exception in markChanges: " + e);
+            log.error("exception in markChanges: {}", e);
         }
     }
 
     /**
      * The numbers here are 0 to MAXSENSORS, not 1 to MAXSENSORS.
      *
-     * @param s - Sensor object
-     * @param i - 0 to MAXSENSORS number of sensor's input bit on this node
+     * @param s  Sensor object
+     * @param i  0 to MAXSENSORS number of sensor's input bit on this node
      */
     public void registerSensor(Sensor s, int i) {
         // validate the sensor ordinal
         if ((i < 0) || (i > ((numInputCards() * bitsPerCard) - 1)) || (i > MAXSENSORS)) {
-            log.error("Unexpected sensor ordinal in registerSensor: " + Integer.toString(i + 1));
+            log.error("Unexpected sensor ordinal in registerSensor: {}", Integer.toString(i + 1));
             return;
         }
         hasActiveSensors = true;
@@ -1210,8 +1205,7 @@ public class SerialNode extends AbstractNode {
             }
         } else {
             // multiple registration of the same sensor
-            log.warn("multiple registration of same sensor: CS"
-                    + Integer.toString((getNodeAddress() * SerialSensorManager.SENSORSPERUA) + i + 1)); // TODO multichar prefix
+            log.warn("multiple registration of same sensor: CS{}", Integer.toString((getNodeAddress() * SerialSensorManager.SENSORSPERUA) + i + 1)); // TODO multichar prefix
         }
     }
 
@@ -1238,7 +1232,7 @@ public class SerialNode extends AbstractNode {
 
         // see how many polls missed
         if (log.isDebugEnabled()) {
-            log.warn("Timeout to poll for UA=" + getNodeAddress() + ": consecutive timeouts: " + timeout);
+            log.warn("Timeout to poll for UA={}: consecutive timeouts: {}", getNodeAddress(), timeout);
         }
 
         if (timeout > 5) { // enough, reinit
@@ -1256,7 +1250,7 @@ public class SerialNode extends AbstractNode {
                     try {
                         sensorArray[i].setKnownState(Sensor.UNKNOWN);
                     } catch (jmri.JmriException e) {
-                        log.error("unexpected exception setting sensor i=" + i + " on node " + getNodeAddress() + "e: " + e);
+                        log.error("unexpected exception setting sensor i={} on node {}e: {}", i, getNodeAddress(), e);
                     }
                 }
             }
@@ -1269,7 +1263,7 @@ public class SerialNode extends AbstractNode {
     @Override
     public void resetTimeout(AbstractMRMessage m) {
         if (timeout > 0) {
-            log.debug("Reset " + timeout + " timeout count");
+            log.debug("Reset {} timeout count", timeout);
         }
         timeout = 0;
     }

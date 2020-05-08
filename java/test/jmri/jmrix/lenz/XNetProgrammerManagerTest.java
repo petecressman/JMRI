@@ -1,18 +1,14 @@
 package jmri.jmrix.lenz;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * XNetProgrammerManagerTest.java
  *
- * Description:	tests for the jmri.jmrix.lenz.XNetProgrammerManager class
+ * Test for the jmri.jmrix.lenz.XNetProgrammerManager class
  *
- * @author	Paul Bender Copyright (C) 2012,2018
+ * @author Paul Bender Copyright (C) 2012,2018
  */
 public class XNetProgrammerManagerTest {
 
@@ -38,7 +34,6 @@ public class XNetProgrammerManagerTest {
         Assert.assertNotNull(t.getAddressedProgrammer(false,42));
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -49,6 +44,7 @@ public class XNetProgrammerManagerTest {
 
     @After
     public void tearDown() {
+        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
     }
 

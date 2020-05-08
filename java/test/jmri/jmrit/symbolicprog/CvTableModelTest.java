@@ -5,8 +5,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * @author	Bob Jacobsen
-  */
+ * @author Bob Jacobsen
+ */
 public class CvTableModelTest {
 
     @Test
@@ -15,4 +15,5 @@ public class CvTableModelTest {
     }
 
     // private final static Logger log = LoggerFactory.getLogger(CvTableModelTest.class);
+
 }

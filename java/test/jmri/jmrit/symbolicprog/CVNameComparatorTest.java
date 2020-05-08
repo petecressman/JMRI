@@ -1,13 +1,14 @@
 package jmri.jmrit.symbolicprog;
 
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Tests for the jmri.util.AlphanumComparator class.
  *
- * @author	Paul Bender Copyright 2016
+ * @author Paul Bender Copyright 2016
  */
 public class CVNameComparatorTest extends jmri.util.AlphanumComparatorTest {
 

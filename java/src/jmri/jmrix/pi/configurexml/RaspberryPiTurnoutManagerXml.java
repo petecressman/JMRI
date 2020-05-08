@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides load and store functionality for
  * configuring RaspberryPiTurnoutManagers.
- * <P>
+ * <p>
  * Uses the store method from the abstract base class, but
  * provides a load method here.
  *
@@ -21,7 +21,7 @@ public class RaspberryPiTurnoutManagerXml extends jmri.managers.configurexml.Abs
 
     @Override
     public void setStoreElementClass(Element turnouts) {
-        turnouts.setAttribute("class","jmri.jmrix.pi.configurexml.RaspberryPiTurnoutManagerXml");
+        turnouts.setAttribute("class", "jmri.jmrix.pi.configurexml.RaspberryPiTurnoutManagerXml");
     }
 
     @Override

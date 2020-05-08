@@ -7,9 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * MatrixSignalMastXmlTest.java
- *
- * Description: tests for the MatrixSignalMastXml class
+ * Tests for the MatrixSignalMastXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
@@ -17,10 +15,9 @@ public class MatrixSignalMastXmlTest {
 
     @Test
     public void testCtor(){
-      Assert.assertNotNull("MatrixSignalMastXml constructor",new MatrixSignalMastXml());
+      Assert.assertNotNull("MatrixSignalMastXml constructor", new MatrixSignalMastXml());
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

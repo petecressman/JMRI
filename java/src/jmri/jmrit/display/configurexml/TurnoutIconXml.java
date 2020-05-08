@@ -60,10 +60,10 @@ public class TurnoutIconXml extends PositionableIconXml {
             ed.loadFailed();
             return;
         }
+
         if (!loadPositionableIcon(element, l)) {
             loadPre50(element, l, name);
         }
-
         l.setTurnout(name);
 
         Attribute a = element.getAttribute("tristate");
@@ -109,16 +109,15 @@ public class TurnoutIconXml extends PositionableIconXml {
         List<Element> states = element.getChildren();
         if (states.size() > 0) {
             if (log.isDebugEnabled()) {
-                log.debug("Main element has " + states.size() + " items");
+                log.debug("Main element has{} items", states.size());
             }
             Element elem = element;     // the element containing the icons
             Element icons = element.getChild("icons");
             if (icons != null) {
-                List<Element> s = icons.getChildren();
-                states = s;
+                states = icons.getChildren();
                 elem = icons;          // the element containing the icons
                 if (log.isDebugEnabled()) {
-                    log.debug("icons element has " + states.size() + " items");
+                    log.debug("icons element has{} items", states.size());
                 }
             }
             for (int i = 0; i < states.size(); i++) {
@@ -134,18 +133,18 @@ public class TurnoutIconXml extends PositionableIconXml {
                     state = "BeanStateInconsistent";
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug("setIcon for key \"" + key
-                            + "\" and " + state);
+                    log.debug("setIcon for key \"{}\" and {}", key, state);
                 }
-                NamedIcon icon = PositionableLabelXml.loadIcon(l, key, elem, "TurnoutIcon \"" + name + "\": icon \"" + state + "\" ", ed);
+                String msg = "TurnoutIcon \"" + name + "\": icon \"" + state + "\" ";
+                NamedIcon icon = loadIcon(l, key, elem, msg, ed);
                 if (icon != null) {
                     l.setStateIcon(state, icon);
                 } else {
-                    log.info("TurnoutIcon \"" + name + "\": icon \"" + state + "\" removed");
+                    log.info("TurnoutIcon \"{}\": icon \"{}\" removed", name, state);
                     return;
                 }
             }
-            log.debug(states.size() + " icons loaded for " + l.getNameString());
+            log.debug("{} icons loaded for {}", states.size(), l.getNameString());
         } else {        // case when everything was attributes
             loadTurnoutIcon("thrown", "TurnoutStateThrown", l, element, name, ed);
             loadTurnoutIcon("closed", "TurnoutStateClosed", l, element, name, ed);
@@ -159,7 +158,6 @@ public class TurnoutIconXml extends PositionableIconXml {
                 l.setFamily(attr.getValue());
             }
         }
-        
     }
 
     static private void loadTurnoutIcon(String key, String state, PositionableIcon l, Element element,
@@ -171,14 +169,14 @@ public class TurnoutIconXml extends PositionableIconXml {
             if (icon == null) {
                 icon = ed.loadFailed("Turnout \"" + name + "\" icon \"" + key + "\" ", iconName);
                 if (icon == null) {
-                    log.info("Turnout \"" + name + "\" icon \"" + key + "\" removed for url= " + iconName);
+                    log.info("Turnout \"{}\" icon \"{}\" removed for url= {}", name, state, iconName);
                 }
             }
         } else {
-            log.warn("did not locate " + key + " icon file for Turnout " + name);
+            log.warn("did not locate {} icon file for Turnout {}", key, name);
         }
         if (icon == null) {
-            log.info("Turnout Icon \"" + name + "\": icon \"" + key + "\" removed");
+            log.info("Turnout Icon \"{}\": icon \"{}\" removed", name, key);
         } else {
             l.setStateIcon(state, icon);
         }

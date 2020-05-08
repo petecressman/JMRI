@@ -6,6 +6,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.roster.RosterEntry;
+import jmri.Reportable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
 
     public MemoryIcon(String s, LayoutEditor panel) {
         super(s, panel);
-        log.debug("MemoryIcon ctor= " + MemoryIcon.class.getName());
+        log.debug("MemoryIcon ctor= {}", MemoryIcon.class.getName());
     }
 
     @Override
@@ -84,24 +85,34 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
                     setIsIcon(false);
 //                    setAttributes(getPopupUtility(), this);
                     updateSize();
-                    return;
                 } else if (val instanceof javax.swing.ImageIcon) {
                     setIcon(new NamedIcon(((javax.swing.ImageIcon)val).getImage()));
                     setText(null);
                     setIsText(false);
                     setIsIcon(true);
                     updateSize();
-                    return;
                 } else if (val instanceof Number) {
                     setText(val.toString());
                     setIcon(null);
                     setIsText(true);
                     setIsIcon(false);
                     updateSize();
-                    return;
+                } else if (val instanceof jmri.IdTag){
+                    // most IdTags are Reportable objects, so 
+                    // this needs to be before Reportable
+                    setText(((jmri.IdTag)val).getDisplayName());
+                    setIcon(null);
+                    setIsText(true);
+                    setIsIcon(false);
+                    updateSize();
+                } else if (val instanceof Reportable) {
+                    setText(((Reportable)val).toReportString());
+                    setIcon(null);
+                    setIsText(true);
+                    setIsIcon(false);
+                   updateSize();
                 } else {
-                    log.warn("can't display current value of " + getNamedMemory().getName()
-                            + ", val= " + val + " of Class " + val.getClass().getName());
+                    log.warn("can't display current value of {}, val= {} of Class {}", getNamedMemory().getName(), val, val.getClass().getName());
                 }
             } else {
                 // map exists, use it
@@ -113,7 +124,6 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
                     setIsText(false);
                     setIsIcon(true);
                     updateSize();
-                    return;
                 } else {
                     // no match, use default
                     setIcon(getDefaultIcon());
@@ -140,9 +150,7 @@ public class MemoryIcon extends jmri.jmrit.display.MemoryIcon {
         if (isEditable()) {
             popup.add(updateBlockItem);
             updateBlockItem.setSelected(updateBlockValueOnChange());
-            updateBlockItem.addActionListener((java.awt.event.ActionEvent e) -> {
-                updateBlockValueOnChange(updateBlockItem.isSelected());
-            });
+            updateBlockItem.addActionListener((java.awt.event.ActionEvent e) -> updateBlockValueOnChange(updateBlockItem.isSelected()));
         }  // end of selectable
         return super.showPopUp(popup);
     }

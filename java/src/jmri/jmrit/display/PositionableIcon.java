@@ -2,6 +2,7 @@ package jmri.jmrit.display;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -18,12 +19,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Any common ancestor of Namedbeans having multiple states needs to have multiple
- * displays when represented on graphically on a panel. Such Namedbeans may also 
+ * displays when represented graphically on a panel. Such Namedbeans may also 
  * have a state controlling feature included in their associated widget.
  * Each state may have either an icon or a text string or both to display.
- * Gather common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
- * This class also used for items that use display modes to show status, e.g. IndicatorTrack.
- * IndicatorTrack currently is the only descendant that is not a controlling widget.
+ * This class gathers common methods for Turnouts, Sensors, SignalHeads, Masts, etc.
+ * The class also is used for items that display modes to show status, e.g. IndicatorTrack.
+  * IndicatorTrack currently is the only descendant that is not a controlling widget.
  * <p>
  * The flags, _iconDisplay and _textDisplay, determine the current display mode.
  * When both are true, display mode is icon overlaid with text.
@@ -46,25 +47,8 @@ public class PositionableIcon extends PositionableLabel {
 
     public PositionableIcon(Editor editor) {
         super(editor);
-        _controlling = true;
-        _displayStateMap = makeDefaultMap();
-        _displayState = Bundle.getMessage("BeanStateUnknown");
         setName(getClass().getSimpleName());
-        if (log.isDebugEnabled()) {
-            String name = getClass().getSimpleName();
-            setName(name);
-            if (_displayStateMap != null) {
-                for (Map.Entry<String, DisplayState> e : _displayStateMap.entrySet()) {
-                    DisplayState state = e.getValue();
-                    log.debug("{} state = {}, text= {}, icon= {}", 
-                            name, e.getKey(), state.getText(),
-                            (state.getIcon()==null?"null": state.getIcon().getName()));
-                }
-                
-            } else {
-                log.debug("{}) null DisplayStateMap", name);
-            }
-        }
+        _controlling = true;
     }
 
     public PositionableIcon(NamedIcon s, Editor editor) {
@@ -137,6 +121,29 @@ public class PositionableIcon extends PositionableLabel {
     }
 
     /**
+     * Drive the current state of the display due to state change
+     *
+     * @param state the sensor state
+     */
+    protected void displayState(String state) {
+        log.debug("displayState({})", state);
+        if (getNamedBean() == null) {
+            setDisconnectedText("BeanDisconnected");
+            return;
+        }
+        DisplayState ds = getDisplayState(state);
+        if (ds == null) {
+            log.error("Unknown display state {} for {}!", state, getName());
+            return;
+        }
+        restoreConnectionDisplay();
+
+        ds.setDisplayParameters(this);
+        _displayState  = state;
+        updateSize();
+    }
+
+    /**
      * Show bean disconnected.  This may be a temporary condition so
      * save the intended display mode for when case connection is restored.
      * @param text overlay
@@ -147,6 +154,7 @@ public class PositionableIcon extends PositionableLabel {
         setIcon(new NamedIcon(_redX, _redX));
         super.setIsText(true);
         super.setIsIcon(true);
+        updateSize();
     }
 
     protected void restoreConnectionDisplay() {
@@ -171,28 +179,43 @@ public class PositionableIcon extends PositionableLabel {
     public final void setIsText(boolean b) {
         _textDisplay = b;
     }
-    
-    /**
-     * NamedBean icon items should return a map with the default localized text
-     * names for their states.
-     * @return mapping of state names as found in jmri.NamedBeanBundle.properties
-     */
-    protected HashMap<String, DisplayState> makeDefaultMap() {
+
+    protected Collection<String> getStateNameCollection() {
+        log.error("getStateNameCollection() must be implemented by extensions!");
         return null;
     }
-    public HashMap<String, DisplayState> getDisplayStateMap() {
-        return _displayStateMap;
+
+    /**
+     * Make the raw map of display information for each state of the NamedBean.
+     * Caller will fill in the data for each state
+     */
+    protected void makeDisplayMap() {
+        Collection<String> col = getStateNameCollection();
+        _displayStateMap = new HashMap<>(col.size());
+        for (String state : col) {
+            DisplayState ds = new DisplayState();
+            if (this instanceof SignalMastIcon) {
+                ds.setText(state);
+            } else {
+                ds.setText(Bundle.getMessage(state));
+            }
+            _displayStateMap.put(state, ds);
+        }
+        log.debug("makeDisplayMap \"{}\"", getName());
     }
-    protected void  setIconMap(HashMap<String, DisplayState> map) {
-        _displayStateMap = map;
+
+    public HashMap<String, DisplayState> getDisplayStateMap() {
         if (log.isDebugEnabled()) {
+            log.debug("getDisplayMap \"{}\"", getName());
             for (Map.Entry<String, DisplayState> e : _displayStateMap.entrySet()) {
-                DisplayState pos = e.getValue();
-                log.debug("state = {}, text= {}, icon= {}", e.getKey(), pos.getText(),
-                        (pos.getIcon()==null?"null": pos.getIcon().getName()));
+                DisplayState ds = e.getValue();
+                log.debug("{} state = {}, text= {}, icon= {}", e.getKey(), ds.getText(),
+                        (ds.getIcon()==null?"null": ds.getIcon().getName()));
             }
         }
+        return _displayStateMap;
     }
+
     public DisplayState getStateData(String state) {
         return _displayStateMap.get(state);
     }
@@ -230,10 +253,12 @@ public class PositionableIcon extends PositionableLabel {
      * as found in jmri.NamedBeanBundle.properties
      */
     public Iterator<String> getStateNames() {
-        if (_displayStateMap.keySet() == null) {
+        Collection<String> col = getStateNameCollection();
+        if (col == null) {
+            log.error("getStateNameCollection not implemented for {}, {}", getName(), getNameString());
             return null;
         }
-        return _displayStateMap.keySet().iterator();
+        return col.iterator();
     }
 
     /**
@@ -345,8 +370,6 @@ public class PositionableIcon extends PositionableLabel {
         return _controlling;
     }
 
-    //////// popup Menu method overrides ////////
-
     public boolean setDisableControlMenu(JPopupMenu popup) {
         JCheckBoxMenuItem disableItem = new JCheckBoxMenuItem(Bundle.getMessage("Disable"));
         disableItem.setSelected(!_controlling);
@@ -424,20 +447,6 @@ public class PositionableIcon extends PositionableLabel {
         _displayStateMap = null;
         super.dispose();
     }
-
-/*
-    public static HashMap<String, PositionableLabel> cloneMap(HashMap<String, PositionableLabel> map,
-            PositionableIcon pos) {
-        HashMap<String, PositionableLabel> clone = new HashMap<>();
-        if (map != null) {
-            Iterator<Entry<String, PositionableLabel>> it = map.entrySet().iterator();
-            while (it.hasNext()) {
-                Entry<String, PositionableLabel> entry = it.next();
-                clone.put(entry.getKey(), (PositionableLabel)entry.getValue().deepClone());
-            }
-        }
-        return clone;
-    }*/
 
     private final static Logger log = LoggerFactory.getLogger(PositionableIcon.class);
 }

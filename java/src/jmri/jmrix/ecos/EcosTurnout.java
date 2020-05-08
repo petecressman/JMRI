@@ -142,7 +142,7 @@ public class EcosTurnout extends AbstractTurnout
             // first look for the double case, which we can't handle
             if ((s & Turnout.THROWN) != 0) {
                 // this is the disaster case!
-                log.error("Cannot command both CLOSED and THROWN " + s);
+                log.error("Cannot command both CLOSED and THROWN {}", s);
                 return;
             } else {
                 // send a CLOSED command
@@ -235,20 +235,30 @@ public class EcosTurnout extends AbstractTurnout
                 int turnaddr = _number - 1;
                 Turnout t = tm.getTurnout(prefix + "T" + turnaddr);
                 secondstate = closed;
-                if (t.getKnownState() == CLOSED) {
-                    firststate = true;
+                if (t==null){
+                    log.error("Unable to locate second Turnout address {}",turnaddr);
+                    return;
                 } else {
-                    firststate = false;
+                    if (t.getKnownState() == CLOSED) {
+                        firststate = true;
+                    } else {
+                        firststate = false;
+                    }
                 }
 
             } else {
                 Turnout t = tm.getTurnout(slaveAddress);
                 firststate = closed;
-
-                if (t.getKnownState() == CLOSED) {
-                    secondstate = true;
+                if (t==null){
+                    log.error("Unable to locate slave Turnout address {}",slaveAddress);
+                    return;
                 } else {
-                    secondstate = false;
+
+                    if (t.getKnownState() == CLOSED) {
+                        secondstate = true;
+                    } else {
+                        secondstate = false;
+                    }
                 }
             }
             int setState = 0;
@@ -273,13 +283,13 @@ public class EcosTurnout extends AbstractTurnout
             }
 
             if (setState == 99) {
-                //System.out.println("Invalid selection old state " + getKnownState() + " " + getCommandedState());
+                // log.debug("Invalid selection old state " + getKnownState() + " " + getCommandedState());
                 if (closed) {
                     setCommandedState(THROWN);
                 } else {
                     setCommandedState(CLOSED);
                 }
-                //System.out.println("After - " + getKnownState() + " " + getCommandedState() + " " + "Is consistant " + isConsistentState());
+                // log.debug("After - " + getKnownState() + " " + getCommandedState() + " " + "Is consistant " + isConsistentState());
             } else {
 
                 EcosMessage m = new EcosMessage("request(" + objectNumber + ", control)");
@@ -310,7 +320,7 @@ public class EcosTurnout extends AbstractTurnout
             return; //message is not for our turnout address
         }
         if (msg.contains("switching[0]")) {
-            log.debug("Turnout switched - new state="+newstate);
+            log.debug("Turnout switched - new state={}", newstate);
             /*log.debug("see new state "+newstate+" for "+_number);*/
             //newCommandedState(newstate);
             /*Using newKnownState, as any changes made on the ecos do not show
@@ -329,21 +339,21 @@ public class EcosTurnout extends AbstractTurnout
             }
         }
         if ((m.isUnsolicited()) || (m.getReplyType().equals("get")) || (m.getReplyType().equals("set"))) {
-            //if (msg.startsWith("<REPLY get("+objectNumber+",") || msg.startsWith("<EVENT "+objectNumber+">")) {
+            //if (msg.startsWith("<REPLY get(" + objectNumber + ",") || msg.startsWith("<EVENT " + objectNumber + ">")) {
             int start = msg.indexOf("state[");
             int end = msg.indexOf("]");
             if (start > 0 && end > 0) {
                 String val = msg.substring(start + 6, end);
-                //System.out.println("Extended - " + extended + " " + objectNumber);
+                // log.debug("Extended - " + extended + " " + objectNumber);
                 if (extended == 0) {
                     if (val.equals("0")) {
                         newstate = CLOSED;
                     } else if (val.equals("1")) {
                         newstate = THROWN;
                     } else {
-                        log.warn("val |" + val + "| from " + msg);
+                        log.warn("val |{}| from {}", val, msg);
                     }
-                    log.debug("newstate found: "+newstate);
+                    log.debug("newstate found: {}", newstate);
                     if (m.getReplyType().equals("set")) {
                        // wait to set the state until ECOS tells us to (by an event with the contents "switching[0]")
                     } else {

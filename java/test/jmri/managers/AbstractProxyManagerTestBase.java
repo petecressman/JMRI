@@ -1,9 +1,7 @@
 package jmri.managers;
 
-import java.beans.PropertyChangeListener;
 import jmri.*;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -16,7 +14,7 @@ import org.junit.Test;
  * Quite a bit of AbstractManager testing is done in InternalSensorManagerTest
  * to give it a concrete platform
  *
- * @author Bob Jacobsen Copyright (C) 2017	
+ * @author Bob Jacobsen Copyright (C) 2017
  */
 public abstract class AbstractProxyManagerTestBase<T extends Manager<E>, E extends NamedBean> {
 

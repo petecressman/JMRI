@@ -4,6 +4,8 @@ import java.awt.geom.Point2D;
 import jmri.configurexml.AbstractXmlAdapter;
 import jmri.jmrit.display.layoutEditor.LayoutEditor;
 import jmri.jmrit.display.layoutEditor.LayoutSlip;
+import jmri.jmrit.display.layoutEditor.LayoutSingleSlip;
+import jmri.jmrit.display.layoutEditor.LayoutDoubleSlip;
 import jmri.jmrit.display.layoutEditor.TrackSegment;
 import org.jdom2.Attribute;
 import org.jdom2.DataConversionException;
@@ -23,6 +25,8 @@ public class LayoutSlipXml extends AbstractXmlAdapter {
     public LayoutSlipXml() {
     }
 
+    final static EnumIO<LayoutSlip.TurnoutType> tTypeEnumMap = new EnumIoNamesNumbers<>(LayoutSlip.TurnoutType.class);
+
     /**
      * Default implementation for storing the contents of a LayoutSlip
      *
@@ -38,7 +42,7 @@ public class LayoutSlipXml extends AbstractXmlAdapter {
 
         // include attributes
         element.setAttribute("ident", p.getName());
-        element.setAttribute("slipType", "" + p.getSlipType());
+        element.setAttribute("slipType", tTypeEnumMap.outputFromEnum(p.getTurnoutType()));
 
         element.setAttribute("hidden", "" + (p.isHidden() ? "yes" : "no"));
         element.setAttribute("disabled", "" + (p.isDisabled() ? "yes" : "no"));
@@ -158,7 +162,7 @@ public class LayoutSlipXml extends AbstractXmlAdapter {
         state.addContent(new Element("turnoutB").addContent("" + p.getTurnoutBState(LayoutSlip.STATE_BD)));
         states.addContent(state);
 
-        if (p.getSlipType() == LayoutSlip.DOUBLE_SLIP) {
+        if (p.getSlipType() == LayoutSlip.TurnoutType.DOUBLE_SLIP) {
             state = new Element("B-C");
             state.addContent(new Element("turnout").addContent("" + p.getTurnoutState(LayoutSlip.STATE_BC)));
             state.addContent(new Element("turnoutB").addContent("" + p.getTurnoutBState(LayoutSlip.STATE_BC)));
@@ -196,17 +200,22 @@ public class LayoutSlipXml extends AbstractXmlAdapter {
         } catch (org.jdom2.DataConversionException e) {
             log.error("failed to convert layoutslip center  attribute");
         }
-        int type = LayoutSlip.SINGLE_SLIP;
-        try {
-            type = element.getAttribute("slipType").getIntValue();
-        } catch (org.jdom2.DataConversionException e) {
-            log.error("failed to convert layoutslip type attribute");
-        } catch (java.lang.NullPointerException e) {
-            //can be ignored as panel file may not support method
-        }
+
+        LayoutSlip.TurnoutType type = tTypeEnumMap.inputFromAttribute(element.getAttribute("slipType"));
 
         // create the new LayoutSlip
-        LayoutSlip l = new LayoutSlip(name, new Point2D.Double(x, y), 0.0, p, type);
+        LayoutSlip l; 
+        switch(type) {
+            case DOUBLE_SLIP :
+                l = new LayoutDoubleSlip(name, new Point2D.Double(x, y), 0.0, p);
+                break;
+            case SINGLE_SLIP :
+                l = new LayoutSingleSlip(name, new Point2D.Double(x, y), 0.0, p);
+                break;
+            default:
+                log.error("can't create slip {} with type {}", name, type);
+                return; // without creating
+        }
 
         // get remaining attributes
         l.setTurnout(getElement(element, "turnout"));
@@ -214,19 +223,19 @@ public class LayoutSlipXml extends AbstractXmlAdapter {
 
         Attribute a = element.getAttribute("blockname");
         if (a != null) {
-            l.setLayoutBlockByName(a.getValue());
+            l.tBlockAName = a.getValue();
         }
         a = element.getAttribute("blockbname");
         if (a != null) {
-            l.setLayoutBlockBByName(a.getValue());
+            l.tBlockBName = a.getValue();
         }
         a = element.getAttribute("blockcname");
         if (a != null) {
-            l.setLayoutBlockCByName(a.getValue());
+            l.tBlockCName = a.getValue();
         }
         a = element.getAttribute("blockdname");
         if (a != null) {
-            l.setLayoutBlockDByName(a.getValue());
+            l.tBlockDName = a.getValue();
         }
 
         a = element.getAttribute("connectaname");

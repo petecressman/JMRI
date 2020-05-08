@@ -3,15 +3,13 @@ package jmri.jmrix.easydcc;
 import jmri.JmriException;
 import jmri.jmrix.AbstractPowerManagerTestBase;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import jmri.util.junit.annotations.NotApplicable;
+import org.junit.*;
 
 /**
  * JUnit tests for the EasyDccPowerManager class
  *
- * @author	Bob Jacobsen Copyright 2006
+ * @author Bob Jacobsen Copyright 2006
  */
 public class EasyDccPowerManagerTest extends AbstractPowerManagerTestBase {
 
@@ -91,17 +89,16 @@ public class EasyDccPowerManagerTest extends AbstractPowerManagerTestBase {
     // state readback by sending messages & getting a reply
     @Override
     @Test
-    @Ignore("no unsolicited messages, so skip test")
+    @NotApplicable("no unsolicited messages, so skip test")
     public void testStateOn() throws JmriException {
     }
 
     @Override
     @Test
-    @Ignore("no unsolicited messages, so skip test")
+    @NotApplicable("no unsolicited messages, so skip test")
     public void testStateOff() throws JmriException {
     }
 
-    // The minimal setup for log4J
     @After 
     public void tearDown() {
         controller.terminateThreads();

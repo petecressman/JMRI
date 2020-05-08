@@ -160,13 +160,13 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
         // see if this is from _value itself, or from an alternate rep.
         // if from an alternate rep, it will contain the value to select
         if (log.isDebugEnabled()) {
-            log.debug(label() + " start action event: " + e);
+            log.debug("{} start action event: {}", label(), e);
         }
         if (!(e.getActionCommand().equals(""))) {
             // is from alternate rep
             _value.setSelectedItem(e.getActionCommand());
             if (log.isDebugEnabled()) {
-                log.debug(label() + " action event was from alternate rep");
+                log.debug("{} action event was from alternate rep", label());
             }
             // match and select in tree
             if (_nstored > 0) {
@@ -192,21 +192,21 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
         // compute new cv value by combining old and request
         int oldCv = cv.getValue();
         int newVal = getIntValue();
-        int newCv = newValue(oldCv, newVal, getMask());
+        int newCv = setValueInCV(oldCv, newVal, getMask(), _maxVal-1);
         if (newCv != oldCv) {
             cv.setValue(newCv);  // to prevent CV going EDITED during loading of decoder file
 
             // notify  (this used to be before setting the values)
             if (log.isDebugEnabled()) {
-                log.debug(label() + " about to firePropertyChange");
+                log.debug("{} about to firePropertyChange", label());
             }
             prop.firePropertyChange("Value", null, oldVal);
             if (log.isDebugEnabled()) {
-                log.debug(label() + " returned to from firePropertyChange");
+                log.debug("{} returned to from firePropertyChange", label());
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug(label() + " end action event saw oldCv=" + oldCv + " newVal=" + newVal + " newCv=" + newCv);
+            log.debug("{} end action event saw oldCv={} newVal={} newCv={}", label(), oldCv, newVal, newCv);
         }
     }
 
@@ -234,11 +234,11 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
 
     /**
      * Set to a specific value.
-     * <P>
+     * <p>
      * This searches for the displayed value, and sets the enum to that
      * particular one. It used to work off an index, but now it looks for the
      * value.
-     * <P>
+     * <p>
      * If the value is larger than any defined, a new one is created.
      */
     protected void selectValue(int value) {
@@ -262,8 +262,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
 
         // We can be commanded to a number that hasn't been defined.
         // But that's OK for certain applications.  Instead, we add them as needed
-        log.debug("Create new item with value " + value + " count was " + _value.getItemCount()
-                + " in " + label());
+        log.debug("Create new item with value {} count was {} in {}", value, _value.getItemCount(), label());
         // lengthen arrays
         _valueArray = java.util.Arrays.copyOf(_valueArray, _valueArray.length + 1);
 
@@ -289,8 +288,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
     @Override
     public int getIntValue() {
         if (_value.getSelectedIndex() >= _valueArray.length || _value.getSelectedIndex() < 0) {
-            log.error("trying to get value " + _value.getSelectedIndex() + " too large"
-                    + " for array length " + _valueArray.length + " in var " + label());
+            log.error("trying to get value {} too large for array length {} in var {}", _value.getSelectedIndex(), _valueArray.length, label());
         }
         log.debug("SelectedIndex={}", _value.getSelectedIndex());
         return _valueArray[_value.getSelectedIndex()];
@@ -438,7 +436,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
     @Override
     public void readChanges() {
         if (isToRead() && !isChanged()) {
-            log.debug("!!!!!!! unacceptable combination in readChanges: " + label());
+            log.debug("!!!!!!! unacceptable combination in readChanges: {}", label());
         }
         if (isChanged() || isToRead()) {
             readAll();
@@ -448,7 +446,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
     @Override
     public void writeChanges() {
         if (isToWrite() && !isChanged()) {
-            log.debug("!!!!!! unacceptable combination in writeChanges: " + label());
+            log.debug("!!!!!! unacceptable combination in writeChanges: {}", label());
         }
         if (isChanged() || isToWrite()) {
             writeAll();
@@ -502,7 +500,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
             case "Value": {
                 // update value of Variable
                 CvValue cv = _cvMap.get(getCvNum());
-                int newVal = (cv.getValue() & maskVal(getMask())) >>> offsetVal(getMask());
+                int newVal = getValueInCV(cv.getValue(), getMask(), _maxVal-1); // _maxVal value is count of possibles, i.e. radix
                 setValue(newVal);  // check for duplicate done inside setVal
                 break;
             }
@@ -513,7 +511,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
 
     /* Internal class extends a JComboBox so that its color is consistent with
      * an underlying variable; we return one of these in getNewRep.
-     *<P>
+     * <p>
      * Unlike similar cases elsewhere, this doesn't have to listen to
      * value changes.  Those are handled automagically since we're sharing the same
      * model between this object and the real JComboBox value.
@@ -529,7 +527,7 @@ public class EnumVariableValue extends VariableValue implements ActionListener {
                 @Override
                 public void propertyChange(java.beans.PropertyChangeEvent e) {
                     if (log.isDebugEnabled()) {
-                        log.debug("VarComboBox saw property change: " + e);
+                        log.debug("VarComboBox saw property change: {}", e);
                     }
                     originalPropertyChanged(e);
                 }

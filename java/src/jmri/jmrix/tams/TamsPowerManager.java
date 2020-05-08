@@ -2,6 +2,9 @@ package jmri.jmrix.tams;
 
 import jmri.JmriException;
 import jmri.PowerManager;
+
+import java.beans.PropertyChangeListener;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,14 +35,14 @@ public class TamsPowerManager implements PowerManager, TamsListener {
     TamsMessage tm = myDummy();
     
     public TamsPowerManager(TamsTrafficController ttc) {
-        log.debug("*** Tams Power Manager ***");
+        log.debug("*** Tams PowerManager ***");
         // connect to the TrafficManager
         tc = ttc;
         tc.addTamsListener(this);
         TamsMessage tm = TamsMessage.getXStatus();
         tc.sendTamsMessage(tm, this);
         tc.addPollMessage(tm, this);
-        log.debug("TamsMessage added to pollqueue = " + jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(0) & 0xFF, "") + " " + jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(1) & 0xFF, "") + " and replyType = " + tm.getReplyType());
+        log.debug("TamsMessage added to pollqueue = {} {} and replyType = {}", jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(0) & 0xFF, ""), jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(1) & 0xFF, ""), tm.getReplyType());
     }
 
     TamsTrafficController tc;
@@ -108,13 +111,37 @@ public class TamsPowerManager implements PowerManager, TamsListener {
         pcs.removePropertyChangeListener(l);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
+    }
+
     // to listen for status changes from Tams system
     @Override
     public void reply(TamsReply tr) {
         if ((TamsTrafficController.replyType == 'P')){
             log.debug("*** Tams Power Reply ***");
             //log.debug("TamsMessage = " + jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(0) & 0xFF, "") + " " + jmri.util.StringUtil.appendTwoHexFromInt(tm.getElement(1) & 0xFF, "") + " and replyType = " + tm.getReplyType());
-            log.debug("TamsReply = " + jmri.util.StringUtil.appendTwoHexFromInt(tr.getElement(0) & 0xFF, ""));
+            log.debug("TamsReply = {}", jmri.util.StringUtil.appendTwoHexFromInt(tr.getElement(0) & 0xFF, ""));
             boolean valid = false;
             if (TamsTrafficController.replyBinary) {//Reply related to Poll Message
                 log.debug("Reply to Poll Message");
@@ -151,7 +178,7 @@ public class TamsPowerManager implements PowerManager, TamsListener {
             }
             if (valid == false) {
                 power = UNKNOWN;
-                log.debug("Unknown reply in power manager " + tr.toString());
+                log.debug("Unknown reply in power manager {}", tr.toString());
             }
         tm = myDummy();
         }

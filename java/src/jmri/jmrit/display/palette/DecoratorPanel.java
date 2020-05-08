@@ -1,18 +1,13 @@
 package jmri.jmrit.display.palette;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import javax.annotation.Nonnull;
+//import javax.annotation.Nonnull;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -36,6 +31,7 @@ import jmri.jmrit.display.PositionableIcon;
 import jmri.jmrit.display.PositionableJPanel;
 import jmri.jmrit.display.PositionableLabel;
 import jmri.jmrit.display.palette.FontPanel.AJComboBox;
+import jmri.jmrit.display.PreviewPanel;
 import jmri.jmrit.display.palette.TextItemPanel.DragDecoratorLabel;
 import jmri.util.swing.ImagePanel;
 import jmri.util.swing.JmriColorChooser;
@@ -74,41 +70,29 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
     private AJComboBox _fontJustBox;
 
     private JColorChooser _chooser;
-    ImagePanel _previewPanel;
-    JPanel _samplePanel;
+    private PreviewPanel _previewPanel;
+    private final ImagePanel _samplePanel;
+    private final HashMap<String, ColorButtonPanel> _colorPanels;
+    private HashMap<String, PositionableLabel> _samples = null;    
     private int _selectedButton;
     private String _selectedState;
     private final ButtonGroup _buttonGroup = new ButtonGroup();
 
-    protected BufferedImage[] _backgrounds; // array of Image backgrounds
-    protected JComboBox<String> _bgColorBox;
-
     Editor _editor;
-    protected DisplayFrame _paletteFrame;
-    // map of _target's state components for preview panel
-    private final HashMap<String, PositionableLabel> _samples;
-    private final HashMap<String, ColorButtonPanel> _colorPanels;
+    protected DisplayFrame _frame;
 
-    public DecoratorPanel(Editor editor, DisplayFrame paletteFrame) {
-        _editor = editor;
-        _paletteFrame = paletteFrame;
+    public DecoratorPanel(DisplayFrame frame) {
+        _editor = frame.getEditor();
+        _frame = frame;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         Color panelBackground = _editor.getTargetPanel().getBackground(); // start using Panel background color
-        // create array of backgrounds, _currentBackground already set and used
-        _backgrounds = ItemPanel.makeBackgrounds(null,  panelBackground);
         _chooser = new JColorChooser(panelBackground);
         _samples = new HashMap<>();
         _colorPanels =  new HashMap<>();
 
-        _previewPanel = new ImagePanel();
-        _previewPanel.setLayout(new BorderLayout());
-        _previewPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black, 1),
-                Bundle.getMessage("PreviewBorderTitle")));
-        _previewPanel.add(Box.createVerticalStrut(STRUT), BorderLayout.PAGE_START);
-        _previewPanel.add(Box.createVerticalStrut(STRUT), BorderLayout.PAGE_END);
-
-        _samplePanel = new JPanel();
-        _samplePanel.add(Box.createHorizontalStrut(STRUT));
+        _samplePanel = new ImagePanel();
+        _samplePanel.add(Box.createVerticalStrut(50));
+        _samplePanel.setBorder(BorderFactory.createLineBorder(Color.black));
         _samplePanel.setOpaque(false);
     }
 
@@ -221,7 +205,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
         add(panel);
         _samplePanel.add(sample);
         log.debug("DragDecoratorLabel size {} | panel size {}", sample.getPreferredSize(), _samplePanel.getPreferredSize());
-        finishInit(true, sample);
+        finishInit(sample);
     }
 
     /* Called by Editor's TextAttrDialog - i.e. update a panel item from menu */
@@ -274,29 +258,19 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
             pos.setAttributesOf(sample);
             setSample("Text", sample, addTextField, addFixedField);
         }
-        finishInit(false, pos);
+        finishInit(pos);
     }
 
-    private void finishInit(boolean addBgCombo, Positionable p) {
+    private void finishInit(Positionable  p) {
         _chooser = JmriColorChooser.extendColorChooser(_chooser);
         setSuppressRecentColor(true);
         _chooser.getSelectionModel().addChangeListener(this);
         _chooser.setPreviewPanel(new JPanel());
         add(_chooser);
-        _previewPanel.add(_samplePanel, BorderLayout.CENTER);
-
-        // add a SetBackground combo
-        if (addBgCombo) {
-            add(add(makeBgButtonPanel(_previewPanel, null, _backgrounds))); // no listener on this variant
-        }
-        add(_previewPanel);
-        _previewPanel.setImage(_backgrounds[0]);
-        _previewPanel.revalidate();        // force redraw
-        // after everything created, set selections
-        setSelections(p);
+        _fontPanel.setFontSelections(p.getFont());
         updateSamples();
     }
-
+/*
     private void setSelections(Positionable pos) {
         Positionable p = _samples.get(_selectedState);
         _fontPanel.setFontSelections(p.getFont());
@@ -305,7 +279,7 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
         _marginSpin.setValue(pos.getMarginSize());
         _widthSpin.setValue(pos.getFixedWidth());
         _heightSpin.setValue(pos.getFixedHeight());
-    }
+    }*/
 
     private void setSample(String state, PositionableLabel sample, boolean editText, boolean editFixed) {
         sample.setSuppressRecentColor(true);
@@ -389,101 +363,45 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
 
     private AJRadioButton makeColorRadioButton(String caption, int which, String state) {
         AJRadioButton button = new AJRadioButton(Bundle.getMessage(caption), which, state);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent a) {
-                if (button.isSelected()) {
-                    _selectedButton = button._which;
-                    _selectedState = button._state;
-                    PositionableLabel pos = _samples.get(_selectedState);
-                    _fontPanel.setFontSelections(pos.getFont());
-                    setJustificationIndex(pos, _fontJustBox);
-
-                    switch (button._which) {
-                        case FOREGROUND_BUTTON:
-                            _chooser.setColor(pos.getForeground());
-                            break;
-                        case BACKGROUND_BUTTON:
-                            _chooser.setColor(pos.getBackground());
-                            break;
-                        case TRANSPARENT_BUTTON:
-                            _chooser.setColor(pos.getBackground());
-                            pos.setBackground(null);
-                            break;
-                        case BORDERCOLOR_BUTTON:
-                            _chooser.setColor(pos.getBorderColor());
-                            break;
-                        default:
-                    }
-                    log.debug("Button actionPerformed Color button _state= {} _which= {}",
-                           button._state, BUTTONS[button._which]);
-                    updateSamples();
-                }
+        button.addActionListener(a -> {
+            if (button.isSelected()) {
+                _selectedButton =button._which;
+                _selectedState = button._state;
+                PositionableLabel pos =_samples.get(_selectedState);
+                _fontPanel.setFontSelections(pos.getFont());
+                setJustificationIndex(pos, _fontJustBox);
+                switch (button._which) {
+                    case FOREGROUND_BUTTON:
+                        _chooser.setColor(pos.getForeground());
+                        break;
+                    case BACKGROUND_BUTTON:
+                        _chooser.setColor(pos.getBackground());
+                        break;
+                    case BORDERCOLOR_BUTTON:
+                        _chooser.setColor(pos.getBorderColor());
+                        break;
+                    case TRANSPARENT_BUTTON:
+                        _chooser.setColor(pos.getBackground());
+                        pos.setBackground(null);
+                        break;
+                    default:    // TRANSPARENT_BUTTON
+               }
+                log.debug("Button actionPerformed Colors opaque= {} _state= {} _which= {}",
+                        pos.isOpaque(), button._state, button._which);
+                updateSamples();
             }
         });
         _buttonGroup.add(button);            
         return button;
     }
-    /**
-     * Create panel element containing [Set background:] drop down list.
-     * Special version for Decorator, no access to shared variable previewBgSet.
-     * @see jmri.jmrit.catalog.PreviewDialog#setupPanel()
-     * @see ItemPanel
-     *
-     * @param preview1 ImagePanel containing icon set
-     * @param preview2 not used, matches method in ItemPanel
-     * @param imgArray array of colored background images
-     * @return a JPanel with label and drop down
-     */
-    private JPanel makeBgButtonPanel(@Nonnull ImagePanel preview1, ImagePanel preview2, BufferedImage[] imgArray) {
-        _bgColorBox = new JComboBox<>();
-        _bgColorBox.addItem(Bundle.getMessage("PanelBgColor")); // PanelColor key is specific for CPE, too long for combo
-        _bgColorBox.addItem(Bundle.getMessage("White"));
-        _bgColorBox.addItem(Bundle.getMessage("LightGray"));
-        _bgColorBox.addItem(Bundle.getMessage("DarkGray"));
-        _bgColorBox.addItem(Bundle.getMessage("Checkers"));
-        int index;
-        if (_paletteFrame != null) {
-            index = _paletteFrame.getPreviewBg();
-        } else {
-            index = 0;
-        }
-        _bgColorBox.setSelectedIndex(index);
-        _bgColorBox.addActionListener((ActionEvent e) -> {
-            if (imgArray != null) {
-                // index may repeat
-                int previewBgSet = _bgColorBox.getSelectedIndex(); // store user choice
-                if (_paletteFrame != null) {
-                    _paletteFrame.setPreviewBg(previewBgSet);
-                }
-                // load background image
-                log.debug("Palette Decorator setImage called {}", previewBgSet);
-                preview1.setImage(imgArray[previewBgSet]);
-                preview1.revalidate();        // force redraw
-            } else {
-                log.debug("imgArray is empty");
-            }
-        });
-        JPanel backgroundPanel = new JPanel();
-        backgroundPanel.setLayout(new BoxLayout(backgroundPanel, BoxLayout.Y_AXIS));
-        JPanel pp = new JPanel();
-        pp.setLayout(new FlowLayout(FlowLayout.CENTER));
-        pp.add(new JLabel(Bundle.getMessage("setBackground")));
-        pp.add(_bgColorBox);
-        backgroundPanel.add(pp);
-        backgroundPanel.setMaximumSize(backgroundPanel.getPreferredSize());
-        return backgroundPanel;
+
+    protected void setPreviewIndex(int idx) {
+        
     }
 
     // called when editor changed
-    protected BufferedImage[] getBackgrounds() {
-        return _backgrounds;
-    }
-    // called when editor changed
-    protected void setBackgrounds(BufferedImage[] imgArray) {
-        _backgrounds = imgArray;
-        _previewPanel.setImage(imgArray[0]);
-        _previewPanel.revalidate();        // force redraw
+    protected void sampleBgColorChange() {
+        _previewPanel.setBackgroundSelection(_frame.getPreviewBg());
     }
 
     @Override
@@ -645,9 +563,8 @@ public class DecoratorPanel extends JPanel implements ChangeListener, FontPanelL
     }
     
     public void setSuppressRecentColor(boolean bool) {
-        Iterator<PositionableLabel> iter = _samples.values().iterator();
-        while (iter.hasNext()) {
-            iter.next().setSuppressRecentColor(bool);
+        for (PositionableLabel positionableLabel : _samples.values()) {
+            positionableLabel.setSuppressRecentColor(bool);
         }
     }
 

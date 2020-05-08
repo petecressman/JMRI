@@ -5,6 +5,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+
 import jmri.Sensor;
 import jmri.jmrit.display.controlPanelEditor.shape.LocoLabel;
 import jmri.jmrit.logix.OBlock;
@@ -17,13 +20,17 @@ import org.slf4j.LoggerFactory;
  *
  * @author Pete Cressman Copyright (c) 2012
  */
-class IndicatorTrackPaths {
+public class IndicatorTrackPaths {
 
     protected ArrayList<String> _paths;      // list of paths that this icon displays
     private boolean _showTrain;         // this track icon should display _loco when occupied
     private LocoLabel _loco = null;
 
+    static String[] STATUSNAME = {"ClearTrack", "OccupiedTrack", "PositionTrack", "AllocatedTrack", "DontUseTrack", "ErrorTrack"};
+    NameCollection  _statusNames;
+
     protected IndicatorTrackPaths() {
+        _statusNames = new NameCollection(Arrays.copyOf(STATUSNAME, STATUSNAME.length));
     }
 
     protected IndicatorTrackPaths deepClone() {
@@ -57,7 +64,7 @@ class IndicatorTrackPaths {
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("addPath \"" + path + "\" #paths= " + _paths.size());
+            log.debug("addPath \"{}\" #paths= {}", path, _paths.size());
         }
     }
 
@@ -108,7 +115,7 @@ class IndicatorTrackPaths {
         return status;
     }
 
-    private void removeLocoIcon() {
+    public void removeLocoIcon() {
         if (_loco != null) {
             _loco.remove();
             _loco = null;
@@ -125,7 +132,7 @@ class IndicatorTrackPaths {
             removeLocoIcon();
             return;
         }
-        if (_loco != null) {
+        if (_loco != null || pt == null) {
             return;
         }
         trainName = trainName.trim();
@@ -171,6 +178,10 @@ class IndicatorTrackPaths {
                 break;
         }
         return status;
+    }
+
+    protected Collection<String> getStatusNameCollection() {
+        return _statusNames;
     }
 
     private final static Logger log = LoggerFactory.getLogger(IndicatorTrackPaths.class);

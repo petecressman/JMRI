@@ -22,15 +22,15 @@ import org.slf4j.LoggerFactory;
  *
  * <hr>
  * This file is part of JMRI.
- * <P>
+ * <p>
  * JMRI is free software; you can redistribute it and/or modify it under the
  * terms of version 2 of the GNU General Public License as published by the Free
  * Software Foundation. See the "COPYING" file for a copy of this license.
- * <P>
+ * <p>
  * JMRI is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
  * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- * <P>
+ *
  * @author Kevin Dickerson Copyright (C) 2009
  */
 public class RemoveRosterEntryToGroupAction extends AbstractAction {
@@ -105,11 +105,11 @@ public class RemoveRosterEntryToGroupAction extends AbstractAction {
 
     public void okPressed() {
         String group = rosterBox.getSelectedRosterGroup();
-        log.info("Selected " + group);
+        log.info("Selected {}", group);
         if (group != null && !group.equals(Roster.ALLENTRIES)) {
             if (rosterBox.getSelectedRosterEntries().length != 0) {
                 RosterEntry re = rosterBox.getSelectedRosterEntries()[0];
-                log.info("Preparing to remove " + re.getId() + " from " + group);
+                log.info("Preparing to remove {} from {}", re.getId(), group);
                 if (userOK(re.getId(), group)) {
                     re.deleteAttribute(Roster.getRosterGroupProperty(group));
                     re.updateFile();

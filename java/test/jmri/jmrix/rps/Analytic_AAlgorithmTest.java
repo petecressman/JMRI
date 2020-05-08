@@ -1,14 +1,13 @@
 package jmri.jmrix.rps;
 
 import javax.vecmath.Point3d;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * JUnit tests for the rps.Analytic_AAlgorithm class.
  *
  *
- * @author	Bob Jacobsen Copyright 2008
+ * @author Bob Jacobsen Copyright 2008
  */
 public class Analytic_AAlgorithmTest extends AbstractAlgorithmTestBase {
 

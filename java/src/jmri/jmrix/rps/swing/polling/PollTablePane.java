@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Pane for user management of RPS polling.
  *
- * @author	Bob Jacobsen Copyright (C) 2008
+ * @author Bob Jacobsen Copyright (C) 2008
  */
 public class PollTablePane extends javax.swing.JPanel {
 
@@ -169,14 +169,12 @@ public class PollTablePane extends javax.swing.JPanel {
     void setDefaults() {
         try {
             File file = new File(PollingFile.defaultFilename());
-            if (log.isInfoEnabled()) {
-                log.info("located file " + file + " for store");
-            }
+            log.info("located file {} for store", file);
             // handle the file
             Engine.instance().storePollConfig(file);
             modifiedFlag.setModifiedFlag(false);
         } catch (Exception e) {
-            log.error("exception during storeDefault: " + e);
+            log.error("exception during storeDefault: ", e);
         }
     }
 
@@ -205,7 +203,7 @@ public class PollTablePane extends javax.swing.JPanel {
      */
     void updateInterval() {
         int interval = Integer.parseInt(delay.getText());
-        log.debug("set interval to " + interval);
+        log.debug("set interval to {}", interval);
         Engine.instance().setPollingInterval(interval);
     }
 

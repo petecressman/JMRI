@@ -1,18 +1,18 @@
 package jmri.jmrit.operations.rollingstock.engines.tools;
 
 import java.awt.GraphicsEnvironment;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.swing.JemmyUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class ExportEnginesTest extends OperationsTestCase {
 
@@ -44,23 +44,12 @@ public class ExportEnginesTest extends OperationsTestCase {
             return export.getState().equals(Thread.State.WAITING);
         }, "wait for prompt");
 
-        JemmyUtil.pressDialogButton(Bundle.getMessage("ExportComplete"), "OK");
+        JemmyUtil.pressDialogButton(Bundle.getMessage("ExportComplete"), Bundle.getMessage("ButtonOK"));
 
         java.io.File file = new java.io.File(ExportEngines.defaultOperationsFilename());
         Assert.assertTrue("Confirm file creation", file.exists());
-    }
+        
 
-    // The minimal setup for log4J
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-    }
-
-    @Override
-    @After
-    public void tearDown() {
-        super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(ExportEnginesTest.class);

@@ -2,31 +2,30 @@ package jmri.jmrix.mrc;
 
 import java.util.Date;
 import jmri.JmriException;
-import jmri.PowerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * PowerManager implementation for controlling layout power
- * <P>
+ * <p>
  * Some of the message formats used in this class are Copyright MRC, Inc. and
  * used with permission as part of the JMRI project. That permission does not
  * extend to uses in other software products. If you wish to use this code,
  * algorithm or these message formats outside of JMRI, please contact Mrc Inc
  * for separate permission.
- * <P>
+ *
  * @author Bob Jacobsen Copyright (C) 2001
  * 
  */
 public class MrcPowerManager
         extends jmri.managers.AbstractPowerManager
-        implements PowerManager, MrcTrafficListener {
+        implements MrcTrafficListener {
 
     public MrcPowerManager(MrcSystemConnectionMemo memo) {
         super(memo);
         // standard Mrc - connect
         if (memo.getMrcTrafficController() == null) {
-            log.error("Power Manager Created, yet there is no Traffic Controller");
+            log.error("PowerManager Created, yet there is no Traffic Controller");
             return;
         }
         this.tc = memo.getMrcTrafficController();
@@ -50,7 +49,7 @@ public class MrcPowerManager
             tc.sendMrcMessage(l);
         }
         power = v;
-        firePropertyChange("Power", old, power); //IN18N
+        firePropertyChange("Power", old, power); // NOI18N
     }
 
     @Override
@@ -85,7 +84,7 @@ public class MrcPowerManager
 
     private void checkTC() throws JmriException {
         if (tc == null) {
-            throw new JmriException("Use power manager after dispose"); //IN18N
+            throw new JmriException("Use power manager after dispose"); // NOI18N
         }
     }
 

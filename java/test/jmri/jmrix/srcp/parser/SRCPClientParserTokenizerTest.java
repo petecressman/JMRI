@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests for the {@link jmri.jmrix.srcp.parser.SRCPClientParserTokenizer} class.
+ * Tests for the jmri.jmrix.srcp.parser.SRCPClientParserTokenizer class.
  *
  * @author Paul Bender
  */
@@ -246,7 +246,6 @@ public class SRCPClientParserTokenizerTest{
         stm.getNextToken();
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

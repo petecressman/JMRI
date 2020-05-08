@@ -14,15 +14,13 @@ import jmri.jmrit.display.palette.IconItemPanel;
 import jmri.jmrit.display.palette.ItemPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import javax.annotation.Nonnull;
 
 /**
  * PositionableLabel is a container for text and icons
  * <P>
- * The positionable parameter is a global, set from outside. The 'fixed'
- * parameter is local, set from the popup here.
- *
- * <a href="doc-files/Heirarchy.png"><img src="doc-files/Heirarchy.png" alt="UML class diagram for package" height="33%" width="33%"></a>
  * @author Bob Jacobsen Copyright (c) 2002
+ * @author Pete Cressman Copyright 2017
  */
 public class PositionableLabel extends Positionable {
 
@@ -120,6 +118,7 @@ public class PositionableLabel extends Positionable {
 
     public void setText(String text) {
         _textString = text;
+        _text = (text != null && !text.isEmpty());
         updateSize();
     }
     
@@ -141,6 +140,7 @@ public class PositionableLabel extends Positionable {
     }
 
     @Override
+    @Nonnull
     public Positionable deepClone() {
         PositionableLabel pos;
         if (_icon) {
@@ -152,7 +152,7 @@ public class PositionableLabel extends Positionable {
         return finishClone(pos);
     }
 
-    protected Positionable finishClone(PositionableLabel pos) {
+    protected @Nonnull Positionable finishClone(@Nonnull PositionableLabel pos) {
         pos._text = _text;
         pos._icon = _icon;
         pos._textString = _textString;
@@ -295,9 +295,7 @@ public class PositionableLabel extends Positionable {
         _iconEditor.setIcon(0, "plainIcon", icon);
         _iconEditor.makeIconPanel(false);
 
-        ActionListener addIconAction = (ActionEvent a) -> {
-            editIcon();
-        };
+        ActionListener addIconAction = (ActionEvent a) -> editIcon();
         _iconEditor.complete(addIconAction, true, false, true);
 
     }
@@ -325,26 +323,23 @@ public class PositionableLabel extends Positionable {
      * @return DisplayFrame for palette item
      */
     public DisplayFrame makePaletteFrame(String title) {
-        jmri.jmrit.display.palette.ItemPalette.loadIcons(_editor);
+        jmri.jmrit.display.palette.ItemPalette.loadIcons();
 
-        DisplayFrame paletteFrame = new DisplayFrame(title, false, false);
-//        paletteFrame.setLocationRelativeTo(this);
-//        paletteFrame.toFront();
-        return paletteFrame;
+        return new DisplayFrame(title, _editor);
     }
 
-    public void initPaletteFrame(DisplayFrame paletteFrame, ItemPanel itemPanel) {
+    public void initPaletteFrame(DisplayFrame paletteFrame, @Nonnull ItemPanel itemPanel) {
         Dimension dim = itemPanel.getPreferredSize();
         JScrollPane sp = new JScrollPane(itemPanel);
         dim = new Dimension(dim.width + 25, dim.height + 25);
         sp.setPreferredSize(dim);
         paletteFrame.add(sp);
         paletteFrame.pack();
-        paletteFrame.setLocation(jmri.util.PlaceWindow.nextTo(_editor, this, paletteFrame));
+        jmri.InstanceManager.getDefault(jmri.util.PlaceWindow.class).nextTo(_editor, this, paletteFrame);
         paletteFrame.setVisible(true);
     }
 
-    public void finishItemUpdate(DisplayFrame paletteFrame, ItemPanel itemPanel) {
+    public void finishItemUpdate(DisplayFrame paletteFrame, @Nonnull ItemPanel itemPanel) {
         itemPanel.closeDialogs();
         paletteFrame.dispose();
         invalidate();
@@ -371,10 +366,8 @@ public class PositionableLabel extends Positionable {
     protected void editIconItem() {
         _paletteFrame = makePaletteFrame(
                 java.text.MessageFormat.format(Bundle.getMessage("EditItem"), Bundle.getMessage("BeanNameTurnout")));
-        _iconItemPanel = new IconItemPanel(_paletteFrame, "Icon", _editor); // NOI18N
-        ActionListener updateAction = (ActionEvent a) -> {
-                updateIconItem();
-         };
+        _iconItemPanel = new IconItemPanel(_paletteFrame, "Icon"); // NOI18N
+        ActionListener updateAction = (ActionEvent a) -> updateIconItem();
         _iconItemPanel.init(updateAction);
         initPaletteFrame(_paletteFrame, _iconItemPanel);
     }
@@ -545,4 +538,5 @@ public class PositionableLabel extends Positionable {
     }
 
     private final static Logger log = LoggerFactory.getLogger(PositionableLabel.class);
+
 }

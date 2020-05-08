@@ -2,13 +2,16 @@ package jmri.jmrix.srcp;
 
 import jmri.JmriException;
 import jmri.PowerManager;
+
+import java.beans.PropertyChangeListener;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * PowerManager implementation for controlling layout power
  *
- * @author	Bob Jacobsen Copyright (C) 2001, 2008
+ * @author Bob Jacobsen Copyright (C) 2001, 2008
  */
 public class SRCPPowerManager implements PowerManager, SRCPListener {
 
@@ -91,6 +94,30 @@ public class SRCPPowerManager implements PowerManager, SRCPListener {
         pcs.removePropertyChangeListener(l);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
+    }
+
     SRCPTrafficController tc = null;
 
     // to listen for status changes from SRCP system
@@ -107,7 +134,7 @@ public class SRCPPowerManager implements PowerManager, SRCPListener {
     @Override
     public void reply(jmri.jmrix.srcp.parser.SimpleNode n) {
         if (log.isDebugEnabled()) {
-            log.debug("reply called with simpleNode " + n.jjtGetValue());
+            log.debug("reply called with simpleNode {}", n.jjtGetValue());
         }
         reply(new SRCPReply(n));
     }

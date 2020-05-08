@@ -1,14 +1,12 @@
 package jmri.jmrix.nce;
 
 import jmri.GlobalProgrammerManager;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * JUnit tests for the NceSystemConnectionMemo class
  *
- * @author	Bob Jacobsen
+ * @author Bob Jacobsen
  */
 public class NceSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
@@ -61,8 +59,10 @@ public class NceSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemo
         memo.configureManagers();
     }
 
+    @After
     @Override
     public void tearDown() {        
+        jmri.util.JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         jmri.util.JUnitUtil.tearDown();
     }
 

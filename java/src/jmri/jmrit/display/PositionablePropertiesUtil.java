@@ -88,9 +88,7 @@ public class PositionablePropertiesUtil {
 
         JButton applyButton = new JButton(Bundle.getMessage("ButtonApply"));
         _buttonArea.add(applyButton);
-        applyButton.addActionListener((ActionEvent e) -> {
-            fontApply();
-        });
+        applyButton.addActionListener((ActionEvent e) -> fontApply());
 
         JButton okButton = new JButton(Bundle.getMessage("ButtonOK"));
         _buttonArea.add(okButton);
@@ -178,7 +176,7 @@ public class PositionablePropertiesUtil {
 
             JColorChooser txtColorChooser = new JColorChooser(defaultForeground);
             txtColorChooser.setPreviewPanel(new JPanel()); // remove the preview panel
-            AbstractColorChooserPanel txtColorPanels[] = { new SplitButtonColorChooserPanel()};
+            AbstractColorChooserPanel[] txtColorPanels = { new SplitButtonColorChooserPanel()};
             txtColorChooser.setChooserPanels(txtColorPanels);
             txtColorChooser.getSelectionModel().addChangeListener(previewChangeListener);
             txtPanel.add(txtColorChooser);
@@ -195,7 +193,7 @@ public class PositionablePropertiesUtil {
             defaultBackground = _parent.getBackground();
             JColorChooser txtBackColorChooser = new JColorChooser(defaultBackground);
             txtBackColorChooser.setPreviewPanel(new JPanel()); // remove the preview panel
-            AbstractColorChooserPanel txtBackColorPanels[] = { new SplitButtonColorChooserPanel()};
+            AbstractColorChooserPanel[] txtBackColorPanels = { new SplitButtonColorChooserPanel()};
             txtBackColorChooser.setChooserPanels(txtBackColorPanels);
             txtBackColorChooser.getSelectionModel().addChangeListener(previewChangeListener);
             txtPanel.add(txtBackColorChooser);
@@ -219,13 +217,9 @@ public class PositionablePropertiesUtil {
         propertiesPanel.addTab(Bundle.getMessage("FontTabTitle"), null, _textPanel, Bundle.getMessage("FontTabTooltip"));
     }
 
-    ActionListener previewActionListener = (ActionEvent actionEvent) -> {
-        preview();
-    };
+    ActionListener previewActionListener = (ActionEvent actionEvent) -> preview();
 
-    ChangeListener spinnerChangeListener = (ChangeEvent actionEvent) -> {
-        preview();
-    };
+    ChangeListener spinnerChangeListener = (ChangeEvent actionEvent) -> preview();
 
     FocusListener textFieldFocus = new FocusListener() {
         @Override
@@ -260,9 +254,7 @@ public class PositionablePropertiesUtil {
         }
     };
 
-    ChangeListener previewChangeListener = (ChangeEvent ce) -> {
-        preview();
-    };
+    ChangeListener previewChangeListener = (ChangeEvent ce) -> preview();
 
     private JColorChooser borderColorChooser = null;
     javax.swing.JSpinner borderSizeTextSpin;
@@ -275,7 +267,7 @@ public class PositionablePropertiesUtil {
         JPanel borderPanel = new JPanel();
 
         borderColorChooser = new JColorChooser(defaultBorderColor);
-        AbstractColorChooserPanel borderColorPanels[] = { new SplitButtonColorChooserPanel()};
+        AbstractColorChooserPanel[] borderColorPanels = { new SplitButtonColorChooserPanel()};
         borderColorChooser.setChooserPanels(borderColorPanels);
         borderColorChooser.setPreviewPanel(new JPanel()); // remove the preview panel
 
@@ -691,7 +683,7 @@ public class PositionablePropertiesUtil {
 
     protected JList<String> fontSizeChoice;
 
-    protected String fontSizes[] = {"6", "8", "10", "11", "12", "14", "16",
+    protected String[] fontSizes = {"6", "8", "10", "11", "12", "14", "16",
         "20", "24", "28", "32", "36"};
 
     javax.swing.JSpinner getSpinner(int value, String tooltip) {

@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Pane for user management of RPS alignment.
  *
- * @author	Bob Jacobsen Copyright (C) 2008
+ * @author Bob Jacobsen Copyright (C) 2008
  */
 public class AlignTablePane extends javax.swing.JPanel {
 
@@ -286,19 +286,19 @@ public class AlignTablePane extends javax.swing.JPanel {
                     if (rc == null) {
                         return null;
                     }
-                    return new Double(rc.getPosition().x);
+                    return Double.valueOf(rc.getPosition().x);
                 case YCOL:
                     rc = Engine.instance().getReceiver(r + 1);
                     if (rc == null) {
                         return null;
                     }
-                    return new Double(rc.getPosition().y);
+                    return Double.valueOf(rc.getPosition().y);
                 case ZCOL:
                     rc = Engine.instance().getReceiver(r + 1);
                     if (rc == null) {
                         return null;
                     }
-                    return new Double(rc.getPosition().z);
+                    return Double.valueOf(rc.getPosition().z);
                 case ACTIVECOL:
                     rc = Engine.instance().getReceiver(r + 1);
                     if (rc == null) {
@@ -397,7 +397,7 @@ public class AlignTablePane extends javax.swing.JPanel {
                     flag.setModifiedFlag(true);
                     break;
                 default:
-                    log.error("setValueAt of column " + c);
+                    log.error("setValueAt of column {}", c);
             }
         }
     }

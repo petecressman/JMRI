@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Carries the reply to an EcosMessage.
- * <P>
+ * <p>
  * Some rudimentary support is provided for the "binary" option.
  *
  * @author Bob Jacobsen Copyright (C) 2001, 2008
@@ -89,7 +89,7 @@ public class EcosReply extends jmri.jmrix.AbstractMRReply {
         try {
             return Integer.parseInt(resultCode);
         } catch (java.lang.NumberFormatException ex) {
-            log.error("Unable to convert result code to a number " + resultCode);
+            log.error("Unable to convert result code to a number {}", resultCode);
             return -1;
         }
     }

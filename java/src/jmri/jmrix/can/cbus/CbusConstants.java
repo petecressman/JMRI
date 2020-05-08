@@ -3,7 +3,7 @@ package jmri.jmrix.can.cbus;
 /**
  * CbusConstants.java
  *
- * Description: Constants to represent CBUS protocol
+ * Constants to represent CBUS protocol
  *
  * @author Andrew Crosland Copyright (C) 2008
  */
@@ -61,7 +61,7 @@ public final class CbusConstants {
     public static final int CBUS_DFNON = 0x49;
     public static final int CBUS_DFNOF = 0x4A;
     public static final int CBUS_SSTAT = 0x4C;
-
+    public static final int CBUS_NNRSM = 0x4F;
     public static final int CBUS_RQNN = 0x50;
     public static final int CBUS_NNREL = 0x51;
     public static final int CBUS_NNACK = 0x52;
@@ -76,7 +76,7 @@ public final class CbusConstants {
     public static final int CBUS_RQDDS = 0x5B;
     public static final int CBUS_BOOTM = 0x5C;
     public static final int CBUS_ENUM = 0x5D;
-
+    public static final int CBUS_NNRST = 0x5E;
     public static final int CBUS_EXTC1 = 0x5F;
 
     // Opcodes with 3 data
@@ -139,7 +139,7 @@ public final class CbusConstants {
     // Opcodes with 6 data
     public static final int CBUS_RDCC5 = 0xC0;
     public static final int CBUS_WCVOA = 0xC1;
-
+    public static final int CBUS_CABDAT = 0xC2;
     public static final int CBUS_FCLK = 0xCF;
 
     public static final int CBUS_ACON2 = 0xD0;
@@ -176,11 +176,32 @@ public final class CbusConstants {
     public static final int CBUS_ASOF3 = 0xF9;
     public static final int CBUS_DDES = 0xFA;
     public static final int CBUS_DDRS = 0xFB;
+    public static final int CBUS_DDWS = 0xFC;
 
     public static final int CBUS_ARSON3 = 0xFD;
     public static final int CBUS_ARSOF3 = 0xFE;
     public static final int CBUS_EXTC6 = 0xFF;
 
+    /**
+     * Extended opcodes, currently only used by the bootloader
+     * <p>
+     * These are all responses from the bootloader
+     */
+    public static final int CBUS_EXT_BOOT_ERROR = 0x00;
+    public static final int CBUS_EXT_BOOT_OK = 0x01;
+    public static final int CBUS_EXT_BOOTC = 0x02;
+    
+    /**
+     * Bootloader commands
+     * 
+     * These are used in the data payload of bootloader control frames.
+     */
+    public static final int CBUS_BOOT_NOP = 0x00;
+    public static final int CBUS_BOOT_RESET = 0x01;
+    public static final int CBUS_BOOT_INIT = 0x02;
+    public static final int CBUS_BOOT_CHECK = 0x03;
+    public static final int CBUS_BOOT_TEST = 0x04;
+   
     /**
      * Programming modes
      */
@@ -218,17 +239,21 @@ public final class CbusConstants {
     public static final int EVENT_ON = 0;
     public static final int EVENT_OFF = 1;
     public static final int EVENT_EITHER = 2;
+    public static final int EVENT_NEITHER = 3;
+    
+    /**
+     * Event directions
+     */
+    public static final int EVENT_DIR_UNSET = 0;
+    public static final int EVENT_DIR_IN = 1;
+    public static final int EVENT_DIR_OUT = 2;
+    public static final int EVENT_DIR_EITHER = 3;
 
     /**
      * CBUS Priorities
      */
     public static final int DEFAULT_DYNAMIC_PRIORITY = 2;
     public static final int DEFAULT_MINOR_PRIORITY = 3;
-
-    /**
-     * Event Table
-     */
-    public static final int MAX_TABLE_EVENTS = 5000;
 
     /**
      * Function bits for group1

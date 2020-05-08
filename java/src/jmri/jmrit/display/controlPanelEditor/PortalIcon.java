@@ -7,14 +7,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.swing.AbstractAction;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-import jmri.InstanceManager;
-import jmri.NamedBean;
-import jmri.NamedBeanHandle;
-import jmri.NamedBeanHandleManager;
+
 import jmri.jmrit.catalog.NamedIcon;
 import jmri.jmrit.display.CoordinateEdit;
 import jmri.jmrit.display.Editor;
@@ -36,8 +34,8 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
     public static final String TO_ARROW = "toArrow";
     public static final String FROM_ARROW = "fromArrow";
 
-    private NamedBeanHandle<Portal> _portalHdl;
     private HashMap<String, NamedIcon> _iconMap;
+    private Portal _portal;
     private String _status;
     private boolean _regular = true; // true when TO_ARROW shows entry into ToBlock
     private boolean _hide = false; // true when arrow should NOT show entry into ToBlock
@@ -93,7 +91,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
     // Called from EditPortalDirection frame in CircuitBuilder
     protected void setIcon(String name, NamedIcon ic) {
         if (log.isDebugEnabled()) {
-            log.debug("Icon " + getPortal().getName() + " put icon key= \"" + name + "\" icon= " + ic);
+            log.debug("Icon {} put icon key= \"{}\" icon= {}", getPortal().getName(), name, ic);
         }
         NamedIcon icon = new NamedIcon(ic, this);
         _iconMap.put(name, icon);
@@ -106,7 +104,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
     // Called from EditPortalDirection frame in CircuitBuilder
     public void setArrowOrientatuon(boolean set) {
         if (log.isDebugEnabled()) {
-            log.debug("Icon " + getPortal().getName() + " setArrowOrientatuon regular=" + set + " from " + _regular);
+            log.debug("Icon {} setArrowOrientatuon regular={} from {}", getPortal().getName(), set, _regular);
         }
         _regular = set;
     }
@@ -114,7 +112,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
     // Called from EditPortalDirection frame in CircuitBuilder
     public void setHideArrows(boolean set) {
         if (log.isDebugEnabled()) {
-            log.debug("Icon " + getPortal().getName() + " setHideArrows hide=" + set + " from " + _hide);
+            log.debug("Icon {} setHideArrows hide={} from {}", getPortal().getName(), set, _hide);
         }
         _hide = set;
     }
@@ -128,10 +126,7 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
     }
 
     public Portal getPortal() {
-        if (_portalHdl == null) {
-            return null;
-        }
-        return _portalHdl.getBean();
+        return _portal;
     }
 
     @SuppressFBWarnings(value="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification="Portals always have userNames")
@@ -139,20 +134,12 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
         if (portal == null) {
             return;
         }
-        if (_portalHdl != null) {
-            Portal port = getPortal();
-            if (port.equals(portal)) {
-                return;
-            } else {
-                port.removePropertyChangeListener(this);
-            }
+        if (_portal != null) {
+            _portal.removePropertyChangeListener(this);
         }
-        // Portals always have userNames
-        _portalHdl = InstanceManager.getDefault(NamedBeanHandleManager.class)
-                .getNamedBeanHandle(portal.getUserName(), portal);
-        portal.addPropertyChangeListener(this);
-        setName(portal.getName());
-        setToolTip(new ToolTip(portal.getDescription(), 0, 0));
+        _portal = portal;
+        _portal.addPropertyChangeListener(this);
+        setToolTip(new ToolTip(_portal.getDescription(), 0, 0));
     }
 
     public void setStatus(String status) {
@@ -167,10 +154,10 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
         return _status;
     }
 
-    /* currently Portals do not have an instance manager - !!!todo? */
     @Override
-    public NamedBean getNamedBean() {
-        return getPortal();
+    public boolean remove() {
+        ((ControlPanelEditor)_editor).getCircuitBuilder().deletePortalIcon(this);
+        return super.remove();
     }
 
     public void displayState(int state) {
@@ -207,7 +194,8 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
 //        if (log.isDebugEnabled()) log.debug("Icon "+getPortal().getName()+" PropertyChange= "+e.getPropertyName()+
 //          " oldValue= "+e.getOldValue().toString()+" newValue= "+e.getNewValue().toString());
         if (source instanceof Portal) {
-            if ("Direction".equals(e.getPropertyName())) {
+            String propertyName = e.getPropertyName();
+            if ("Direction".equals(propertyName)) {
                 if (_hide) {
                     setStatus(HIDDEN);
                     return;
@@ -225,17 +213,19 @@ public class PortalIcon extends PositionableLabel implements PropertyChangeListe
                     default:
                         log.warn("Unhandled portal value: {}", e.getNewValue() );
                 }
-            } else if ("UserName".equals(e.getPropertyName())) {
+            } else if ("NameChange".equals(propertyName)) {
                 setName((String) e.getNewValue());
-                ((ControlPanelEditor) getEditor()).getCircuitBuilder().changePortalName(
-                        (String) e.getOldValue(), (String) e.getNewValue());
+            } else if ("portalDelete".equals(propertyName)) {
+                remove();
             }
         }
     }
 
     @Override
     public String getNameString() {
-        return getPortal().getDescription();
+        Portal p = getPortal();
+        if (p == null) return "No Portal Defined";
+        return p.getDescription();
     }
 
     /**

@@ -7,9 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * <P>
- * Tests for XBeeAdapter
- * </P>
+ * Tests for XBeeAdapter.
+ *
  * @author Paul Bender Copyright (C) 2016
  */
 public class XBeeAdapterTest {
@@ -20,7 +19,6 @@ public class XBeeAdapterTest {
        Assert.assertNotNull(a);
    }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -30,6 +28,5 @@ public class XBeeAdapterTest {
     public void tearDown() {
         JUnitUtil.tearDown();
     }
-
 
 }

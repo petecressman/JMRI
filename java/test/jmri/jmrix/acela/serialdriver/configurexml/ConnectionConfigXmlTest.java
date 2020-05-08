@@ -1,30 +1,33 @@
 package jmri.jmrix.acela.serialdriver.configurexml;
 
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import jmri.jmrix.acela.serialdriver.ConnectionConfig;
 
 /**
  * ConnectionConfigXmlTest.java
  *
- * Description: tests for the ConnectionConfigXml class
+ * Test for the ConnectionConfigXml class
  *
  * @author   Paul Bender  Copyright (C) 2016
  */
 public class ConnectionConfigXmlTest extends jmri.jmrix.configurexml.AbstractSerialConnectionConfigXmlTestBase {
 
-    // The minimal setup for log4J
     @Before
+    @Override
     public void setUp() {
         JUnitUtil.setUp();
         xmlAdapter = new ConnectionConfigXml();
+        cc = new ConnectionConfig();
     }
 
     @After
+    @Override
     public void tearDown() {
+        JUnitUtil.clearShutDownManager(); // put in place because AbstractMRTrafficController implementing subclass was not terminated properly
         JUnitUtil.tearDown();
+
         xmlAdapter = null;
+        cc = null;
     }
 }

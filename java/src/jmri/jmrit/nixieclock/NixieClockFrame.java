@@ -16,7 +16,7 @@ import jmri.util.JmriJFrame;
 
 /**
  * Frame providing a simple clock showing Nixie tubes.
- * <P>
+ * <p>
  * A Run/Stop button is built into this, but because I don't like the way it
  * looks, it's not currently displayed in the GUI.
  *
@@ -142,16 +142,8 @@ public class NixieClockFrame extends JmriJFrame implements java.beans.PropertyCh
         }
         Image scaledImage = baseColon.getImage().getScaledInstance(iconWidth / 2, iconHeight, Image.SCALE_SMOOTH);
         colonIcon.setImage(scaledImage);
-
-//      Ugly hack to force frame to redo the layout.
-//      Without this the image is scaled but the label size and position doesn't change.
-//      doLayout() doesn't work either
-        this.setVisible(false);
-        this.remove(b);
-        if (clock.getShowStopButton()) {
-            this.getContentPane().add(b); // pick up clock prefs choice
-        }
-        this.setVisible(true);
+        // update the images on screen
+        this.getContentPane().revalidate();
         return;
     }
 

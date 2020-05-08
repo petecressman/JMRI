@@ -138,7 +138,7 @@ public class ConstantValue extends VariableValue {
             updateRepresentation(b);
             return b;
         } else {
-            log.error("Did not recognize a value format: " + format);
+            log.error("Did not recognize a value format: {}", format);
             return null;
         }
     }
@@ -198,7 +198,7 @@ public class ConstantValue extends VariableValue {
 
     /**
      * Skip actually reading, but set states and notifications anyway.
-     * <P>
+     * <p>
      * This sets the state to READ so that you can have algorithms like "write
      * all variables that aren't in READ state" This is different from the
      * 'normal' VariableValue objects, which rely on the associated CV objects
@@ -217,7 +217,7 @@ public class ConstantValue extends VariableValue {
 
     /**
      * Skip actually writing, but set states and notifications anyway.
-     * <P>
+     * <p>
      * This sets the state to STORED so that you can have algorithms like "write
      * all variables that aren't in STORED state" This is different from the
      * 'normal' VariableValue objects, which rely on the associated CV objects
@@ -236,7 +236,7 @@ public class ConstantValue extends VariableValue {
 
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
-        log.warn("Unexpected propertyChange: " + e);
+        log.warn("Unexpected propertyChange: {}", e);
     }
 
     // clean up connections when done

@@ -1,14 +1,12 @@
 package jmri.jmrix.xpa;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
+import jmri.util.junit.annotations.NotApplicable;
 
 /**
- * Description:	tests for the jmri.jmrix.xpa.XpaPowerManager class
- * <P>
- * @author	Paul Bender
+ * Tests for the jmri.jmrix.xpa.XpaPowerManager class.
+ *
+ * @author Paul Bender
  */
 public class XpaPowerManagerTest extends jmri.jmrix.AbstractPowerManagerTestBase {
 
@@ -69,17 +67,16 @@ public class XpaPowerManagerTest extends jmri.jmrix.AbstractPowerManagerTestBase
 
     @Test
     @Override
-    @Ignore("unsolicited state changes are currently ignored")
+    @NotApplicable("no unsolicited changes")
     public void testStateOn() {
     }
 
     @Test
     @Override
-    @Ignore("unsolicited state changes are currently ignored")
+    @NotApplicable("no unsolicited changes")
     public void testStateOff() {
     }
 
-    // The minimal setup for log4J
     @Before
     @Override
     public void setUp() {

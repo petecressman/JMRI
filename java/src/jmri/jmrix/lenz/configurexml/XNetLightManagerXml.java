@@ -6,10 +6,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Provides load and store functionality for configuring XNetLightManagers.
- * <P>
+ * <p>
  * Uses the store method from the abstract base class, but provides a load
  * method here.
- * <P>
+ *
  * @author Dave Duchamp Copyright (c) 2006
  */
 public class XNetLightManagerXml extends jmri.managers.configurexml.AbstractLightManagerConfigXML {
@@ -34,6 +34,6 @@ public class XNetLightManagerXml extends jmri.managers.configurexml.AbstractLigh
         return loadLights(shared);
     }
 
-    private final static Logger log = LoggerFactory.getLogger(XNetLightManagerXml.class);
+    private static final Logger log = LoggerFactory.getLogger(XNetLightManagerXml.class);
 
 }

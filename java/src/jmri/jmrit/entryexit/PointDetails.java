@@ -249,7 +249,7 @@ public class PointDetails {
     }
 
     public void setRefObject(NamedBean refObs) {
-        List<LayoutEditor> panels = jmri.jmrit.display.PanelMenu.instance().
+        List<LayoutEditor> panels = InstanceManager.getDefault(jmri.jmrit.display.PanelMenu.class).
                 getLayoutEditorPanelList();
         for (LayoutEditor pnl : panels) {
             if (refLoc == null) {
@@ -287,15 +287,15 @@ public class PointDetails {
                 }
             }
         }
-        if (refLoc != null) {
-            if (refLoc instanceof PositionablePoint) {
-                //((PositionablePoint)refLoc).addPropertyChangeListener(this);
-            } else if (refLoc instanceof LayoutTurnout) {  //<== this includes LayoutSlips
-                //((LayoutTurnout)refLoc).addPropertyChangeListener(this);
-            } else if (refLoc instanceof LevelXing) {
-                //((LevelXing)refLoc).addPropertyChangeListener(this);
-            }
-        }
+//        if (refLoc != null) {
+//            if (refLoc instanceof PositionablePoint) {
+//                //((PositionablePoint)refLoc).addPropertyChangeListener(this);
+//            } else if (refLoc instanceof LayoutTurnout) {  //<== this includes LayoutSlips
+//                //((LayoutTurnout)refLoc).addPropertyChangeListener(this);
+//            } else if (refLoc instanceof LevelXing) {
+//                //((LevelXing)refLoc).addPropertyChangeListener(this);
+//            }
+//        }
         //With this set ref we can probably add a listener to it, so that we can detect when a change to the point details takes place
     }
 
@@ -363,7 +363,7 @@ public class PointDetails {
             }
         }
         ButtonTimeOut t = new ButtonTimeOut();
-        nxButtonTimeOutThr = new Thread(t, "NX Button Timeout " + getSensor().getDisplayName());  // NOI18N
+        nxButtonTimeOutThr = jmri.util.ThreadingUtil.newThread(t, "NX Button Timeout " + getSensor().getDisplayName());  // NOI18N
 
         nxButtonTimeOutThr.start();
     }
@@ -434,7 +434,11 @@ public class PointDetails {
         }
     }
 
-    Sensor getSensor() {
+    /**
+     * @since 4.17.6
+     * Making the source object available for scripting in Jython.
+     */
+    public Sensor getSensor() {
         if (getRefObject() == null) {
             return null;
         }

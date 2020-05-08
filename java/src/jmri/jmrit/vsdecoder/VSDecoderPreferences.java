@@ -3,20 +3,18 @@ package jmri.jmrit.vsdecoder;
 /*
  * <hr>
  * This file is part of JMRI.
- * <P>
+ * <p>
  * JMRI is free software; you can redistribute it and/or modify it under 
  * the terms of version 2 of the GNU General Public License as published 
  * by the Free Software Foundation. See the "COPYING" file for a copy
  * of this license.
- * <P>
+ * <p>
  * JMRI is distributed in the hope that it will be useful, but WITHOUT 
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
  * for more details.
- * <P>
  *
  * @author   Mark Underwood Copyright (C) 2011
- * 
  */
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -85,7 +83,7 @@ public class VSDecoderPreferences {
             log.info("Did not find VSDecoder preferences file.  This is normal if you haven't save the preferences before");
             root = null;
         } catch (JDOMException | RuntimeException e) {
-            log.error("Exception while loading VSDecoder preferences: " + e);
+            log.error("Exception while loading VSDecoder preferences: {}", e);
             root = null;
         }
         if (root != null) {
@@ -198,7 +196,7 @@ public class VSDecoderPreferences {
                 log.error("createNewFile failed");
             }
         } catch (IOException | RuntimeException exp) {
-            log.error("Exception while writing the new VSDecoder preferences file, may not be complete: " + exp);
+            log.error("Exception while writing the new VSDecoder preferences file, may not be complete: {}", exp);
         }
 
         try {
@@ -215,7 +213,7 @@ public class VSDecoderPreferences {
             root.setContent(store());
             xf.writeXML(file, doc);
         } catch (IOException | RuntimeException ex) { // TODO fix null value for Attribute
-            log.warn("Exception in storing vsdecoder preferences xml: " + ex);
+            log.warn("Exception in storing vsdecoder preferences xml: {}", ex);
         }
     }
 
@@ -252,7 +250,7 @@ public class VSDecoderPreferences {
     }
 
     public ListeningSpot getListenerPosition() {
-        log.debug("getListenerPosition() : " + _listenerPosition.toString());
+        log.debug("getListenerPosition() : {}", _listenerPosition.toString());
         return (_listenerPosition);
     }
 
@@ -288,7 +286,7 @@ public class VSDecoderPreferences {
         Iterator<Map.Entry<AudioMode, String>> idi = ids.iterator();
         while (idi.hasNext()) {
             Map.Entry<AudioMode, String> e = idi.next();
-            log.debug("    ID = " + e.getKey() + " Val = " + e.getValue());
+            log.debug("    ID = {} Val = {}", e.getKey(), e.getValue());
             if (e.getValue().equals(am)) {
                 _audioMode = e.getKey();
                 return;

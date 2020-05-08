@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import jmri.InstanceManager;
 import jmri.Light;
+import jmri.NamedBean.DisplayOptions;
 import jmri.jmrit.catalog.NamedIcon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,8 +142,7 @@ public class LightIcon extends PositionableIcon implements java.beans.PropertyCh
     @Override
     public void propertyChange(java.beans.PropertyChangeEvent e) {
         if (log.isDebugEnabled()) {
-            log.debug("property change: " + getNameString() + " " + e.getPropertyName() + " is now "
-                    + e.getNewValue());
+            log.debug("property change: {} {} is now {}", getNameString(), e.getPropertyName(), e.getNewValue());
         }
 
         if (e.getPropertyName().equals("KnownState")) {
@@ -156,10 +156,8 @@ public class LightIcon extends PositionableIcon implements java.beans.PropertyCh
         String name;
         if (light == null) {
             name = Bundle.getMessage("NotConnected");
-        } else if (light.getUserName() != null) {
-            name = light.getUserName() + " (" + light.getSystemName() + ")";
         } else {
-            name = light.getSystemName();
+            name = light.getDisplayName(DisplayOptions.USERNAME_SYSTEMNAME);
         }
         return name;
     }
@@ -175,9 +173,7 @@ public class LightIcon extends PositionableIcon implements java.beans.PropertyCh
         _iconEditor.setIcon(1, "BeanStateUnknown", unknown);
         _iconEditor.makeIconPanel(false);
 
-        ActionListener addIconAction = (ActionEvent a) -> {
-            updateLight();
-        };
+        ActionListener addIconAction = (ActionEvent a) -> updateLight();
         _iconEditor.complete(addIconAction, true, true, true);
         _iconEditor.setSelection(light);
     }
@@ -251,7 +247,7 @@ public class LightIcon extends PositionableIcon implements java.beans.PropertyCh
             return;
         }
         if (log.isDebugEnabled()) {
-            log.debug("doMouseClicked state= " + light.getState());
+            log.debug("doMouseClicked state= {}", light.getState());
         }
         if (light.getState() == jmri.Light.OFF) {
             light.setState(jmri.Light.ON);

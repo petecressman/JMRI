@@ -90,20 +90,12 @@ public abstract class PositionableShape extends Positionable implements Property
     }
 
     public void setWidth(int w) {
-        if (w > SIZE) {
-            _width = w;
-        } else {
-            _width = SIZE;
-        }
+        _width = Math.max(w, SIZE);
         invalidateShape();
     }
 
     public void setHeight(int h) {
-        if (h > SIZE) {
-            _height = h;
-        } else {
-            _height = SIZE;
-        }
+        _height = Math.max(h, SIZE);
         invalidateShape();
     }
 
@@ -348,9 +340,7 @@ public abstract class PositionableShape extends Positionable implements Property
             Sensor sensor = sensorManager.get().getSensor(pName);
             Optional<NamedBeanHandleManager> nbhm = InstanceManager.getOptionalDefault(NamedBeanHandleManager.class);
             if (sensor != null) {
-                if (nbhm.isPresent()) {
-                    _controlSensor = nbhm.get().getNamedBeanHandle(pName, sensor);
-                }
+                nbhm.ifPresent(namedBeanHandleManager -> _controlSensor = namedBeanHandleManager.getNamedBeanHandle(pName, sensor));
             } else {
                 msg = Bundle.getMessage("badSensorName", pName); // NOI18N
             }

@@ -203,8 +203,7 @@ public abstract class PositionableShapeXml extends PositionableJComponentXml {
         try {
             Attribute attr = element.getAttribute(name);
             if (attr != null) {
-                int num = attr.getIntValue();
-                return num;
+                return attr.getIntValue();
             }
         } catch (DataConversionException e) {
             log.error("failed to convert integer attribute for {} - {}", name, e);
@@ -216,8 +215,7 @@ public abstract class PositionableShapeXml extends PositionableJComponentXml {
         try {
             Attribute attr = element.getAttribute(name);
             if (attr != null) {
-                float num = attr.getFloatValue();
-                return num;
+                return attr.getFloatValue();
             }
         } catch (DataConversionException e) {
             log.error("failed to convert integer attribute for {} - {}", name, e);

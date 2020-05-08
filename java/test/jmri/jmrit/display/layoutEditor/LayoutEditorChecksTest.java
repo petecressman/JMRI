@@ -5,32 +5,37 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
+import jmri.util.JUnitUtil;
+
 import java.awt.GraphicsEnvironment;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class LayoutEditorChecksTest {
 
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
-        LayoutEditor le = new LayoutEditor("Test Layout");
+        LayoutEditor le = new LayoutEditor("Layout Editor Checks Test Layout");
         LayoutEditorChecks t = new LayoutEditorChecks(le);
-        Assert.assertNotNull("exists",t);
+        Assert.assertNotNull("exists", t);
+        JUnitUtil.dispose(le);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
-        jmri.util.JUnitUtil.setUp();
-        jmri.util.JUnitUtil.resetProfileManager();
+        JUnitUtil.setUp();
+        JUnitUtil.resetProfileManager();
+        JUnitUtil.initConfigureManager();
     }
 
     @After
     public void tearDown() {
-        jmri.util.JUnitUtil.tearDown();
+        JUnitUtil.deregisterBlockManagerShutdownTask();
+        JUnitUtil.tearDown();
     }
 
 }

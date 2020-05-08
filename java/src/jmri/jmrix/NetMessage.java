@@ -6,11 +6,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a single general command or response.
- * <P>
+ * <p>
  * Content is represented with ints to avoid the problems with sign-extension
  * that bytes have, and because a Java char is actually a variable number of
  * bytes in Unicode.
- * <P>
+ * <p>
  * Both a set of indexed contents, an opcode, and a length field are available.
  * Different implementations will map the opcode and length into the contents in
  * different ways. They may not appear at all...
@@ -27,7 +27,7 @@ public abstract class NetMessage implements Serializable {
      */
     public NetMessage(int len) {
         if (len < 0) {
-            log.error("invalid length in call to ctor: " + len);
+            log.error("invalid length in call to ctor: {}", len);
         }
         mNDataBytes = len;
         mDataBytes = new int[len];
@@ -57,18 +57,14 @@ public abstract class NetMessage implements Serializable {
 
     public int getElement(int n) {
         if (n < 0 || n >= mDataBytes.length) {
-            log.error("illegal get element " + n
-                    + " in message of " + mDataBytes.length
-                    + " elements: " + this.toString());
+            log.error("illegal get element {} in message of {} elements: {}", n, mDataBytes.length, this.toString());
         }
         return mDataBytes[n];
     }
 
     public void setElement(int n, int v) {
         if (n < 0 || n >= mDataBytes.length) {
-            log.error("illegal set element " + n
-                    + " in message of " + mDataBytes.length
-                    + " elements: " + this.toString());
+            log.error("illegal set element {} in message of {} elements: {}", n, mDataBytes.length, this.toString());
         }
         mDataBytes[n] = v;
     }
@@ -104,8 +100,7 @@ public abstract class NetMessage implements Serializable {
 
     static protected int highByte(int val) {
         if ((val & (~0xFFFF)) != 0) {
-            log.error("highByte called with too large value: "
-                    + Integer.toHexString(val));
+            log.error("highByte called with too large value: {}", Integer.toHexString(val));
         }
         return (val & 0xFF00) / 256;
     }

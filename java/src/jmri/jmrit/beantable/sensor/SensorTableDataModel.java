@@ -1,6 +1,6 @@
 package jmri.jmrit.beantable.sensor;
 
-import apps.gui.GuiLafPreferencesManager;
+import jmri.util.gui.GuiLafPreferencesManager;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
@@ -477,11 +477,7 @@ public class SensorTableDataModel extends BeanTableDataModel<Sensor> {
     /**
      * Visualize state in table as a graphic, customized for Sensors (2 states).
      * Renderer and Editor are identical, as the cell contents are not actually
-     * edited, only used to toggle state using {@link #clickOn(NamedBean)}.
-     *
-     * @see jmri.jmrit.beantable.BlockTableAction#createModel()
-     * @see jmri.jmrit.beantable.LightTableAction#createModel()
-     * @see jmri.jmrit.beantable.TurnoutTableAction#createModel()
+     * edited, only used to toggle state using {@link #clickOn}.
      */
     class ImageIconRenderer extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
 

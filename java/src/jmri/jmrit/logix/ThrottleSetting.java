@@ -100,8 +100,10 @@ public class ThrottleSetting {
                 Warrant w = InstanceManager.getDefault(jmri.jmrit.logix.WarrantManager.class).provideWarrant(name);
                 _namedHandle = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(name, w);                        
             } else {
-                OBlock b = InstanceManager.getDefault(jmri.jmrit.logix.OBlockManager.class).provideOBlock(name);
-                _namedHandle = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(name, b);            
+                OBlock b = InstanceManager.getDefault(jmri.jmrit.logix.OBlockManager.class).getOBlock(name);
+                if (b != null) {
+                    _namedHandle = InstanceManager.getDefault(NamedBeanHandleManager.class).getNamedBeanHandle(name, b);            
+                }
             }            
         } catch (IllegalArgumentException iae) {
             log.error(iae.toString());
@@ -148,5 +150,5 @@ public class ThrottleSetting {
         return sb.toString();
     }
     
-    private final static Logger log = LoggerFactory.getLogger(ThrottleSetting.class);
+    private static final Logger log = LoggerFactory.getLogger(ThrottleSetting.class);
 }

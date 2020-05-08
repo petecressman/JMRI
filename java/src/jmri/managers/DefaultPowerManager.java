@@ -1,12 +1,14 @@
 package jmri.managers;
 
+import java.beans.PropertyChangeListener;
+
 import jmri.JmriException;
 import jmri.PowerManager;
 
 /**
  * Default implementation for controlling layout power
  *
- * @author	Bob Jacobsen Copyright (C) 2001, 2008, 2010
+ * @author Bob Jacobsen Copyright (C) 2001, 2008, 2010
  */
 public class DefaultPowerManager implements PowerManager {
 
@@ -52,6 +54,26 @@ public class DefaultPowerManager implements PowerManager {
     @Override
     public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         pcs.removePropertyChangeListener(l);
+    }
+
+    @Override
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners() {
+        return pcs.getPropertyChangeListeners();
+    }
+
+    @Override
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        return pcs.getPropertyChangeListeners(propertyName);
+    }
+
+    @Override
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
     }
 
 }

@@ -1,6 +1,11 @@
 package jmri.jmrit.operations.locations.tools;
 
 import java.awt.GraphicsEnvironment;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Test;
+
 import jmri.InstanceManager;
 import jmri.jmrit.operations.OperationsTestCase;
 import jmri.jmrit.operations.locations.Location;
@@ -10,11 +15,6 @@ import jmri.jmrit.operations.rollingstock.cars.CarRoads;
 import jmri.util.JUnitOperationsUtil;
 import jmri.util.JUnitUtil;
 import jmri.util.swing.JemmyUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  *
@@ -25,6 +25,8 @@ public class TrackRoadEditFrameTest extends OperationsTestCase {
     @Test
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        
+        JUnitOperationsUtil.initOperationsData();
         TrackRoadEditFrame t = new TrackRoadEditFrame();
         Assert.assertNotNull("exists", t);
 
@@ -36,11 +38,14 @@ public class TrackRoadEditFrameTest extends OperationsTestCase {
         Assert.assertTrue(t.isVisible());
 
         JUnitUtil.dispose(t);
+
     }
 
     @Test
     public void testFrameButtons() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
+        
+        JUnitOperationsUtil.initOperationsData();
         TrackRoadEditFrame tlef = new TrackRoadEditFrame();
         Assert.assertNotNull("exists", tlef);
 
@@ -57,7 +62,7 @@ public class TrackRoadEditFrameTest extends OperationsTestCase {
         JemmyUtil.enterClickAndLeave(tlef.saveTrackButton);
 
         // error dialog window show appear
-        JemmyUtil.pressDialogButton(tlef, Bundle.getMessage("ErrorNoRoads"), "OK");
+        JemmyUtil.pressDialogButton(tlef, Bundle.getMessage("ErrorNoRoads"), Bundle.getMessage("ButtonOK"));
 
         // only road "AA" is to be accepted
         JemmyUtil.enterClickAndLeave(tlef.addRoadButton);
@@ -73,21 +78,7 @@ public class TrackRoadEditFrameTest extends OperationsTestCase {
         }
 
         JUnitUtil.dispose(tlef);
-    }
 
-    // The minimal setup for log4J
-    @Override
-    @Before
-    public void setUp() {
-        super.setUp();
-
-        JUnitOperationsUtil.initOperationsData();
-    }
-
-    @Override
-    @After
-    public void tearDown() {
-        super.tearDown();
     }
 
     // private final static Logger log = LoggerFactory.getLogger(TrackRoadEditFrameTest.class);

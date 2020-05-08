@@ -35,11 +35,11 @@ public class SprogConnectionTypeListTest {
             "jmri.jmrix.sprog.pi.pisprogone.ConnectionConfig",
             "jmri.jmrix.sprog.pi.pisprogonecs.ConnectionConfig",
             "jmri.jmrix.sprog.pi.pisprognano.ConnectionConfig",
-            "jmri.jmrix.sprog.simulator.ConnectionConfig"},
+            "jmri.jmrix.sprog.simulator.ConnectionConfig",
+            "jmri.jmrix.sprog.SprogCSStreamConnectionConfig"},
             ct.getAvailableProtocolClasses());
    }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Bob Jacobsen Copyright: Copyright (c) 2002
  */
+
 public class SensorIconXml extends PositionableIconXml {
 
     /**
@@ -145,15 +146,15 @@ public class SensorIconXml extends PositionableIconXml {
                 if (icon == null) {
                     icon = ed.loadFailed(msg, iconName);
                     if (icon == null) {
-                        log.info(msg + " removed for url= " + iconName);
+                        log.info("{} removed for url= {}", msg, iconName);
                     }
                 }
             } else {
-                log.warn("did not locate " + key + " icon file for " + name);
+                log.warn("did not locate {} icon file for {}", state, name);
             }
         }
         if (icon == null) {
-            log.info(msg + " removed", msg);
+            log.info("{} removed", msg);
         } else {
             l.setStateIcon(state, icon);
         }
@@ -169,7 +170,7 @@ public class SensorIconXml extends PositionableIconXml {
         Color clrBackground = null;
         List<Element> textList = element.getChildren(key.toLowerCase() + "Text");
         if (log.isDebugEnabled()) {
-            log.debug("Found " + textList.size() + " " + key + " text objects");
+            log.debug("Found {} {}Text objects", textList.size(), state);
         }
         if (textList.size() > 0) {
             Element elem = textList.get(0);

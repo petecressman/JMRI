@@ -13,21 +13,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Extend an ImageIcon to remember the name from which it was created
  * Since Aug 2017 all transformations are done in PaintComponent
- * <p>
- * We store both a "URL" for finding the file this was made from (so we can load
- * this later), plus a shorter "name" for display.
- * <p>
- * These can be persisted by storing their name
- *
- * @see jmri.jmrit.display.configurexml.PositionableLabelXml
- * @author Bob Jacobsen Copyright 2002, 2008
-<<<<<<< HEAD
  * @author Pete Cressman Copyright: Copyright (c) 2009, 2010, 2017
-=======
- * @author Pete Cressman Copyright (c) 2009, 2010
- *
- * Modified by Joe Comuzzi and Larry Allen to rotate animated GIFs
->>>>>>> branch 'master' of https://github.com/JMRI/JMRI
  */
 public class NamedIcon extends ImageIcon {
 
@@ -127,7 +113,7 @@ public class NamedIcon extends ImageIcon {
      *
      * @param name the new name, can be null
      */
-    public void setName(@Nullable String name) {
+    public void setName(@CheckForNull String name) {
         mName = name;
     }
 
@@ -147,12 +133,21 @@ public class NamedIcon extends ImageIcon {
      *
      * @param url the URL associated with this icon
      */
-    public void setURL(@Nullable String url) {
+    public void setURL(@CheckForNull String url) {
         mURL = url;
     }
 
     private String mName = null;
     private String mURL = null;
+
+    public void scale(double scale) {
+        int newWidth = (int)scale*getIconWidth();
+        int newHeight = (int)scale*getIconHeight();
+        Image img = getImage() ;  
+        Image newImage = img.getScaledInstance( newWidth, newHeight,  java.awt.Image.SCALE_SMOOTH ) ;  
+        setImage(newImage);        
+    }
+
     private final static Logger log = LoggerFactory.getLogger(NamedIcon.class);
 
 }

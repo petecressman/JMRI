@@ -16,29 +16,28 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import jmri.jmrit.vsdecoder.VSDecoderManager;
 import jmri.jmrit.vsdecoder.VSDecoderPreferences;
 import jmri.util.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/*
+/**
  * <hr>
  * This file is part of JMRI.
- * <P>
+ * <p>
  * JMRI is free software; you can redistribute it and/or modify it under 
  * the terms of version 2 of the GNU General Public License as published 
  * by the Free Software Foundation. See the "COPYING" file for a copy
  * of this license.
- * <P>
+ * <p>
  * JMRI is distributed in the hope that it will be useful, but WITHOUT 
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License 
  * for more details.
- * <P>
  *
  * @author   Mark Underwood Copyright (C) 2011
- * 
  */
 class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyChangeListener {
 
@@ -161,7 +160,7 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
         });
         jbSave.setVisible(false);
 
-        jbCancel.setText(Bundle.getMessage("VSDecoderPrefsReset"));
+        jbCancel.setText(Bundle.getMessage("ButtonCancel"));
         jbCancel.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -291,6 +290,7 @@ class VSDecoderPreferencesPane extends javax.swing.JPanel implements PropertyCha
             path = VSDecoderManager.instance().getVSDecoderPreferences().getDefaultVSDFilePath();
         }
         final JFileChooser fc = new JFileChooser(path);
+        fc.setFileFilter(new FileNameExtensionFilter(Bundle.getMessage("LoadVSDFileChooserFilterLabel"), "vsd", "zip")); // NOI18N
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         int rv = fc.showOpenDialog(this);
         if (rv == JFileChooser.APPROVE_OPTION) {

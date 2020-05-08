@@ -2,12 +2,7 @@ package apps;
 
 import java.awt.GraphicsEnvironment;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  *
@@ -16,14 +11,13 @@ import org.junit.Test;
 public class AppsTest {
 
     @Test
-    @Ignore("Causes Exception")
+    @Ignore("Test emits an (unknown) error message on Appveyor")
     public void testCTor() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
         Apps t = new Apps();
         Assert.assertNotNull("exists", t);
     }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

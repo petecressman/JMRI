@@ -238,15 +238,14 @@ public class SE8cSignalHeadTest {
     LocoNetSystemConnectionMemo memo;
     boolean propChangeFlag;
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
 
         JUnitUtil.resetProfileManager();
 
-        lnis = new LocoNetInterfaceScaffold();
         memo = new jmri.jmrix.loconet.LocoNetSystemConnectionMemo();
+        lnis = new LocoNetInterfaceScaffold(memo);
         memo.setLnTrafficController(lnis);
         jmri.InstanceManager.store(lnis, jmri.jmrix.loconet.LnTrafficController.class);
         jmri.InstanceManager.setDefault(jmri.jmrix.loconet.LnTrafficController.class, lnis);
@@ -259,6 +258,7 @@ public class SE8cSignalHeadTest {
 
     @After
     public void tearDown() {
+        memo.dispose();
         JUnitUtil.tearDown();
     }
 

@@ -6,13 +6,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
-* A data structure of the parameters needs to display the
-* state of a multi-state panel object, such as a NamedBean.
+* A data structure of the parameters needed to display the
+* state of a multi-state panel object, such as a turnout, sensor, etc.
+* @author Pete Cressman Copyright (C) 2018
 */
 public class DisplayState {
 
-    private String _textString;
-    private NamedIcon _namedIcon;
+    private String _textString;    // state name
+    private NamedIcon _namedIcon;  // state icon
 
     private Color _foregroundColor = null;
     private Color _backgroundColor = null;
@@ -93,5 +94,5 @@ public class DisplayState {
         pos.setBorderColor(_borderColor);
     }
 
-    private final static Logger log = LoggerFactory.getLogger(DisplayState.class);
+//    private final static Logger log = LoggerFactory.getLogger(DisplayState.class);
 }

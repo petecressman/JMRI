@@ -7,9 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * <P>
- * Tests for SerialDriverAdapter
- * </P>
+ * Tests for SerialDriverAdapter.
+ *
  * @author Paul Bender Copyright (C) 2016
  */
 public class SerialDriverAdapterTest {
@@ -20,7 +19,6 @@ public class SerialDriverAdapterTest {
        Assert.assertNotNull(a);
    }
 
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();
@@ -30,6 +28,5 @@ public class SerialDriverAdapterTest {
     public void tearDown() {
         JUnitUtil.tearDown();
     }
-
 
 }

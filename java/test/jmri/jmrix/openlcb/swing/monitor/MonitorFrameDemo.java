@@ -8,12 +8,7 @@ import jmri.jmrix.can.CanReply;
 import jmri.jmrix.can.CanSystemConnectionMemo;
 import jmri.jmrix.can.TrafficControllerScaffold;
 import jmri.util.JUnitUtil;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Tests for the jmri.jmrix.can.swing.monitor.MonitorFrame class
@@ -26,18 +21,20 @@ public class MonitorFrameDemo {
     private String testRaw;
     private CanSystemConnectionMemo memo = null;
 
-    class OurScaffold extends TrafficControllerScaffold {
+    static class OurScaffold extends TrafficControllerScaffold {
 
         /*
          * Forward CanMessage to object under test
          */
         public void testMessage(CanMessage f) {
+            // FIXME: must clone, iterator is not threadsafe.
             for (jmri.jmrix.AbstractMRListener c : cmdListeners) {
                 ((CanListener) c).message(f);
             }
         }
 
         public void testReply(CanReply f) {
+            // FIXME: must clone, iterator is not threadsafe.
             for (jmri.jmrix.AbstractMRListener c : cmdListeners) {
                 ((CanListener) c).reply(f);
             }
@@ -47,7 +44,7 @@ public class MonitorFrameDemo {
     private OurScaffold tcs = null;
 
     @Test
-    public void testFireViaAction() throws Exception {
+    public void testFireViaAction() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         new MonitorAction().actionPerformed(null);
@@ -71,7 +68,7 @@ public class MonitorFrameDemo {
 
     @Test
     @Ignore("Duplicates Test in MonitorFrameTest")
-    public void XtestFormatMsg() throws Exception {
+    public void XtestFormatMsg() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         MonitorPane f = new MonitorPane() {
@@ -104,7 +101,7 @@ public class MonitorFrameDemo {
 
     @Test
     @Ignore("Duplicates Test in MonitorFrameTest")
-    public void XtestFormatReply() throws Exception {
+    public void XtestFormatReply() {
         Assume.assumeFalse(GraphicsEnvironment.isHeadless());
 
         MonitorPane f = new MonitorPane() {
@@ -138,9 +135,8 @@ public class MonitorFrameDemo {
         frame.dispose();
     }
 
-    // The minimal setup for log4J
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         JUnitUtil.setUp();
 
         jmri.util.JUnitUtil.initDefaultUserMessagePreferences();
@@ -152,8 +148,13 @@ public class MonitorFrameDemo {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
+        memo.dispose();
+        memo = null;
+        tcs.terminateThreads();
+        tcs = null;
         jmri.util.JUnitUtil.resetWindows(false, false);
         JUnitUtil.tearDown();
+
     }
 }

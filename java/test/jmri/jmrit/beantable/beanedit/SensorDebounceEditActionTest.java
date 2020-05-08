@@ -10,7 +10,7 @@ import org.junit.Test;
 
 /**
  *
- * @author Paul Bender Copyright (C) 2017	
+ * @author Paul Bender Copyright (C) 2017
  */
 public class SensorDebounceEditActionTest {
 
@@ -52,7 +52,7 @@ public class SensorDebounceEditActionTest {
     public void testServiceCalls() {
         SensorDebounceEditAction t = new SensorDebounceEditAction();
 
-        Assert.assertEquals("package.jmri.jmrit.beantable.SensorTable", t.helpTarget());
+        Assert.assertEquals("package.jmri.jmrit.beantable.SensorAddEdit", t.helpTarget());
         Assert.assertEquals("Sensor", t.getBeanType());
         
         t.initPanels();
@@ -62,7 +62,6 @@ public class SensorDebounceEditActionTest {
         
     }
     
-    // The minimal setup for log4J
     @Before
     public void setUp() {
         JUnitUtil.setUp();

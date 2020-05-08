@@ -4,13 +4,12 @@ import jmri.util.JUnitUtil;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 
 /**
  * JUnit tests for the SerialReply class.
  *
- * @author	Bob Jacobsen Copyright 2003, 2008
-  */
+ * @author Bob Jacobsen Copyright 2003, 2008
+ */
 public class SerialReplyTest extends jmri.jmrix.AbstractMessageTestBase {
 
     private SerialReply msg = null;
@@ -70,4 +69,5 @@ public class SerialReplyTest extends jmri.jmrix.AbstractMessageTestBase {
        m = msg = null;
        JUnitUtil.tearDown();
     }
+
 }

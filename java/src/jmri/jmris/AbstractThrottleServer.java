@@ -3,14 +3,8 @@ package jmri.jmris;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import jmri.DccLocoAddress;
-import jmri.DccThrottle;
-import jmri.InstanceManager;
-import jmri.JmriException;
-import jmri.LocoAddress;
-import jmri.Throttle;
-import jmri.ThrottleListener;
-import jmri.ThrottleManager;
+
+import jmri.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +18,7 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
     private static final Logger log = LoggerFactory.getLogger(AbstractThrottleServer.class);
     protected ArrayList<Throttle> throttleList;
 
-    public AbstractThrottleServer() {
+    public AbstractThrottleServer(){
         throttleList = new ArrayList<>();
     }
 
@@ -101,7 +95,7 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
     public void requestThrottle(LocoAddress l) {
         ThrottleManager t = InstanceManager.throttleManagerInstance();
         boolean result;
-        result = t.requestThrottle(l, this); 
+        result = t.requestThrottle(l, this, false); 
         if (!result) {
             try {
                 sendErrorStatus();
@@ -119,7 +113,7 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
      */
     public void releaseThrottle(LocoAddress l) {
         ThrottleManager t = InstanceManager.throttleManagerInstance();
-        t.cancelThrottleRequest(l.getNumber(), this);
+        t.cancelThrottleRequest(l, this);
         if (l instanceof DccLocoAddress) {
             throttleList.forEach(throttle -> {
                 if (throttle.getLocoAddress() == l) {
@@ -135,7 +129,9 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
         }
     }
 
-    // implementation of ThrottleListener
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void notifyThrottleFound(DccThrottle t) {
         throttleList.add(t);
@@ -147,6 +143,9 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void notifyFailedThrottleRequest(LocoAddress address, String reason) {
         try {
@@ -156,10 +155,25 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
         }
     }
 
+    /**
+     * No steal or share decisions made locally
+     * <p>
+     * {@inheritDoc}
+     * @deprecated since 4.15.7; use #notifyDecisionRequired
+     */
     @Override
+    @Deprecated
     public void notifyStealThrottleRequired(LocoAddress address) {
-        // this is an automatically stealing impelementation.
-        InstanceManager.throttleManagerInstance().stealThrottleRequest(address, this, true);
+        InstanceManager.throttleManagerInstance().responseThrottleDecision(address, this, DecisionType.STEAL );
+    }
+
+    /**
+     * No steal or share decisions made locally
+     * <p>
+     * {@inheritDoc}
+     */
+    @Override
+    public void notifyDecisionRequired(LocoAddress address, DecisionType question) {
     }
 
     // internal class used to propagate back end throttle changes
@@ -178,8 +192,9 @@ abstract public class AbstractThrottleServer implements ThrottleListener {
         @Override
         public void propertyChange(java.beans.PropertyChangeEvent e) {
             switch (e.getPropertyName()) {
-                case "SpeedSetting":
-                case "SpeedSteps":
+                case Throttle.SPEEDSETTING:
+                case Throttle.SPEEDSTEPS:
+                case Throttle.ISFORWARD:
                     try {
                         clientserver.sendStatus(throttle.getLocoAddress());
                     } catch (IOException ioe) {

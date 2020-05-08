@@ -206,7 +206,6 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
             }
         });
 
-        //ResourceBundle resources = ResourceBundle.getBundle("jmri.jmrit.roster.JmritRosterBundle");
         _nonSelectedItem = Bundle.getMessage("RosterEntryComboBoxNoSelection");
     }
 
@@ -268,7 +267,6 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
     /**
      * Update the combo box with an arbitrary roster group, using new roster
      * entry attributes.
-     *
      */
     public final void update(String rosterGroup,
             String roadName,
@@ -280,8 +278,8 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
             String id) {
         Object selection = this.getSelectedItem();
         if (log.isDebugEnabled()) {
-            log.debug("Old selection: " + selection);
-            log.debug("Old group: " + _group);
+            log.debug("Old selection: {}", selection);
+            log.debug("Old group: {}", _group);
         }
         ActionListener[] ALs = this.getActionListeners();
         for (ActionListener al : ALs) {
@@ -322,8 +320,8 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
             }
         }
         if (log.isDebugEnabled()) {
-            log.debug("New selection: " + this.getSelectedItem());
-            log.debug("New group: " + _group);
+            log.debug("New selection: {}", this.getSelectedItem());
+            log.debug("New group: {}", _group);
         }
         for (ActionListener al : ALs) {
             this.addActionListener(al);
@@ -385,4 +383,5 @@ public class RosterEntryComboBox extends JComboBox<Object> implements RosterEntr
                 _currentSelection,
                 this.getSelectedRosterEntries(true));
     }
+
 }

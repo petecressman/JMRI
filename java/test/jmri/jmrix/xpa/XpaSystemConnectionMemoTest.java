@@ -7,9 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Description:	tests for the jmri.jmrix.xpa.XpaSystemConnectionMemo class
- * <P>
- * @author	Paul Bender
+ * Tests for the jmri.jmrix.xpa.XpaSystemConnectionMemo class.
+ *
+ * @author Paul Bender
  */
 public class XpaSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemoTestBase {
 
@@ -39,7 +39,6 @@ public class XpaSystemConnectionMemoTest extends jmri.jmrix.SystemConnectionMemo
     }
 
 
-    // The minimal setup for log4J
     @Override
     @Before
     public void setUp() {

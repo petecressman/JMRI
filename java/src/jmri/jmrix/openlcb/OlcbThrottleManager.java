@@ -9,24 +9,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of a ThrottleManager for OpenLCB
- * <P>
+ *
  * @author Bob Jacobsen Copyright (C) 2003, 2005, 2012
  */
 public class OlcbThrottleManager extends AbstractThrottleManager {
 
     public OlcbThrottleManager() {
         super();
-    }
-
-    /**
-     * Constructor.
-     * @param memo system connection memo
-     * @param mgr config manager
-     * @deprecated since 4.13.4
-     */
-    @Deprecated
-    public OlcbThrottleManager(jmri.jmrix.SystemConnectionMemo memo, OlcbConfigurationManager mgr) {
-        this(memo);
     }
 
     /**
@@ -40,8 +29,12 @@ public class OlcbThrottleManager extends AbstractThrottleManager {
     @Override
     public void requestThrottleSetup(LocoAddress a, boolean control) {
         // Immediately trigger the callback.
+        if (!(a instanceof DccLocoAddress)){
+            failedThrottleRequest(a, "Not a DccLocoAddress");
+            return;
+        }
         DccLocoAddress address = (DccLocoAddress) a;
-        log.debug("new debug throttle for " + address);
+        log.debug("new debug throttle for {}", address);
         notifyThrottleKnown(new OlcbThrottle(address, adapterMemo), a);
     }
 
@@ -99,11 +92,13 @@ public class OlcbThrottleManager extends AbstractThrottleManager {
 
     @Override
     public boolean disposeThrottle(DccThrottle t, jmri.ThrottleListener l) {
-        log.debug("disposeThrottle called for " + t);
+        log.debug("disposeThrottle called for {}", t);
         if (super.disposeThrottle(t, l)) {
-            OlcbThrottle lnt = (OlcbThrottle) t;
-            lnt.throttleDispose();
-            return true;
+            if (t instanceof OlcbThrottle) {
+                OlcbThrottle lnt = (OlcbThrottle) t;
+                lnt.throttleDispose();
+                return true;
+            }
         }
         return false;
     }

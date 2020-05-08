@@ -1,16 +1,12 @@
 package jmri.jmrit.symbolicprog.tabbedframe;
 
 import java.io.File;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * Check the names in an XML programmer file against the names.xml definitions
  *
- * @author	Bob Jacobsen Copyright (C) 2001, 2007, 2008
+ * @author Bob Jacobsen Copyright (C) 2001, 2007, 2008
  * @see jmri.jmrit.XmlFile
  */
 public class CheckProgrammerNamesTest {
